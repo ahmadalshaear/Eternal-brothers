@@ -1,2 +1,224 @@
-# Eternal-brothers
-Eternal Brothers FC - Team Management Webpage
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Eternal Brothers FC</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body {
+    font-family: "Cairo", Arial, sans-serif;
+    background-color: #121212;
+    background-image: url('team-logo.jpg');
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: 200px;
+    color: #e0e0e0;
+    padding: 20px;
+    text-align: center;
+}
+
+.container {
+    max-width: 650px;
+    margin: auto;
+    background: #1e1e1ecc;
+    padding: 35px 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px #000;
+    display: none;
+}
+
+h1 { font-size: 32px; color: #fff; margin-bottom: 15px; font-weight: 700; }
+h2 { font-size: 24px; color: #fff; margin: 20px 0 10px; }
+.match-time { font-weight: 600; color: #bbbbbb; margin-bottom: 25px; font-size: 18px; }
+
+label { font-weight: 600; display: block; margin: 15px 0 10px 0; font-size: 18px; color: #fff; }
+input[type=text] { padding: 12px; width: 75%; margin: 10px 0 20px 0; border-radius: 8px; border: 1px solid #555; text-align: center; font-size: 16px; background-color: #2c2c2c; color: #fff; }
+
+button { padding: 12px 18px; border: none; background-color: #1976d2; color: white; border-radius: 8px; cursor: pointer; margin: 10px 8px; font-size: 16px; font-weight: 600; transition: 0.2s; }
+button:hover { background-color: #0d47a1; }
+
+ul { list-style: none; padding: 0; text-align: left; margin-top: 20px; }
+li { background: #2c2c2c; margin: 10px 0; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 500; color: #e0e0e0; }
+.actions button { background-color: #555; margin-left: 6px; padding: 6px 10px; font-size: 14px; color: #fff; }
+.actions button:hover { background-color: #333; }
+
+.nav-buttons { margin: 30px 0; }
+.nav-buttons h3 { margin-bottom: 15px; font-size: 20px; font-weight: 600; color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="nav-buttons">
+    <button onclick="showSection('main')">🏠 Main Team</button>
+    <button onclick="showSection('blue')">🟦 Blue Team</button>
+    <button onclick="showSection('yellow')">🟨 Yellow Team</button>
+</div>
+
+<!-- Main Team -->
+<div id="main" class="container">
+    <h1>⚽ Eternal Brothers FC ⚽</h1>
+    <div class="match-time">🗓️ The match will be on Sunday at 9:40 AM</div>
+    <label>📍 Match Location:</label>
+    <input type="text" id="matchLocation" placeholder="Enter location here">
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <button onclick="addMember()">Add</button>
+    <h2>Main Team List (24 players max):</h2>
+    <ul id="teamList"></ul>
+    <h2>Waiting List:</h2>
+    <ul id="waitingList"></ul>
+</div>
+
+<!-- Blue Team -->
+<div id="blue" class="container">
+    <h2>Blue Team 🔵</h2>
+    <input type="text" id="blueInput" placeholder="Enter player name">
+    <button onclick="addBlue()">Add</button>
+    <ul id="blueList"></ul>
+</div>
+
+<!-- Yellow Team -->
+<div id="yellow" class="container">
+    <h2>Yellow Team 🟡</h2>
+    <input type="text" id="yellowInput" placeholder="Enter player name">
+    <button onclick="addYellow()">Add</button>
+    <ul id="yellowList"></ul>
+</div>
+
+<script>
+// ------------------ Show/Hide Sections ------------------
+function showSection(id){
+    document.querySelectorAll('.container').forEach(c=>c.style.display='none');
+    document.getElementById(id).style.display='block';
+}
+showSection('main');
+
+// ------------------ Auto Clear Monday ------------------
+const today = new Date();
+if(today.getDay() === 1){ // 1 = Monday
+    localStorage.removeItem('mainTeam');
+    localStorage.removeItem('mainWaiting');
+    localStorage.removeItem('blueTeam');
+    localStorage.removeItem('yellowTeam');
+}
+
+// ------------------ Main Team ------------------
+let team = JSON.parse(localStorage.getItem('mainTeam')) || [];
+let waiting = JSON.parse(localStorage.getItem('mainWaiting')) || [];
+const maxTeamSize = 24;
+const locationInput = document.getElementById('matchLocation');
+locationInput.value = localStorage.getItem('matchLocation') || '';
+locationInput.addEventListener('input', ()=>localStorage.setItem('matchLocation', locationInput.value));
+
+function addMember(){
+    const input = document.getElementById('nameInput');
+    const name = input.value.trim();
+    if(!name) return alert("⚠️ Name cannot be empty!");
+    if(team.includes(name) || waiting.includes(name)) return alert("⚠️ Already exists!");
+    if(team.length<maxTeamSize) team.push(name);
+    else waiting.push(name);
+    input.value=""; updateMain();
+}
+
+function updateMain(){
+    localStorage.setItem('mainTeam', JSON.stringify(team));
+    localStorage.setItem('mainWaiting', JSON.stringify(waiting));
+    renderList('teamList', team, true, null);
+    renderList('waitingList', waiting, true, null);
+}
+
+// ------------------ Blue Team ------------------
+let blueTeam = JSON.parse(localStorage.getItem('blueTeam')) || [];
+const maxBlue = 12;
+function addBlue(){
+    const input = document.getElementById('blueInput');
+    const name = input.value.trim();
+    if(!name) return alert("⚠️ Name cannot be empty!");
+    if(blueTeam.includes(name)) return alert("⚠️ Already exists!");
+    if(blueTeam.length>=maxBlue) return alert("⚠️ Team full!");
+    blueTeam.push(name); input.value=""; updateBlue();
+}
+function updateBlue(){ localStorage.setItem('blueTeam', JSON.stringify(blueTeam)); renderList('blueList', blueTeam, false, '🔵'); }
+
+// ------------------ Yellow Team ------------------
+let yellowTeam = JSON.parse(localStorage.getItem('yellowTeam')) || [];
+const maxYellow = 12;
+function addYellow(){
+    const input = document.getElementById('yellowInput');
+    const name = input.value.trim();
+    if(!name) return alert("⚠️ Name cannot be empty!");
+    if(yellowTeam.includes(name)) return alert("⚠️ Already exists!");
+    if(yellowTeam.length>=maxYellow) return alert("⚠️ Team full!");
+    yellowTeam.push(name); input.value=""; updateYellow();
+}
+function updateYellow(){ localStorage.setItem('yellowTeam', JSON.stringify(yellowTeam)); renderList('yellowList', yellowTeam, false, '🟡'); }
+
+// ------------------ Generic Render with Edit/Delete ------------------
+function renderList(id,list,isMain,symbol){
+    const ul = document.getElementById(id);
+    ul.innerHTML = list.map((m,i)=>`
+        <li>
+            <span>${i+1}. ${symbol?symbol+' ':''}${m}</span>
+            <div class="actions">
+                <button onclick="editName('${id}', ${i})">✏️</button>
+                <button onclick="deleteName('${id}', ${i})">🗑️</button>
+            </div>
+        </li>
+    `).join('');
+}
+
+// Edit function
+function editName(listId,index){
+    let list;
+    if(listId==='teamList') list=team;
+    else if(listId==='waitingList') list=waiting;
+    else if(listId==='blueList') list=blueTeam;
+    else list=yellowTeam;
+    const newName = prompt("Enter new name:", list[index]);
+    if(!newName) return;
+    if(list.includes(newName)) return alert("⚠️ Already exists!");
+    list[index]=newName;
+    saveList(listId,list); renderAll();
+}
+
+// Delete function
+function deleteName(listId,index){
+    let list;
+    if(listId==='teamList') list=team;
+    else if(listId==='waitingList') list=waiting;
+    else if(listId==='blueList') list=blueTeam;
+    else list=yellowTeam;
+
+    if(!confirm(`Remove ${list[index]}?`)) return;
+
+    // نقل تلقائي من Waiting إلى Main Team عند حذف لاعب من Main
+    if(listId==='teamList'){
+        list.splice(index,1);
+        if(waiting.length > 0){
+            const nextPlayer = waiting.shift();
+            team.push(nextPlayer);
+            alert(`👟 ${nextPlayer} moved from Waiting to Main Team.`);
+        }
+    } else list.splice(index,1);
+
+    saveList(listId,list);
+    renderAll();
+}
+
+// Save to localStorage
+function saveList(listId,list){
+    if(listId==='teamList') localStorage.setItem('mainTeam',JSON.stringify(list));
+    else if(listId==='waitingList') localStorage.setItem('mainWaiting',JSON.stringify(list));
+    else if(listId==='blueList') localStorage.setItem('blueTeam',JSON.stringify(list));
+    else localStorage.setItem('yellowTeam',JSON.stringify(list));
+}
+
+// Render all lists
+function renderAll(){
+    updateMain(); updateBlue(); updateYellow();
+}
+
+renderAll();
+</script>
+
+</body>
+</html>
