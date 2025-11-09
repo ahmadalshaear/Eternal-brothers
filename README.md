@@ -16,7 +16,6 @@ body {
     padding: 20px;
     text-align: center;
 }
-
 .container {
     max-width: 650px;
     margin: auto;
@@ -26,22 +25,17 @@ body {
     box-shadow: 0 0 15px #000;
     display: none;
 }
-
 h1 { font-size: 32px; color: #fff; margin-bottom: 15px; font-weight: 700; }
 h2 { font-size: 24px; color: #fff; margin: 20px 0 10px; }
 .match-time { font-weight: 600; color: #bbbbbb; margin-bottom: 25px; font-size: 18px; }
-
 label { font-weight: 600; display: block; margin: 15px 0 10px 0; font-size: 18px; color: #fff; }
 input[type=text] { padding: 12px; width: 75%; margin: 10px 0 20px 0; border-radius: 8px; border: 1px solid #555; text-align: center; font-size: 16px; background-color: #2c2c2c; color: #fff; }
-
 button { padding: 12px 18px; border: none; background-color: #1976d2; color: white; border-radius: 8px; cursor: pointer; margin: 10px 8px; font-size: 16px; font-weight: 600; transition: 0.2s; }
 button:hover { background-color: #0d47a1; }
-
 ul { list-style: none; padding: 0; text-align: left; margin-top: 20px; }
 li { background: #2c2c2c; margin: 10px 0; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 500; color: #e0e0e0; }
 .actions button { background-color: #555; margin-left: 6px; padding: 6px 10px; font-size: 14px; color: #fff; }
 .actions button:hover { background-color: #333; }
-
 .nav-buttons { margin: 30px 0; }
 .nav-buttons h3 { margin-bottom: 15px; font-size: 20px; font-weight: 600; color: #fff; }
 </style>
@@ -57,9 +51,9 @@ li { background: #2c2c2c; margin: 10px 0; padding: 12px; border-radius: 8px; dis
 <!-- Main Team -->
 <div id="main" class="container">
     <h1>⚽ Eternal Brothers FC ⚽</h1>
-    <div class="match-time">🗓️ The match will be on Sunday at 9:40 AM</div>
+    <div class="match-time">🗓️ Match will be on Sunday at 9:40 AM</div>
     <label>📍 Match Location:</label>
-    <input type="text" id="matchLocation" placeholder="Enter location here">
+    <input type="text" id="matchLocation" placeholder="Enter location here" oninput="saveMatchLocation()">
     <input type="text" id="nameInput" placeholder="Enter your name">
     <button onclick="addMember()">Add</button>
     <h2>Main Team List (24 players max):</h2>
@@ -84,141 +78,111 @@ li { background: #2c2c2c; margin: 10px 0; padding: 12px; border-radius: 8px; dis
     <ul id="yellowList"></ul>
 </div>
 
-<script>
-// ------------------ Show/Hide Sections ------------------
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot } 
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAPB2dHdpBwIvPBpkFlu9EbRwbdswV7i8",
+  authDomain: "eternal-brothers-fc.firebaseapp.com",
+  projectId: "eternal-brothers-fc",
+  storageBucket: "eternal-brothers-fc.appspot.com",
+  messagingSenderId: "884144294831",
+  appId: "1:884144294831:web:8125177dcab873b3c77d5a",
+  measurementId: "G-XZ7WX25BMG"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Show/Hide Sections
 function showSection(id){
-    document.querySelectorAll('.container').forEach(c=>c.style.display='none');
-    document.getElementById(id).style.display='block';
+    document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
 }
 showSection('main');
 
-// ------------------ Auto Clear Monday ------------------
-const today = new Date();
-if(today.getDay() === 1){ // 1 = Monday
-    localStorage.removeItem('mainTeam');
-    localStorage.removeItem('mainWaiting');
-    localStorage.removeItem('blueTeam');
-    localStorage.removeItem('yellowTeam');
-}
-
-// ------------------ Main Team ------------------
-let team = JSON.parse(localStorage.getItem('mainTeam')) || [];
-let waiting = JSON.parse(localStorage.getItem('mainWaiting')) || [];
 const maxTeamSize = 24;
-const locationInput = document.getElementById('matchLocation');
-locationInput.value = localStorage.getItem('matchLocation') || '';
-locationInput.addEventListener('input', ()=>localStorage.setItem('matchLocation', locationInput.value));
-
-function addMember(){
-    const input = document.getElementById('nameInput');
-    const name = input.value.trim();
-    if(!name) return alert("⚠️ Name cannot be empty!");
-    if(team.includes(name) || waiting.includes(name)) return alert("⚠️ Already exists!");
-    if(team.length<maxTeamSize) team.push(name);
-    else waiting.push(name);
-    input.value=""; updateMain();
-}
-
-function updateMain(){
-    localStorage.setItem('mainTeam', JSON.stringify(team));
-    localStorage.setItem('mainWaiting', JSON.stringify(waiting));
-    renderList('teamList', team, true, null);
-    renderList('waitingList', waiting, true, null);
-}
-
-// ------------------ Blue Team ------------------
-let blueTeam = JSON.parse(localStorage.getItem('blueTeam')) || [];
 const maxBlue = 12;
-function addBlue(){
-    const input = document.getElementById('blueInput');
-    const name = input.value.trim();
-    if(!name) return alert("⚠️ Name cannot be empty!");
-    if(blueTeam.includes(name)) return alert("⚠️ Already exists!");
-    if(blueTeam.length>=maxBlue) return alert("⚠️ Team full!");
-    blueTeam.push(name); input.value=""; updateBlue();
-}
-function updateBlue(){ localStorage.setItem('blueTeam', JSON.stringify(blueTeam)); renderList('blueList', blueTeam, false, '🔵'); }
-
-// ------------------ Yellow Team ------------------
-let yellowTeam = JSON.parse(localStorage.getItem('yellowTeam')) || [];
 const maxYellow = 12;
-function addYellow(){
-    const input = document.getElementById('yellowInput');
-    const name = input.value.trim();
+
+const teamListEl = document.getElementById('teamList');
+const waitingListEl = document.getElementById('waitingList');
+const locationInput = document.getElementById('matchLocation');
+
+async function saveMatchLocation(){
+    await addDoc(collection(db,"matchInfo"),{type:"location", value: locationInput.value});
+}
+
+async function addMember(){
+    const name = document.getElementById('nameInput').value.trim();
     if(!name) return alert("⚠️ Name cannot be empty!");
-    if(yellowTeam.includes(name)) return alert("⚠️ Already exists!");
-    if(yellowTeam.length>=maxYellow) return alert("⚠️ Team full!");
-    yellowTeam.push(name); input.value=""; updateYellow();
-}
-function updateYellow(){ localStorage.setItem('yellowTeam', JSON.stringify(yellowTeam)); renderList('yellowList', yellowTeam, false, '🟡'); }
-
-// ------------------ Generic Render with Edit/Delete ------------------
-function renderList(id,list,isMain,symbol){
-    const ul = document.getElementById(id);
-    ul.innerHTML = list.map((m,i)=>`
-        <li>
-            <span>${i+1}. ${symbol?symbol+' ':''}${m}</span>
-            <div class="actions">
-                <button onclick="editName('${id}', ${i})">✏️</button>
-                <button onclick="deleteName('${id}', ${i})">🗑️</button>
-            </div>
-        </li>
-    `).join('');
+    const snap = await getDocs(collection(db,"mainTeam"));
+    const count = snap.size;
+    await addDoc(collection(db, count < maxTeamSize ? "mainTeam" : "waiting"), {name});
+    document.getElementById('nameInput').value="";
 }
 
-// Edit function
-function editName(listId,index){
-    let list;
-    if(listId==='teamList') list=team;
-    else if(listId==='waitingList') list=waiting;
-    else if(listId==='blueList') list=blueTeam;
-    else list=yellowTeam;
-    const newName = prompt("Enter new name:", list[index]);
+async function addBlue(){
+    const name = document.getElementById('blueInput').value.trim();
+    if(!name) return alert("⚠️ Name cannot be empty!");
+    const snap = await getDocs(collection(db,"blueTeam"));
+    if(snap.size >= maxBlue) return alert("⚠️ Team full!");
+    await addDoc(collection(db,"blueTeam"), {name});
+    document.getElementById('blueInput').value="";
+}
+
+async function addYellow(){
+    const name = document.getElementById('yellowInput').value.trim();
+    if(!name) return alert("⚠️ Name cannot be empty!");
+    const snap = await getDocs(collection(db,"yellowTeam"));
+    if(snap.size >= maxYellow) return alert("⚠️ Team full!");
+    await addDoc(collection(db,"yellowTeam"), {name});
+    document.getElementById('yellowInput').value="";
+}
+
+async function editDoc(collectionName,id){
+    const newName = prompt("Enter new name:");
     if(!newName) return;
-    if(list.includes(newName)) return alert("⚠️ Already exists!");
-    list[index]=newName;
-    saveList(listId,list); renderAll();
+    await updateDoc(doc(db,collectionName,id), {name:newName});
 }
 
-// Delete function
-function deleteName(listId,index){
-    let list;
-    if(listId==='teamList') list=team;
-    else if(listId==='waitingList') list=waiting;
-    else if(listId==='blueList') list=blueTeam;
-    else list=yellowTeam;
+async function deleteDocById(collectionName,id){
+    if(!confirm("Are you sure?")) return;
 
-    if(!confirm(`Remove ${list[index]}?`)) return;
-
-    // نقل تلقائي من Waiting إلى Main Team عند حذف لاعب من Main
-    if(listId==='teamList'){
-        list.splice(index,1);
-        if(waiting.length > 0){
-            const nextPlayer = waiting.shift();
-            team.push(nextPlayer);
-            alert(`👟 ${nextPlayer} moved from Waiting to Main Team.`);
+    if(collectionName === "mainTeam"){
+        await deleteDoc(doc(db,"mainTeam",id));
+        const waitingSnap = await getDocs(collection(db,"waiting"));
+        if(waitingSnap.size > 0){
+            const firstWaiting = waitingSnap.docs[0];
+            await addDoc(collection(db,"mainTeam"), {name:firstWaiting.data().name});
+            await deleteDoc(doc(db,"waiting",firstWaiting.id));
+            alert(`👟 ${firstWaiting.data().name} moved from Waiting List to Main Team`);
         }
-    } else list.splice(index,1);
+        return;
+    }
 
-    saveList(listId,list);
-    renderAll();
+    await deleteDoc(doc(db,collectionName,id));
 }
 
-// Save to localStorage
-function saveList(listId,list){
-    if(listId==='teamList') localStorage.setItem('mainTeam',JSON.stringify(list));
-    else if(listId==='waitingList') localStorage.setItem('mainWaiting',JSON.stringify(list));
-    else if(listId==='blueList') localStorage.setItem('blueTeam',JSON.stringify(list));
-    else localStorage.setItem('yellowTeam',JSON.stringify(list));
+function renderList(ulEl, data, collectionName){
+    ulEl.innerHTML = "";
+    data.forEach((docSnap, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${i+1}. ${docSnap.data().name}</span>
+                        <div class="actions">
+                            <button onclick="editDoc('${collectionName}','${docSnap.id}')">✏️</button>
+                            <button onclick="deleteDocById('${collectionName}','${docSnap.id}')">🗑️</button>
+                        </div>`;
+        ulEl.appendChild(li);
+    });
 }
 
-// Render all lists
-function renderAll(){
-    updateMain(); updateBlue(); updateYellow();
-}
-
-renderAll();
+onSnapshot(collection(db,"mainTeam"), snap => renderList(teamListEl,snap.docs,"mainTeam"));
+onSnapshot(collection(db,"waiting"), snap => renderList(waitingListEl,snap.docs,"waiting"));
+onSnapshot(collection(db,"blueTeam"), snap => renderList(document.getElementById('blueList'),snap.docs,"blueTeam"));
+onSnapshot(collection(db,"yellowTeam"), snap => renderList(document.getElementById('yellowList'),snap.docs,"yellowTeam"));
 </script>
-
 </body>
 </html>
