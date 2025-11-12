@@ -1,9 +1,8 @@
 // firebase-config.js
-
-// إعدادات Firebase الخاصة بك
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyAPB2dHdpBwIvPBpkFlu9EbRwbdswV7iI8",
   authDomain: "eternal-brothers-fc.firebaseapp.com",
+  databaseURL: "https://eternal-brothers-fc-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "eternal-brothers-fc",
   storageBucket: "eternal-brothers-fc.firebasestorage.app",
   messagingSenderId: "884144294831",
