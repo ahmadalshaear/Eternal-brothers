@@ -1,44 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
 <title>Eternal Brothers FC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* --- UI styles --- */
-  body { font-family: "Cairo", Arial, sans-serif; background:#121212; color:#e0e0e0; margin:0; padding:12px; text-align:center; }
-  .nav-buttons { display:flex; justify-content:space-between; gap:8px; margin-bottom:16px; }
-  button { padding:10px 14px; border-radius:8px; border:0; font-weight:700; cursor:pointer; width:32%; max-width:160px; }
-  #homeBtn { background:#d32f2f; color:#fff; } #blueBtn { background:#1976d2; color:#fff; } #yellowBtn { background:#fbc02d; color:#000; }
-  .container { max-width:980px; margin:8px auto 24px; background:rgba(30,30,30,0.9); padding:18px; border-radius:12px; display:none; box-shadow:0 6px 24px rgba(0,0,0,0.6); }
-  h1 { margin:0 0 8px; font-size:20px; color:#d32f2f; font-weight:800; }
-  h2 { margin:14px 0 8px; font-size:18px; color:#fff; }
-  input[type=text] { padding:8px 10px; width:78%; border-radius:8px; border:1px solid #555; background:#2c2c2c; color:#fff; text-align:center; font-size:14px; }
-  button.addBtn { padding:8px 12px; margin:6px; font-size:13px; }
-  ul { list-style:none; padding:12px; margin:8px 0 0; text-align:left; border-radius:10px; }
-  li { padding:8px; margin-bottom:8px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-weight:700; }
-  #teamList li { background:#a8e6a1; color:#000; }
-  #waitingList li { background:#ffe0e0; color:#000; }
-  #blueList li { background:rgba(25,118,210,0.8); color:#000; }
-  #yellowList li { background:rgba(251,192,42,0.85); color:#000; }
-  #chatBox { max-height:300px; overflow:auto; background:#2c2c2c; padding:10px; border-radius:10px; text-align:left; margin-bottom:8px; }
-  .message-time { font-size:11px; color:#aaa; margin-left:8px; }
-  .match-time { font-size:15px; color:#fff; margin:6px 0; }
-  .match-note { font-size:14px; color:#fdd835; margin-bottom:6px; }
-  .address-container { display:inline-block; position:relative; margin-bottom:10px; }
-  .address-pin { position:absolute; left:-28px; top:50%; transform:translateY(-50%); font-size:20px; }
-  #matchAddress { font-weight:800; cursor:pointer; user-select:none; color:#fff; }
-  .field { width:100%; max-width:420px; height:260px; background:#4caf50; margin:12px auto; border-radius:10px; position:relative; border:2px solid #fff; touch-action:none; }
-  .field::before { content:""; position:absolute; inset:0; border-radius:10px; border:2px solid #fff; pointer-events:none; }
-  .field .center-circle, .field .penalty-box-left, .field .penalty-box-right, .field .mid-line { position:absolute; border:2px solid #fff; }
-  .field .center-circle { width:50px; height:50px; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); }
-  .field .penalty-box-left { width:64px; height:120px; top:50%; left:6px; transform:translateY(-50%); }
-  .field .penalty-box-right { width:64px; height:120px; top:50%; right:6px; transform:translateY(-50%); }
-  .field .mid-line { width:0; height:100%; border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
-  .player-marker { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; position:absolute; cursor:grab; user-select:none; color:#fff; }
-  .player-name { position:absolute; width:120px; text-align:center; left:-40px; top:-22px; font-size:12px; color:#fff; }
-  @media (max-width:520px){ button{ width:30%; } input[type=text]{ width:72%; } .field{ max-width:330px; height:220px; } }
+body {
+  font-family: "Cairo", sans-serif;
+  background-color: #121212;
+  color: #e0e0e0;
+  margin:0;
+  padding:10px;
+  text-align:center;
+}
+.nav-buttons {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+button {
+  padding:10px 16px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+}
+#homeBtn { background:#d32f2f; color:#fff; }
+#blueBtn { background:#1976d2; color:#fff; }
+#yellowBtn { background:#fbc02d; color:#000; }
+
+.container {
+  display:none;
+  max-width:95%;
+  margin:auto;
+  background:#1e1e1ecc;
+  padding:20px 10px;
+  border-radius:15px;
+  box-shadow:0 0 10px #000;
+}
+h1,h2 { margin:10px 0; }
+input[type=text] { padding:8px; width:80%; border-radius:8px; border:1px solid #555; margin:5px 0; background:#2c2c2c; color:#fff; text-align:center; }
+ul { list-style:none; padding:0; margin-top:10px; text-align:left; font-weight:bold; }
+li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content:space-between; }
+#teamList li { background:#a8e6a1; color:black; }
+#waitingList li { background:#ffe0e0; color:black; }
+#blueList li { background:rgba(25,118,210,0.7); color:black; }
+#yellowList li { background:rgba(251,192,42,0.7); color:black; }
+
+#chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
+.player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; }
+.player-name { position:absolute; width:100px; text-align:center; left:-30px; top:-20px; font-size:12px; color:#fff; }
+.field { width:100%; max-width:400px; height:250px; background:#4CAF50; margin:10px auto; border:2px solid #fff; border-radius:10px; position:relative; touch-action:none; }
+.field .center-circle { position:absolute; width:50px;height:50px;border-radius:50%;border:2px solid #fff; top:50%; left:50%; transform:translate(-50%,-50%); }
+.field .penalty-box-left, .field .penalty-box-right { position:absolute;width:60px;height:120px;border:2px solid #fff; top:50%; transform:translateY(-50%); }
+.field .penalty-box-left { left:0; }
+.field .penalty-box-right { right:0; }
+.field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
 </style>
 </head>
 <body>
@@ -49,311 +67,135 @@
   <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
 </div>
 
-<!-- MAIN -->
 <div id="main" class="container">
   <h1>Eternal Brothers FC</h1>
-  <div class="address-container">
-    <span class="address-pin">📍</span>
-    <span id="matchAddress">Click here to set match address</span>
-  </div>
-  <div class="match-time">✔️ Match: Sunday — 9:40 AM</div>
-  <div class="match-note">Please follow group chat for any changes</div>
+  <h2>Add Player</h2>
+  <input type="text" id="nameInput" placeholder="Enter player name">
+  <button onclick="addPlayer()">Add</button>
 
-  <h2>Add Player to Main Team</h2>
-  <input id="nameInput" type="text" placeholder="Enter player name">
-  <button class="addBtn" onclick="addMember()">Add</button>
-
-  <h2>Main Team List (24 max)</h2>
+  <h2>Main Team (24 max)</h2>
   <ul id="teamList"></ul>
 
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
 
-  <h2>Team Chat</h2>
-  <input id="chatName" type="text" placeholder="Enter your name to enable chat">
-  <button class="addBtn" onclick="enableChat()">✔️ Confirm</button>
+  <h2>Chat</h2>
+  <input type="text" id="chatName" placeholder="Enter your name">
+  <button onclick="enableChat()">✔️ Confirm</button>
   <div id="chatBox"></div>
-  <div style="margin-top:8px;">
-    <input id="chatInput" type="text" placeholder="Type your message..." disabled>
-    <button class="addBtn" id="sendBtn" onclick="sendMessage()" disabled style="background:green;">Send</button>
-    <button class="addBtn" style="background:#d32f2f;" onclick="clearChat()">Clear Chat</button>
-  </div>
+  <input type="text" id="chatInput" placeholder="Type message..." disabled>
+  <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
 </div>
 
-<!-- BLUE -->
-<div id="blue" class="container" style="background:rgba(21,101,192,0.12);">
-  <h2>Blue Team 🔵</h2>
-  <input id="blueInput" type="text" placeholder="Enter player name">
-  <button class="addBtn" onclick="addBlue()">Add</button>
+<div id="blue" class="container" style="background:#1565c0aa;">
+  <h2>Blue Team</h2>
+  <input type="text" id="blueInput" placeholder="Enter player name">
+  <button onclick="addBlue()">Add</button>
   <ul id="blueList"></ul>
-  <h3>Blue Team Plan</h3>
+  <h3>Plan</h3>
   <div id="bluePlan" class="field"></div>
 </div>
 
-<!-- YELLOW -->
-<div id="yellow" class="container" style="background:rgba(253,216,53,0.12); color:#000;">
-  <h2>Yellow Team 🟡</h2>
-  <input id="yellowInput" type="text" placeholder="Enter player name">
-  <button class="addBtn" onclick="addYellow()">Add</button>
+<div id="yellow" class="container" style="background:#fdd835aa; color:#000;">
+  <h2>Yellow Team</h2>
+  <input type="text" id="yellowInput" placeholder="Enter player name">
+  <button onclick="addYellow()">Add</button>
   <ul id="yellowList"></ul>
-  <h3>Yellow Team Plan</h3>
+  <h3>Plan</h3>
   <div id="yellowPlan" class="field"></div>
 </div>
 
-<audio id="sendSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
-<!-- Supabase client -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ================== Supabase config (YOUR project info inserted) ================== */
-const SUPABASE_URL = "https://wihhlvgkjglphjzhivdn.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ";
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-/* ================== state arrays ================== */
-let team = [], waiting = [], blueTeam = [], yellowTeam = [], chatMessages = [], bluePlanPos = [], yellowPlanPos = [];
+let chatEnabled=false;
 
-/* ================== small utils ================== */
-const maxTeamSize = 12;
-const getUserColor = (() => {
-  const map = {};
-  const colors = ["#2196F3","#FF9800","#4CAF50","#9C27B0","#00BCD4","#FFC107","#E91E63","#9E9E9E"];
-  return (name) => { if(map[name]) return map[name]; const c = colors[Math.floor(Math.random()*colors.length)]; map[name]=c; return c; };
-})();
-
-/* ================== show/hide sections ================== */
+// Navigation
 function showSection(id){
   document.querySelectorAll('.container').forEach(c=>c.style.display='none');
-  const el = document.getElementById(id);
-  if(el) el.style.display = 'block';
+  document.getElementById(id).style.display='block';
 }
 showSection('main');
 
-/* ================== render helpers ================== */
-function renderList(id, list) {
-  const el = document.getElementById(id);
-  el.innerHTML = list.map((v,i)=> {
-    const time = v.time ? new Date(Number(v.time)).toLocaleString() : "";
-    return `<li><span>${i+1}. ${escapeHtml(v.name||v.player_name||"")}${ time ? ` <span style="font-weight:600; font-size:12px; color:#333">(${time})</span>` : "" }</span></li>`;
-  }).join('');
+// Add player to main team
+async function addPlayer(){
+  const name = document.getElementById("nameInput").value.trim();
+  if(!name) return alert("Enter a name");
+  const { error } = await supabase.from("main_team").insert([{name,time:Date.now()}]);
+  if(error) return alert(error.message);
+  document.getElementById("nameInput").value="";
+  loadPlayers();
 }
-function renderAll(){
-  renderList("teamList", team);
-  renderList("waitingList", waiting);
-  renderList("blueList", blueTeam);
-  renderList("yellowList", yellowTeam);
-  renderChat();
-  renderAllPlans();
-}
-
-/* ================== Supabase load/save ================== */
-async function loadData(){
-  // load ordered lists (we expect name & time fields)
-  const mainRes = await supabase.from('main_team').select('*').order('time', { ascending:true });
-  team = mainRes.data || [];
-  const waitRes = await supabase.from('waiting_list').select('*').order('time', { ascending:true });
-  waiting = waitRes.data || [];
-  const blueRes = await supabase.from('blue_team').select('*').order('time', { ascending:true });
-  blueTeam = blueRes.data || [];
-  const yellowRes = await supabase.from('yellow_team').select('*').order('time', { ascending:true });
-  yellowTeam = yellowRes.data || [];
-  const chatRes = await supabase.from('chat_messages').select('*').order('time', { ascending:true });
-  chatMessages = chatRes.data || [];
-
-  // plans (we map to simple arrays of positions)
-  const bp = await supabase.from('plan_positions_blue').select('*').order('id',{ascending:true});
-  bluePlanPos = (bp.data || []).map(r => ({ x: Number(r.x), y: Number(r.y), player_name: r.player_name || null }));
-  const yp = await supabase.from('plan_positions_yellow').select('*').order('id',{ascending:true});
-  yellowPlanPos = (yp.data || []).map(r => ({ x: Number(r.x), y: Number(r.y), player_name: r.player_name || null }));
-
-  renderAll();
+async function loadPlayers(){
+  const { data: team } = await supabase.from("main_team").select("*").order("id");
+  const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
+  const teamList = document.getElementById("teamList");
+  const waitingList = document.getElementById("waitingList");
+  teamList.innerHTML="";
+  waitingList.innerHTML="";
+  if(team) team.forEach(p=>teamList.innerHTML+=`<li>${p.name}</li>`);
+  if(waiting) waiting.forEach(p=>waitingList.innerHTML+=`<li>${p.name}</li>`);
 }
 
-/* Save helper: clear table then insert rows (simple approach) */
-async function saveTable(tableName, arr) {
-  // delete all rows
-  await supabase.from(tableName).delete().neq('id', 0);
-  if (!arr || arr.length === 0) return;
-  // insert rows in one go (split to chunk if needed)
-  await supabase.from(tableName).insert(arr);
-}
-
-/* ================== Team management ================== */
-async function addMember(){
-  const name = document.getElementById('nameInput').value.trim();
-  if(!name) return alert("Name cannot be empty");
-  if(team.find(p=>p.name===name) || waiting.find(p=>p.name===name)) return alert("Already exists");
-  const entry = { name, time: Date.now() };
-  if(team.length < 24) team.push(entry);
-  else waiting.push(entry);
-  document.getElementById('nameInput').value = "";
-  await saveTable('main_team', team);
-  await saveTable('waiting_list', waiting);
-  renderAll();
-}
+// Blue/Yellow teams
 async function addBlue(){
-  const name = document.getElementById('blueInput').value.trim();
-  if(!name) return alert("Name cannot be empty");
-  if(blueTeam.find(p=>p.name===name)) return alert("Already exists");
-  if(blueTeam.length >= maxTeamSize) return alert("Blue team is full (12)");
-  const entry = { name, time: Date.now() };
-  blueTeam.push(entry);
-  document.getElementById('blueInput').value="";
-  await saveTable('blue_team', blueTeam);
-  renderAll();
+  const name = document.getElementById("blueInput").value.trim();
+  if(!name) return;
+  await supabase.from("blue_team").insert([{name,time:Date.now()}]);
+  document.getElementById("blueInput").value="";
+  loadBlue();
 }
-async function addYellow(){
-  const name = document.getElementById('yellowInput').value.trim();
-  if(!name) return alert("Name cannot be empty");
-  if(yellowTeam.find(p=>p.name===name)) return alert("Already exists");
-  if(yellowTeam.length >= maxTeamSize) return alert("Yellow team is full (12)");
-  const entry = { name, time: Date.now() };
-  yellowTeam.push(entry);
-  document.getElementById('yellowInput').value="";
-  await saveTable('yellow_team', yellowTeam);
-  renderAll();
+async function loadBlue(){
+  const { data } = await supabase.from("blue_team").select("*").order("id");
+  const ul = document.getElementById("blueList");
+  ul.innerHTML="";
+  if(data) data.forEach(p=>ul.innerHTML+=`<li>${p.name}</li>`);
 }
 
-/* ================== Chat ================== */
-let chatEnabled = false;
+async function addYellow(){
+  const name = document.getElementById("yellowInput").value.trim();
+  if(!name) return;
+  await supabase.from("yellow_team").insert([{name,time:Date.now()}]);
+  document.getElementById("yellowInput").value="";
+  loadYellow();
+}
+async function loadYellow(){
+  const { data } = await supabase.from("yellow_team").select("*").order("id");
+  const ul = document.getElementById("yellowList");
+  ul.innerHTML="";
+  if(data) data.forEach(p=>ul.innerHTML+=`<li>${p.name}</li>`);
+}
+
+// Chat
 function enableChat(){
-  const name = document.getElementById('chatName').value.trim();
-  if(!name) return alert("Please enter your name");
-  chatEnabled = true;
-  document.getElementById('chatInput').disabled = false;
-  document.getElementById('sendBtn').disabled = false;
+  const name=document.getElementById('chatName').value.trim();
+  if(!name) return alert("Enter your name");
+  chatEnabled=true;
+  document.getElementById('chatInput').disabled=false;
+  document.getElementById('sendBtn').disabled=false;
 }
 async function sendMessage(){
-  if(!chatEnabled) return alert("Enable chat first");
-  const name = document.getElementById('chatName').value.trim();
-  const text = document.getElementById('chatInput').value.trim();
+  if(!chatEnabled) return;
+  const name=document.getElementById('chatName').value.trim();
+  const text=document.getElementById('chatInput').value.trim();
   if(!text) return;
-  chatMessages.push({ name, text, time: Date.now() });
-  document.getElementById('chatInput').value = "";
-  await saveTable('chat_messages', chatMessages);
-  renderChat();
-  document.getElementById('sendSound').play();
+  await supabase.from("chat").insert([{name,text,time:Date.now()}]);
+  document.getElementById('chatInput').value="";
+  loadChat();
 }
-function renderChat(){
-  const box = document.getElementById('chatBox');
-  box.innerHTML = "";
-  chatMessages.forEach(m => {
-    const time = m.time ? new Date(Number(m.time)).toLocaleString() : "";
-    const color = getUserColor(m.name);
-    const div = document.createElement('div');
-    div.style.padding = "6px 4px";
-    div.innerHTML = `<span style="color:${color}; font-weight:800">${escapeHtml(m.name)}</span>: ${escapeHtml(m.text)} <span class="message-time">(${time})</span>`;
-    box.appendChild(div);
-  });
-  box.scrollTop = box.scrollHeight;
-}
-async function clearChat(){
-  if(!confirm("Clear chat?")) return;
-  chatMessages = [];
-  await saveTable('chat_messages', chatMessages);
-  renderChat();
+async function loadChat(){
+  const { data } = await supabase.from("chat").select("*").order("time");
+  const box = document.getElementById("chatBox");
+  box.innerHTML="";
+  if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
 }
 
-/* ================== Match address editable ================== */
-const matchAddress = document.getElementById('matchAddress');
-matchAddress.addEventListener('dblclick', () => {
-  const current = matchAddress.textContent;
-  const newText = prompt("Enter match address:", current);
-  if(newText !== null) matchAddress.textContent = newText.trim() || "Click here to set match address";
-});
-
-/* ================== Draggable plans ================== */
-function createPlan(teamList, planDivId, planPosArr, color, tableName) {
-  const planDiv = document.getElementById(planDivId);
-  planDiv.innerHTML = "";
-
-  // field markers
-  const center = document.createElement('div'); center.className = "center-circle"; planDiv.appendChild(center);
-  const pbL = document.createElement('div'); pbL.className = "penalty-box-left"; planDiv.appendChild(pbL);
-  const pbR = document.createElement('div'); pbR.className = "penalty-box-right"; planDiv.appendChild(pbR);
-  const mid = document.createElement('div'); mid.className = "mid-line"; planDiv.appendChild(mid);
-
-  // ensure plan positions array has at least teamList.length entries
-  while(planPosArr.length < teamList.length) planPosArr.push({ x: Math.random()*(planDiv.clientWidth-36), y: Math.random()*(planDiv.clientHeight-36), player_name: teamList[planPosArr.length]?.name || null });
-
-  teamList.forEach((p, i) => {
-    const marker = document.createElement('div');
-    marker.className = "player-marker";
-    marker.textContent = String(i+1);
-    marker.style.background = color;
-
-    const nameTag = document.createElement('div');
-    nameTag.className = "player-name";
-    nameTag.textContent = p.name;
-    marker.appendChild(nameTag);
-
-    const pos = planPosArr[i] || { x: Math.random()*(planDiv.clientWidth-36), y: Math.random()*(planDiv.clientHeight-36) };
-    marker.style.left = (pos.x || 0) + "px";
-    marker.style.top  = (pos.y || 0) + "px";
-
-    let offsetX=0, offsetY=0;
-    function startDrag(e){
-      e.preventDefault();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      offsetX = clientX - marker.getBoundingClientRect().left;
-      offsetY = clientY - marker.getBoundingClientRect().top;
-      document.addEventListener('mousemove', dragMove);
-      document.addEventListener('mouseup', stopDrag);
-      document.addEventListener('touchmove', dragMove, { passive:false });
-      document.addEventListener('touchend', stopDrag);
-      marker.style.cursor = 'grabbing';
-    }
-    function dragMove(e){
-      e.preventDefault();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      let x = clientX - planDiv.getBoundingClientRect().left - offsetX;
-      let y = clientY - planDiv.getBoundingClientRect().top - offsetY;
-      x = Math.max(0, Math.min(x, planDiv.clientWidth - 36));
-      y = Math.max(0, Math.min(y, planDiv.clientHeight - 36));
-      marker.style.left = x + "px";
-      marker.style.top  = y + "px";
-      planPosArr[i] = { x, y, player_name: p.name };
-    }
-    async function stopDrag(){
-      document.removeEventListener('mousemove', dragMove);
-      document.removeEventListener('mouseup', stopDrag);
-      document.removeEventListener('touchmove', dragMove);
-      document.removeEventListener('touchend', stopDrag);
-      marker.style.cursor = 'grab';
-      // save positions to Supabase table
-      // clear table then insert positions
-      const rows = planPosArr.map(pos => ({ player_name: pos.player_name || null, x: pos.x, y: pos.y }));
-      await saveTable(tableName, rows);
-    }
-    marker.addEventListener('mousedown', startDrag);
-    marker.addEventListener('touchstart', startDrag, { passive:false });
-    planDiv.appendChild(marker);
-  });
-}
-
-function renderAllPlans() {
-  createPlan(blueTeam, "bluePlan", bluePlanPos, "#1565c0", "plan_positions_blue");
-  createPlan(yellowTeam, "yellowPlan", yellowPlanPos, "#fdd835", "plan_positions_yellow");
-}
-
-/* ================== escapes ================== */
-function escapeHtml(str) {
-  if(!str) return "";
-  return String(str).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]);
-}
-
-/* ================== initial load ================== */
-loadData();
-
-/* ================== simple polling to refresh (optional) ================== */
-/* This makes different users see fresh updates when someone else changes data.
-   You can remove or increase interval if you like. */
-setInterval(async () => {
-  await loadData();
-}, 5000);
-
+// Load everything
+loadPlayers(); loadBlue(); loadYellow(); loadChat();
 </script>
+
 </body>
 </html>
