@@ -6,25 +6,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-body { font-family: "Cairo", Arial, sans-serif; background:#121212; color:#e0e0e0; padding:10px; text-align:center; margin:0;}
+body { font-family: "Cairo", Arial, sans-serif; background:#121212; color:#e0e0e0; padding:10px; text-align:center; margin:0; }
 .nav-buttons { display:flex; justify-content:space-between; margin-bottom:20px; }
 button { padding:10px 16px; border:none; font-weight:700; font-size:15px; border-radius:8px; cursor:pointer; width:30%; max-width:130px; }
 #homeBtn { background:#d32f2f; color:#fff; }
 #blueBtn { background:#1976d2; color:#fff; }
 #yellowBtn { background:#fbc02d; color:#000; }
 .container { max-width:95%; margin:auto; background:#1e1e1ecc; padding:20px 10px; border-radius:15px; box-shadow:0 0 10px #000; display:none; }
-ul { list-style:none; padding:0; text-align:left; margin-top:10px; font-weight:bold; font-family:"Arial Black",Arial,sans-serif; }
+h1 { font-size:20px; color:#d32f2f; margin-bottom:5px; font-weight:bold; }
+input[type=text] { padding:10px; width:80%; margin:8px 0; border-radius:8px; border:1px solid #555; text-align:center; font-size:15px; background-color:#2c2c2c; color:#fff; }
+.addBtn { padding:8px 14px; margin:6px; font-size:14px; }
+ul { list-style:none; padding:0; text-align:left; margin-top:10px; font-weight:bold; font-family:"Arial Black", Arial, sans-serif; }
 li { margin:6px 0; padding:8px; border-radius:12px; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
 #teamList li { background:#a8e6a1; color:black; }
-#waitingList li { background:#ffe0e0; color:black; }
 #blueList li { background:rgba(25,118,210,0.7); color:black; }
 #yellowList li { background:rgba(251,192,42,0.7); color:black; }
 #chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
-.message-time { font-size:12px; color:#aaa; margin-left:6px; }
-input[type=text] { padding:10px; width:80%; margin:8px 0; border-radius:8px; border:1px solid #555; text-align:center; font-size:15px; background:#2c2c2c; color:#fff;}
-button.addBtn { padding:8px 14px; margin:6px; font-size:14px; }
-.field { width:100%; max-width:400px; height:250px; background:#4CAF50; margin:10px auto 20px auto; border:2px solid #fff; border-radius:10px; position:relative; touch-action:none;}
-.field .player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; }
+.field { width:100%; max-width:400px; height:250px; background:#4CAF50; margin:10px auto 20px auto; border:2px solid #fff; border-radius:10px; position:relative; touch-action:none; }
+.field .center-circle, .field .penalty-box-left, .field .penalty-box-right, .field .mid-line { position:absolute; border:2px solid #fff; content:""; }
+.field .center-circle { width:50px; height:50px; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); }
+.field .penalty-box-left { width:60px; height:120px; top:50%; left:0; transform:translateY(-50%); }
+.field .penalty-box-right { width:60px; height:120px; top:50%; right:0; transform:translateY(-50%); }
+.field .mid-line { width:0; height:100%; border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
+.player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; text-align:center; }
+.player-name { position:absolute; width:100px; text-align:center; left:-30px; top:-20px; font-size:12px; color:#fff; }
+@media (max-width:500px){ button { width:28%; font-size:14px; } input[type=text]{ width:90%; font-size:14px; } }
 </style>
 </head>
 <body>
@@ -36,159 +42,147 @@ button.addBtn { padding:8px 14px; margin:6px; font-size:14px; }
 </div>
 
 <div id="main" class="container">
-<h1>Eternal Brothers FC</h1>
-<h2>Add Player to Main Team</h2>
-<input type="text" id="nameInput" placeholder="Enter player name">
-<button class="addBtn" onclick="addMember()">Add</button>
-<h2>Main Team List</h2>
-<ul id="teamList"></ul>
-<h2>Waiting List</h2>
-<ul id="waitingList"></ul>
-
-<h2>Team Chat</h2>
-<input type="text" id="chatName" placeholder="Enter your name">
-<button class="addBtn" onclick="enableChat()">✔️ Confirm</button>
-<div id="chatBox"></div>
-<input type="text" id="chatInput" placeholder="Type your message..." disabled>
-<button class="addBtn" id="sendBtn" onclick="sendMessage()" disabled>Send</button>
-<button class="addBtn" style="background:#d32f2f; font-size:12px;" onclick="clearChat()">Clear Chat</button>
+  <h1>Eternal Brothers FC</h1>
+  <h2>Add Player</h2>
+  <input type="text" id="nameInput" placeholder="Enter player name">
+  <button class="addBtn" onclick="addPlayer('main')">Add</button>
+  <h2>Main Team</h2>
+  <ul id="teamList"></ul>
+  <h2>Chat</h2>
+  <input type="text" id="chatName" placeholder="Enter your name">
+  <button class="addBtn" onclick="enableChat()">✔️ Confirm</button>
+  <div id="chatBox"></div>
+  <input type="text" id="chatInput" placeholder="Type message..." disabled>
+  <button class="addBtn" id="sendBtn" onclick="sendMessage()" disabled style="background:green;">Send</button>
 </div>
 
 <div id="blue" class="container" style="background:#1565c0aa;">
-<h2>Blue Team 🔵</h2>
-<input type="text" id="blueInput" placeholder="Enter player name">
-<button class="addBtn" onclick="addBlue()">Add</button>
-<ul id="blueList"></ul>
-<h3>Blue Team Plan</h3>
-<div id="bluePlan" class="field"></div>
+  <h2>Blue Team</h2>
+  <input type="text" id="blueInput" placeholder="Enter player name">
+  <button class="addBtn" onclick="addPlayer('blue')">Add</button>
+  <ul id="blueList"></ul>
+  <h3>Blue Plan</h3>
+  <div id="bluePlan" class="field"></div>
 </div>
 
 <div id="yellow" class="container" style="background:#fdd835aa; color:#000;">
-<h2>Yellow Team 🟡</h2>
-<input type="text" id="yellowInput" placeholder="Enter player name">
-<button class="addBtn" onclick="addYellow()">Add</button>
-<ul id="yellowList"></ul>
-<h3>Yellow Team Plan</h3>
-<div id="yellowPlan" class="field"></div>
+  <h2>Yellow Team</h2>
+  <input type="text" id="yellowInput" placeholder="Enter player name">
+  <button class="addBtn" onclick="addPlayer('yellow')">Add</button>
+  <ul id="yellowList"></ul>
+  <h3>Yellow Plan</h3>
+  <div id="yellowPlan" class="field"></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, set, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// --- ضع معلوماتك هنا ---
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyAPB2dHdpBwIvPBpkFlu9EbRwbdswV7iI8",
-  authDomain: "eternal-brothers-fc.firebaseapp.com",
-  databaseURL: "https://eternal-brothers-fc-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "eternal-brothers-fc",
-  storageBucket: "eternal-brothers-fc.appspot.com",
-  messagingSenderId: "884144294831",
-  appId: "1:884144294831:web:61ad85e11307997dc77d5a",
-  measurementId: "G-3GW3L30Z40"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const teamsRef = ref(db,'teams');
-const bluePlanRef = ref(db,'plans/blue');
-const yellowPlanRef = ref(db,'plans/yellow');
-const messagesRef = ref(db,'messages');
-
-// Navigation
-function showSection(id){ document.querySelectorAll('.container').forEach(c=>c.style.display='none'); document.getElementById(id).style.display='block';}
+// --- Navigation ---
+function showSection(id){ document.querySelectorAll('.container').forEach(c=>c.style.display='none'); document.getElementById(id).style.display='block'; }
 showSection('main');
 
-// ====== Team Functions ======
-function addPlayer(teamType){
-  const inputId = teamType==="main"?"nameInput":teamType==="blue"?"blueInput":"yellowInput";
-  const name = document.getElementById(inputId).value.trim();
+// --- Players ---
+async function addPlayer(team){
+  let name = (team==='main') ? document.getElementById('nameInput').value.trim() :
+             (team==='blue') ? document.getElementById('blueInput').value.trim() :
+             document.getElementById('yellowInput').value.trim();
   if(!name) return alert("Enter name");
-  onValue(teamsRef, snapshot=>{
-    const data=snapshot.val()||{main:[],blue:[],yellow:[],waiting:[]};
-    let arr = teamType==="main"?data.main:teamType==="blue"?data.blue:data.yellow;
-    if(arr.find(p=>p.name===name)) return alert("Already exists");
-    arr.push({name,time:Date.now()});
-    if(teamType==="main" && arr.length>24){
-      const extra = arr.splice(24);
-      data.waiting.push(...extra);
-    }
-    set(teamsRef,data);
-    document.getElementById(inputId).value="";
-  }, {onlyOnce:true});
+  await supabase.from('players').insert([{name,team,timestamp:new Date().toISOString()}]);
+  renderPlayers();
 }
-function addMember(){ addPlayer("main"); }
-function addBlue(){ addPlayer("blue"); }
-function addYellow(){ addPlayer("yellow"); }
-
-function deletePlayer(listId,index){
-  onValue(teamsRef, snapshot=>{
-    const data=snapshot.val()||{main:[],blue:[],yellow:[],waiting:[]};
-    let arr = listId==="teamList"?data.main:listId==="waitingList"?data.waiting:listId==="blueList"?data.blue:data.yellow;
-    arr.splice(index,1);
-    set(teamsRef,data);
-  }, {onlyOnce:true});
+async function renderPlayers(){
+  const {data} = await supabase.from('players').select('*');
+  document.getElementById('teamList').innerHTML = data.filter(p=>p.team==='main').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
+  document.getElementById('blueList').innerHTML = data.filter(p=>p.team==='blue').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
+  document.getElementById('yellowList').innerHTML = data.filter(p=>p.team==='yellow').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
 }
+supabase.from('players').on('INSERT',()=>renderPlayers()).subscribe();
+renderPlayers();
 
-// Render lists
-function renderList(id,listData){
-  const ul=document.getElementById(id); ul.innerHTML="";
-  listData.forEach((p,i)=>{
-    const li=document.createElement('li');
-    li.innerHTML=`${i+1}. ${p.name} <span style="cursor:pointer;color:red;" onclick="deletePlayer('${id}',${i})">🗑️</span>`;
-    ul.appendChild(li);
-  });
-}
-
-// Listen to DB
-onValue(teamsRef, snapshot=>{
-  const data=snapshot.val()||{main:[],blue:[],yellow:[],waiting:[]};
-  renderList("teamList",data.main);
-  renderList("waitingList",data.waiting);
-  renderList("blueList",data.blue);
-  renderList("yellowList",data.yellow);
-});
-
-// ====== Chat ======
+// --- Chat ---
 let chatEnabled=false;
-function enableChat(){ const name=document.getElementById('chatName').value.trim(); if(!name) return alert("Enter name"); chatEnabled=true; document.getElementById('chatInput').disabled=false; document.getElementById('sendBtn').disabled=false; }
-function sendMessage(){ if(!chatEnabled) return alert("Enable chat first"); const text=document.getElementById('chatInput').value.trim(); const name=document.getElementById('chatName').value.trim(); if(!text) return; push(messagesRef,{name,text,time:Date.now()}); document.getElementById('chatInput').value=""; }
-function clearChat(){ if(confirm("Clear chat?")) set(messagesRef,null); }
-const chatBox=document.getElementById('chatBox');
-onValue(messagesRef, snapshot=>{
-  const data=snapshot.val()||{};
-  chatBox.innerHTML="";
-  Object.values(data).forEach(msg=>{
-    const div=document.createElement('div');
-    div.innerHTML=`<b>${msg.name}</b>: ${msg.text} <span class="message-time">(${new Date(msg.time).toLocaleString()})</span>`;
-    chatBox.appendChild(div);
-  });
-  chatBox.scrollTop=chatBox.scrollHeight;
-});
+function enableChat(){ chatEnabled=true; document.getElementById('chatInput').disabled=false; document.getElementById('sendBtn').disabled=false; }
+async function sendMessage(){
+  if(!chatEnabled) return;
+  const name=document.getElementById('chatName').value.trim();
+  const text=document.getElementById('chatInput').value.trim();
+  if(!text) return;
+  await supabase.from('chat').insert([{name,text,timestamp:new Date().toISOString()}]);
+  document.getElementById('chatInput').value="";
+  renderChat();
+}
+async function renderChat(){
+  const {data} = await supabase.from('chat').select('*').order('timestamp',{ascending:true});
+  document.getElementById('chatBox').innerHTML = data.map(m=>`<div><b>${m.name}:</b> ${m.text}</div>`).join('');
+}
+supabase.from('chat').on('INSERT',()=>renderChat()).subscribe();
+renderChat();
 
-// ====== Player Plan (Draggable + Firebase) ======
-function createPlan(planDivId, planRef, teamListId){
-  const planDiv=document.getElementById(planDivId);
+// --- Plans (Draggable) ---
+async function createPlan(teamList, planDivId, teamName){
+  const planDiv = document.getElementById(planDivId);
   planDiv.innerHTML="";
-  const teamList=document.getElementById(teamListId);
-  if(!teamList) return;
-  
-  onValue(planRef,snapshot=>{
-    const positions = snapshot.val()||{};
-    planDiv.innerHTML=""; // clear markers
-    Array.from(teamList.children).forEach((li,i)=>{
-      const marker=document.createElement('div'); marker.className='player-marker'; marker.textContent=i+1;
-      const pos = positions[i]||{x:Math.random()*(planDiv.clientWidth-35), y:Math.random()*(planDiv.clientHeight-35)};
-      marker.style.left=pos.x+"px"; marker.style.top=pos.y+"px";
-      
-      let offsetX=0, offsetY=0;
-      marker.onmousedown = function(e){ offsetX=e.offsetX; offsetY=e.offsetY; document.onmousemove = moveMarker; document.onmouseup=dropMarker; function moveMarker(ev){ let x=ev.clientX-planDiv.getBoundingClientRect().left-offsetX; let y=ev.clientY-planDiv.getBoundingClientRect().top-offsetY; x=Math.max(0,Math.min(x,planDiv.clientWidth-35)); y=Math.max(0,Math.min(y,planDiv.clientHeight-35)); marker.style.left=x+"px"; marker.style.top=y+"px"; positions[i]={x,y}; update(planRef,positions); } function dropMarker(){ document.onmousemove=null; document.onmouseup=null; } };
-      planDiv.appendChild(marker);
-    });
+  ["center-circle","penalty-box-left","penalty-box-right","mid-line"].forEach(cls=>{
+    const div=document.createElement("div"); div.className=cls; planDiv.appendChild(div);
+  });
+  const {data:positions} = await supabase.from('plans').select('*').eq('team',teamName);
+  teamList.forEach((p,i)=>{
+    const marker=document.createElement("div");
+    marker.className="player-marker"; marker.textContent=i+1;
+    marker.style.background=(teamName==="blue")?"#1565c0":"#fdd835";
+    const nameTag=document.createElement("div"); nameTag.className="player-name"; nameTag.textContent=p.name; marker.appendChild(nameTag);
+    const pos = positions.find(pos=>pos.player_index===i) || {x:Math.random()*(planDiv.clientWidth-35), y:Math.random()*(planDiv.clientHeight-35)};
+    marker.style.left = pos.x+"px"; marker.style.top = pos.y+"px";
+    let offsetX=0, offsetY=0;
+    function startDrag(e){
+      e.preventDefault();
+      const clientX=e.touches?e.touches[0].clientX:e.clientX;
+      const clientY=e.touches?e.touches[0].clientY:e.clientY;
+      offsetX = clientX - marker.getBoundingClientRect().left;
+      offsetY = clientY - marker.getBoundingClientRect().top;
+      document.addEventListener('mousemove', dragMove);
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchmove', dragMove,{passive:false});
+      document.addEventListener('touchend', stopDrag);
+    }
+    async function dragMove(e){
+      e.preventDefault();
+      const clientX=e.touches?e.touches[0].clientX:e.clientX;
+      const clientY=e.touches?e.touches[0].clientY:e.clientY;
+      let x=clientX-planDiv.getBoundingClientRect().left-offsetX;
+      let y=clientY-planDiv.getBoundingClientRect().top-offsetY;
+      x=Math.max(0, Math.min(x, planDiv.clientWidth-35));
+      y=Math.max(0, Math.min(y, planDiv.clientHeight-35));
+      marker.style.left=x+"px"; marker.style.top=y+"px";
+      await supabase.from('plans').upsert([{team:teamName, player_index:i, x, y}]);
+    }
+    function stopDrag(){
+      document.removeEventListener('mousemove', dragMove);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchmove', dragMove);
+      document.removeEventListener('touchend', stopDrag);
+    }
+    marker.addEventListener('mousedown', startDrag);
+    marker.addEventListener('touchstart', startDrag,{passive:false});
+    planDiv.appendChild(marker);
   });
 }
 
-onValue(teamsRef,()=>{ createPlan('bluePlan',bluePlanRef,'blueList'); createPlan('yellowPlan',yellowPlanRef,'yellowList'); });
-
+async function renderAllPlans(){
+  const {data:playersData} = await supabase.from('players').select('*');
+  const blueTeam = playersData.filter(p=>p.team==="blue");
+  const yellowTeam = playersData.filter(p=>p.team==="yellow");
+  createPlan(blueTeam,"bluePlan","blue");
+  createPlan(yellowTeam,"yellowPlan","yellow");
+}
+["INSERT","UPDATE","DELETE"].forEach(event=>{
+  supabase.from('plans').on(event,()=>renderAllPlans()).subscribe();
+});
+renderAllPlans();
 </script>
 </body>
 </html>
