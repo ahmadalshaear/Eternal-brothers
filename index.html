@@ -6,17 +6,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
-<!-- Firebase config -->
-<script src="firebase-config.js"></script>
 <script type="module">
+/* ===== Import Firebase ===== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-// Initialize Firebase
+/* ===== Firebase Config ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAPB2dHdpBwIvPBpkFlu9EbRwbdswV7iI8",
+  authDomain: "eternal-brothers-fc.firebaseapp.com",
+  databaseURL: "https://eternal-brothers-fc-default-rtdb.firebaseio.com",
+  projectId: "eternal-brothers-fc",
+  storageBucket: "eternal-brothers-fc.firebasestorage.app",
+  messagingSenderId: "884144294831",
+  appId: "1:884144294831:web:61ad85e11307997dc77d5a",
+  measurementId: "G-3GW3L30Z40"
+};
+
+/* ===== Initialize Firebase ===== */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ====== Navigation ======
+/* ===== Navigation ===== */
 function showSection(id){
   document.querySelectorAll('.container').forEach(c=>c.style.display='none');
   const section = document.getElementById(id);
@@ -26,7 +37,7 @@ function showSection(id){
 }
 document.addEventListener("DOMContentLoaded", ()=>showSection('main'));
 
-// ====== Chat ======
+/* ===== Chat System ===== */
 let chatEnabled=false;
 let chatNameGlobal="";
 const chatBox=document.getElementById('chatBox');
@@ -63,7 +74,7 @@ onValue(ref(db,'messages'), snapshot=>{
   chatBox.scrollTop=chatBox.scrollHeight;
 });
 
-// ====== Teams ======
+/* ===== Teams System ===== */
 const teamsRef = ref(db,'teams');
 const maxTeamSize=12;
 
@@ -116,7 +127,7 @@ onValue(teamsRef, snapshot=>{
   renderTeamList("yellowList",data.yellow);
 });
 
-// ربط وظائف عامة مع HTML
+/* ===== Attach Functions Globally ===== */
 window.enableChat=enableChat;
 window.sendMessage=sendMessage;
 window.addMember=()=>addPlayer("main");
@@ -127,7 +138,6 @@ window.deletePlayer=deletePlayer;
 </script>
 
 <style>
-/* كل CSS كما في النسخة الأصلية */
 body { font-family: "Cairo", Arial, sans-serif; background-color: #121212; color: #e0e0e0; padding:10px; text-align:center; margin:0;}
 .nav-buttons { display:flex; justify-content:space-between; margin-bottom:20px; }
 button { padding:10px 16px; border:none; font-weight:700; font-size:15px; border-radius:8px; cursor:pointer; width:30%; max-width:130px; }
@@ -197,3 +207,4 @@ li { margin:6px 0; padding:8px; border-radius:12px; font-size:15px; display:flex
 <audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 </body>
 </html>
+
