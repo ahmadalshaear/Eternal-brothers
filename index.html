@@ -12,90 +12,92 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-// تهيئة Firebase
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ====== Chat أونلاين ======
-let chatEnabled = false;
-let chatNameGlobal = "";
-const chatBox = document.getElementById('chatBox');
+// ====== Navigation ======
+function showSection(id){
+  document.querySelectorAll('.container').forEach(c=>c.style.display='none');
+  const section = document.getElementById(id);
+  if(section) section.style.display='block';
+  document.body.style.background = (id==="blue") ? "#0d47a1" : (id==="yellow") ? "#fff176" : "#121212";
+  document.body.style.color = (id==="yellow") ? "#000" : "#e0e0e0";
+}
+document.addEventListener("DOMContentLoaded", ()=>showSection('main'));
 
-function enableChat() {
-  const name = document.getElementById('chatName').value.trim();
-  if(!name) return alert("Please enter your name");
-  chatEnabled = true;
-  chatNameGlobal = name;
-  document.getElementById('chatInput').disabled = false;
-  document.getElementById('sendBtn').disabled = false;
+// ====== Chat ======
+let chatEnabled=false;
+let chatNameGlobal="";
+const chatBox=document.getElementById('chatBox');
+
+function enableChat(){
+  const name=document.getElementById('chatName').value.trim();
+  if(!name) return alert("Enter your name");
+  chatEnabled=true;
+  chatNameGlobal=name;
+  document.getElementById('chatInput').disabled=false;
+  document.getElementById('sendBtn').disabled=false;
 }
 
-function sendMessage() {
+function sendMessage(){
   if(!chatEnabled) return alert("Enable chat first");
-  const text = document.getElementById('chatInput').value.trim();
+  const text=document.getElementById('chatInput').value.trim();
   if(!text) return;
-  push(ref(db,'messages'), {name: chatNameGlobal, text: text, time: Date.now()});
-  document.getElementById('chatInput').value = "";
+  push(ref(db,'messages'), {name:chatNameGlobal,text:text,time:Date.now()});
+  document.getElementById('chatInput').value="";
   document.getElementById('sendSound').play();
 }
 
-// عرض الرسائل فورًا لكل الأجهزة
 onValue(ref(db,'messages'), snapshot=>{
-  const data = snapshot.val() || {};
+  const data=snapshot.val()||{};
   chatBox.innerHTML="";
   for(let key in data){
-    const msg = data[key];
-    const time = new Date(msg.time).toLocaleString('en-US',{hour12:true});
-    const div = document.createElement('div');
+    const msg=data[key];
+    const time=new Date(msg.time).toLocaleString('en-US',{hour12:true});
+    const div=document.createElement('div');
     div.innerHTML=`<span style="color:blue">${msg.name}</span>: ${msg.text} <span class="message-time">(${time})</span>`;
     div.style.padding='4px 2px';
     chatBox.appendChild(div);
   }
-  chatBox.scrollTop = chatBox.scrollHeight;
+  chatBox.scrollTop=chatBox.scrollHeight;
 });
 
-// ====== Teams أونلاين ======
+// ====== Teams ======
 const teamsRef = ref(db,'teams');
-const maxTeamSize = 12;
+const maxTeamSize=12;
 
-// Utility: تحديث القائمة في الواجهة
-function renderTeamList(listId, listData){
-  const ul = document.getElementById(listId);
+function renderTeamList(listId,listData){
+  const ul=document.getElementById(listId);
   ul.innerHTML="";
   listData.forEach((p,i)=>{
-    const time = new Date(p.time).toLocaleString('en-US',{hour12:true});
-    const li = document.createElement('li');
+    const time=new Date(p.time).toLocaleString('en-US',{hour12:true});
+    const li=document.createElement('li');
     li.innerHTML=`${i+1}. ${p.name} (${time}) <span style="cursor:pointer;color:red;" onclick="deletePlayer('${listId}',${i})">🗑️</span>`;
     ul.appendChild(li);
   });
 }
 
-// إضافة لاعب أونلاين
 function addPlayer(teamType){
-  const inputId = teamType==="main" ? 'nameInput' : teamType==="blue" ? 'blueInput' : 'yellowInput';
-  const name = document.getElementById(inputId).value.trim();
+  const inputId=teamType==="main" ? 'nameInput' : teamType==="blue" ? 'blueInput' : 'yellowInput';
+  const name=document.getElementById(inputId).value.trim();
   if(!name) return alert("Name cannot be empty");
-
   onValue(teamsRef, snapshot=>{
-    const data = snapshot.val() || {main:[],waiting:[],blue:[],yellow:[]};
-    let teamArr = teamType==="main" ? data.main : teamType==="blue" ? data.blue : data.yellow;
-    if(teamArr.find(p=>p.name===name)) return alert("Already exists in this team");
-    if(teamArr.length>=maxTeamSize && teamType!=="main") return alert(teamType+" team full");
-    if(teamType==="main" && teamArr.length>=24){
-      data.waiting.push({name,time:Date.now()});
-    } else {
-      teamArr.push({name,time:Date.now()});
-    }
+    const data=snapshot.val()||{main:[],waiting:[],blue:[],yellow:[]};
+    let teamArr=teamType==="main" ? data.main : teamType==="blue" ? data.blue : data.yellow;
+    if(teamArr.find(p=>p.name===name)) return alert("Already exists");
+    if(teamType!=="main" && teamArr.length>=maxTeamSize) return alert(teamType+" team full");
+    if(teamType==="main" && teamArr.length>=24) data.waiting.push({name,time:Date.now()});
+    else teamArr.push({name,time:Date.now()});
     set(teamsRef,data);
     document.getElementById(inputId).value="";
   },{onlyOnce:true});
 }
 
-// حذف لاعب أونلاين
 function deletePlayer(listId,index){
   if(!confirm("Delete this player?")) return;
   onValue(teamsRef, snapshot=>{
-    const data = snapshot.val() || {main:[],waiting:[],blue:[],yellow:[]};
+    const data=snapshot.val()||{main:[],waiting:[],blue:[],yellow:[]};
     let arr;
     if(listId==="teamList") arr=data.main;
     else if(listId==="waitingList") arr=data.waiting;
@@ -106,46 +108,43 @@ function deletePlayer(listId,index){
   },{onlyOnce:true});
 }
 
-// الاستماع لتحديثات الفرق
 onValue(teamsRef, snapshot=>{
-  const data = snapshot.val() || {main:[],waiting:[],blue:[],yellow:[]};
+  const data=snapshot.val()||{main:[],waiting:[],blue:[],yellow:[]};
   renderTeamList("teamList",data.main);
   renderTeamList("waitingList",data.waiting);
   renderTeamList("blueList",data.blue);
   renderTeamList("yellowList",data.yellow);
 });
 
-window.enableChat = enableChat;
-window.sendMessage = sendMessage;
-window.addMember = ()=>addPlayer("main");
-window.addBlue = ()=>addPlayer("blue");
-window.addYellow = ()=>addPlayer("yellow");
-window.deletePlayer = deletePlayer;
+// ربط وظائف عامة مع HTML
+window.enableChat=enableChat;
+window.sendMessage=sendMessage;
+window.addMember=()=>addPlayer("main");
+window.addBlue=()=>addPlayer("blue");
+window.addYellow=()=>addPlayer("yellow");
+window.deletePlayer=deletePlayer;
+
 </script>
 
 <style>
-/* كل CSS كما هو سابقًا */
-body { font-family: "Cairo", Arial, sans-serif; background-color: #121212; color: #e0e0e0; padding: 10px; text-align: center; margin:0;}
-.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-button { padding: 10px 16px; border: none; font-weight: 700; font-size: 15px; border-radius: 8px; cursor: pointer; width: 30%; max-width: 130px; }
+/* كل CSS كما في النسخة الأصلية */
+body { font-family: "Cairo", Arial, sans-serif; background-color: #121212; color: #e0e0e0; padding:10px; text-align:center; margin:0;}
+.nav-buttons { display:flex; justify-content:space-between; margin-bottom:20px; }
+button { padding:10px 16px; border:none; font-weight:700; font-size:15px; border-radius:8px; cursor:pointer; width:30%; max-width:130px; }
 #homeBtn { background:#d32f2f; color:#fff; }
 #blueBtn { background:#1976d2; color:#fff; }
 #yellowBtn { background:#fbc02d; color:#000; }
-.container { max-width: 95%; margin: auto; background: #1e1e1ecc; padding: 20px 10px; border-radius: 15px; box-shadow: 0 0 10px #000; display: none; }
-h1 { font-size: 20px; color: #d32f2f; margin-bottom: 5px; font-weight:bold; }
-h1::before, h1::after { content: "⚽"; margin: 0 6px; }
-h2 { font-size: 20px; color: #fff; margin: 15px 0 8px; }
-input[type=text], input[type=time] { padding: 10px; width: 80%; margin: 8px 0; border-radius: 8px; border: 1px solid #555; text-align: center; font-size: 15px; background-color: #2c2c2c; color: #fff; }
-button.addBtn { padding: 8px 14px; margin: 6px; font-size: 14px; }
-ul { list-style: none; padding: 0; text-align: left; margin-top: 10px; font-weight: bold; font-family: "Arial Black", Arial, sans-serif; }
-li { margin: 6px 0; padding: 8px; border-radius: 12px; font-size: 15px; display:flex; justify-content: space-between; align-items: center; }
-#teamList li { background: #a8e6a1; color:black; }
-#waitingList li { background: #ffe0e0; color:black; }
-#blueList li { background: rgba(25,118,210,0.7); color:black; }
-#yellowList li { background: rgba(251,192,42,0.7); color:black; }
-#chatBox { max-height: 300px; overflow-y: auto; background: #2c2c2c; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
-.message-time { font-size: 12px; color: #aaa; margin-left: 6px; }
+.container { max-width:95%; margin:auto; background:#1e1e1ecc; padding:20px 10px; border-radius:15px; box-shadow:0 0 10px #000; display:none; }
+ul { list-style:none; padding:0; text-align:left; margin-top:10px; font-weight:bold; font-family:"Arial Black",Arial,sans-serif; }
+li { margin:6px 0; padding:8px; border-radius:12px; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
+#teamList li { background:#a8e6a1; color:black; }
+#waitingList li { background:#ffe0e0; color:black; }
+#blueList li { background:rgba(25,118,210,0.7); color:black; }
+#yellowList li { background:rgba(251,192,42,0.7); color:black; }
+#chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
+.message-time { font-size:12px; color:#aaa; margin-left:6px; }
 </style>
+</head>
 
 <body>
 <div class="nav-buttons">
@@ -154,48 +153,43 @@ li { margin: 6px 0; padding: 8px; border-radius: 12px; font-size: 15px; display:
   <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
 </div>
 
+<!-- Main Section -->
 <div id="main" class="container">
-  <h1>Eternal Brothers FC</h1>
-  <div class="address-container">
-    <span class="address-pin">📍</span>
-    <span id="matchAddress">Click here to set match address</span>
-  </div>
-  <div class="match-time">✔️ The match will be on Sunday at 9:40 AM</div>
-  <div class="match-note">Please follow the group chat in case of any changes</div>
+<h1>Eternal Brothers FC</h1>
 
-  <h2>Add Player to Main Team</h2>
-  <input type="text" id="nameInput" placeholder="Enter player name">
-  <button class="addBtn" onclick="addMember()">Add</button>
+<h2>Add Player to Main Team</h2>
+<input type="text" id="nameInput" placeholder="Enter player name">
+<button class="addBtn" onclick="addMember()">Add</button>
 
-  <h2>Main Team List (24 players max)</h2>
-  <ul id="teamList"></ul>
+<h2>Main Team List (24 players max)</h2>
+<ul id="teamList"></ul>
 
-  <h2>Waiting List</h2>
-  <ul id="waitingList"></ul>
+<h2>Waiting List</h2>
+<ul id="waitingList"></ul>
 
-  <h2>Team Chat</h2>
-  <input type="text" id="chatName" placeholder="Enter your name to enable chat">
-  <button class="addBtn" onclick="enableChat()">✔️ Confirm</button>
-  <div id="chatBox"></div>
-  <input type="text" id="chatInput" placeholder="Type your message..." style="width:80%;" disabled>
-  <button class="addBtn" id="sendBtn" onclick="sendMessage()" disabled style="background:green;">Send</button>
-  <button class="addBtn" style="background:#d32f2f; font-size:12px;" onclick="clearChat()">Clear Chat</button>
+<h2>Team Chat</h2>
+<input type="text" id="chatName" placeholder="Enter your name to enable chat">
+<button class="addBtn" onclick="enableChat()">✔️ Confirm</button>
+<div id="chatBox"></div>
+<input type="text" id="chatInput" placeholder="Type your message..." style="width:80%;" disabled>
+<button class="addBtn" id="sendBtn" onclick="sendMessage()" disabled style="background:green;">Send</button>
+<button class="addBtn" style="background:#d32f2f; font-size:12px;" onclick="chatBox.innerHTML='';">Clear Chat</button>
 </div>
 
 <!-- Blue Section -->
 <div id="blue" class="container" style="background:#1565c0aa;">
-  <h2>Blue Team 🔵</h2>
-  <input type="text" id="blueInput" placeholder="Enter player name">
-  <button class="addBtn" onclick="addBlue()">Add</button>
-  <ul id="blueList"></ul>
+<h2>Blue Team 🔵</h2>
+<input type="text" id="blueInput" placeholder="Enter player name">
+<button class="addBtn" onclick="addBlue()">Add</button>
+<ul id="blueList"></ul>
 </div>
 
 <!-- Yellow Section -->
 <div id="yellow" class="container" style="background:#fdd835aa; color:#000;">
-  <h2>Yellow Team 🟡</h2>
-  <input type="text" id="yellowInput" placeholder="Enter player name">
-  <button class="addBtn" onclick="addYellow()">Add</button>
-  <ul id="yellowList"></ul>
+<h2>Yellow Team 🟡</h2>
+<input type="text" id="yellowInput" placeholder="Enter player name">
+<button class="addBtn" onclick="addYellow()">Add</button>
+<ul id="yellowList"></ul>
 </div>
 
 <!-- Audio -->
