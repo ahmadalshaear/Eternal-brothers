@@ -36,9 +36,9 @@ li { margin:6px 0; padding:8px; border-radius:12px; font-size:15px; display:flex
 <body>
 
 <div class="nav-buttons">
-  <button id="blueBtn" onclick="showSection('blue')">Blue</button>
-  <button id="homeBtn" onclick="showSection('main')">Home</button>
-  <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
+  <button id="blueBtn">Blue</button>
+  <button id="homeBtn">Home</button>
+  <button id="yellowBtn">Yellow</button>
 </div>
 
 <div id="main" class="container">
@@ -76,113 +76,57 @@ li { margin:6px 0; padding:8px; border-radius:12px; font-size:15px; display:flex
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// --- ضع معلوماتك هنا ---
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+document.addEventListener("DOMContentLoaded", function() {
+  // Navigation
+  function showSection(id){ document.querySelectorAll('.container').forEach(c=>c.style.display='none'); document.getElementById(id).style.display='block'; }
+  showSection('main');
+  document.getElementById('blueBtn').addEventListener('click', ()=>showSection('blue'));
+  document.getElementById('homeBtn').addEventListener('click', ()=>showSection('main'));
+  document.getElementById('yellowBtn').addEventListener('click', ()=>showSection('yellow'));
 
-// --- Navigation ---
-function showSection(id){ document.querySelectorAll('.container').forEach(c=>c.style.display='none'); document.getElementById(id).style.display='block'; }
-showSection('main');
+  // Supabase Setup
+  const SUPABASE_URL = "YOUR_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- Players ---
-async function addPlayer(team){
-  let name = (team==='main') ? document.getElementById('nameInput').value.trim() :
-             (team==='blue') ? document.getElementById('blueInput').value.trim() :
-             document.getElementById('yellowInput').value.trim();
-  if(!name) return alert("Enter name");
-  await supabase.from('players').insert([{name,team,timestamp:new Date().toISOString()}]);
+  // Players
+  async function addPlayer(team){
+    let name = (team==='main') ? document.getElementById('nameInput').value.trim() :
+               (team==='blue') ? document.getElementById('blueInput').value.trim() :
+               document.getElementById('yellowInput').value.trim();
+    if(!name) return alert("Enter name");
+    await supabase.from('players').insert([{name,team,timestamp:new Date().toISOString()}]);
+    renderPlayers();
+  }
+
+  async function renderPlayers(){
+    const {data} = await supabase.from('players').select('*');
+    document.getElementById('teamList').innerHTML = data.filter(p=>p.team==='main').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
+    document.getElementById('blueList').innerHTML = data.filter(p=>p.team==='blue').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
+    document.getElementById('yellowList').innerHTML = data.filter(p=>p.team==='yellow').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
+  }
+  supabase.from('players').on('INSERT',()=>renderPlayers()).subscribe();
   renderPlayers();
-}
-async function renderPlayers(){
-  const {data} = await supabase.from('players').select('*');
-  document.getElementById('teamList').innerHTML = data.filter(p=>p.team==='main').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
-  document.getElementById('blueList').innerHTML = data.filter(p=>p.team==='blue').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
-  document.getElementById('yellowList').innerHTML = data.filter(p=>p.team==='yellow').map((p,i)=>`<li>${i+1}. ${p.name}</li>`).join('');
-}
-supabase.from('players').on('INSERT',()=>renderPlayers()).subscribe();
-renderPlayers();
 
-// --- Chat ---
-let chatEnabled=false;
-function enableChat(){ chatEnabled=true; document.getElementById('chatInput').disabled=false; document.getElementById('sendBtn').disabled=false; }
-async function sendMessage(){
-  if(!chatEnabled) return;
-  const name=document.getElementById('chatName').value.trim();
-  const text=document.getElementById('chatInput').value.trim();
-  if(!text) return;
-  await supabase.from('chat').insert([{name,text,timestamp:new Date().toISOString()}]);
-  document.getElementById('chatInput').value="";
+  // Chat
+  let chatEnabled=false;
+  function enableChat(){ chatEnabled=true; document.getElementById('chatInput').disabled=false; document.getElementById('sendBtn').disabled=false; }
+  async function sendMessage(){
+    if(!chatEnabled) return;
+    const name=document.getElementById('chatName').value.trim();
+    const text=document.getElementById('chatInput').value.trim();
+    if(!text) return;
+    await supabase.from('chat').insert([{name,text,timestamp:new Date().toISOString()}]);
+    document.getElementById('chatInput').value="";
+    renderChat();
+  }
+  async function renderChat(){
+    const {data} = await supabase.from('chat').select('*').order('timestamp',{ascending:true});
+    document.getElementById('chatBox').innerHTML = data.map(m=>`<div><b>${m.name}:</b> ${m.text}</div>`).join('');
+  }
+  supabase.from('chat').on('INSERT',()=>renderChat()).subscribe();
   renderChat();
-}
-async function renderChat(){
-  const {data} = await supabase.from('chat').select('*').order('timestamp',{ascending:true});
-  document.getElementById('chatBox').innerHTML = data.map(m=>`<div><b>${m.name}:</b> ${m.text}</div>`).join('');
-}
-supabase.from('chat').on('INSERT',()=>renderChat()).subscribe();
-renderChat();
-
-// --- Plans (Draggable) ---
-async function createPlan(teamList, planDivId, teamName){
-  const planDiv = document.getElementById(planDivId);
-  planDiv.innerHTML="";
-  ["center-circle","penalty-box-left","penalty-box-right","mid-line"].forEach(cls=>{
-    const div=document.createElement("div"); div.className=cls; planDiv.appendChild(div);
-  });
-  const {data:positions} = await supabase.from('plans').select('*').eq('team',teamName);
-  teamList.forEach((p,i)=>{
-    const marker=document.createElement("div");
-    marker.className="player-marker"; marker.textContent=i+1;
-    marker.style.background=(teamName==="blue")?"#1565c0":"#fdd835";
-    const nameTag=document.createElement("div"); nameTag.className="player-name"; nameTag.textContent=p.name; marker.appendChild(nameTag);
-    const pos = positions.find(pos=>pos.player_index===i) || {x:Math.random()*(planDiv.clientWidth-35), y:Math.random()*(planDiv.clientHeight-35)};
-    marker.style.left = pos.x+"px"; marker.style.top = pos.y+"px";
-    let offsetX=0, offsetY=0;
-    function startDrag(e){
-      e.preventDefault();
-      const clientX=e.touches?e.touches[0].clientX:e.clientX;
-      const clientY=e.touches?e.touches[0].clientY:e.clientY;
-      offsetX = clientX - marker.getBoundingClientRect().left;
-      offsetY = clientY - marker.getBoundingClientRect().top;
-      document.addEventListener('mousemove', dragMove);
-      document.addEventListener('mouseup', stopDrag);
-      document.addEventListener('touchmove', dragMove,{passive:false});
-      document.addEventListener('touchend', stopDrag);
-    }
-    async function dragMove(e){
-      e.preventDefault();
-      const clientX=e.touches?e.touches[0].clientX:e.clientX;
-      const clientY=e.touches?e.touches[0].clientY:e.clientY;
-      let x=clientX-planDiv.getBoundingClientRect().left-offsetX;
-      let y=clientY-planDiv.getBoundingClientRect().top-offsetY;
-      x=Math.max(0, Math.min(x, planDiv.clientWidth-35));
-      y=Math.max(0, Math.min(y, planDiv.clientHeight-35));
-      marker.style.left=x+"px"; marker.style.top=y+"px";
-      await supabase.from('plans').upsert([{team:teamName, player_index:i, x, y}]);
-    }
-    function stopDrag(){
-      document.removeEventListener('mousemove', dragMove);
-      document.removeEventListener('mouseup', stopDrag);
-      document.removeEventListener('touchmove', dragMove);
-      document.removeEventListener('touchend', stopDrag);
-    }
-    marker.addEventListener('mousedown', startDrag);
-    marker.addEventListener('touchstart', startDrag,{passive:false});
-    planDiv.appendChild(marker);
-  });
-}
-
-async function renderAllPlans(){
-  const {data:playersData} = await supabase.from('players').select('*');
-  const blueTeam = playersData.filter(p=>p.team==="blue");
-  const yellowTeam = playersData.filter(p=>p.team==="yellow");
-  createPlan(blueTeam,"bluePlan","blue");
-  createPlan(yellowTeam,"yellowPlan","yellow");
-}
-["INSERT","UPDATE","DELETE"].forEach(event=>{
-  supabase.from('plans').on(event,()=>renderAllPlans()).subscribe();
 });
-renderAllPlans();
 </script>
 </body>
 </html>
