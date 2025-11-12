@@ -7,37 +7,80 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <script type="module">
-/* ===== Import Firebase ===== */
+import { firebaseConfig } from './firebase-config.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-/* ===== Firebase Config ===== */
-const firebaseConfig = {
-  apiKey: "AIzaSyAPB2dHdpBwIvPBpkFlu9EbRwbdswV7iI8",
-  authDomain: "eternal-brothers-fc.firebaseapp.com",
-  databaseURL: "https://eternal-brothers-fc-default-rtdb.firebaseio.com",
-  projectId: "eternal-brothers-fc",
-  storageBucket: "eternal-brothers-fc.firebasestorage.app",
-  messagingSenderId: "884144294831",
-  appId: "1:884144294831:web:61ad85e11307997dc77d5a",
-  measurementId: "G-3GW3L30Z40"
-};
-
-/* ===== Initialize Firebase ===== */
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ===== Navigation ===== */
+// ===== Navigation =====
 function showSection(id){
   document.querySelectorAll('.container').forEach(c=>c.style.display='none');
-  const section = document.getElementById(id);
-  if(section) section.style.display='block';
-  document.body.style.background = (id==="blue") ? "#0d47a1" : (id==="yellow") ? "#fff176" : "#121212";
-  document.body.style.color = (id==="yellow") ? "#000" : "#e0e0e0";
+  document.getElementById(id).style.display='block';
 }
 document.addEventListener("DOMContentLoaded", ()=>showSection('main'));
 
-/* ===== Chat System ===== */
+// ===== Teams =====
+const maxTeamSize=12;
+
+function renderTeamList(listId, listData){
+  const ul=document.getElementById(listId);
+  ul.innerHTML="";
+  listData.forEach((p,i)=>{
+    const time=new Date(p.time).toLocaleTimeString();
+    const li=document.createElement('li');
+    li.innerHTML=`${i+1}. ${p.name} (${time}) <span style="cursor:pointer;color:red;" onclick="deletePlayer('${listId}',${i})">🗑️</span>`;
+    ul.appendChild(li);
+  });
+}
+
+function addPlayer(teamType){
+  const inputId=teamType==="main" ? 'nameInput' : teamType==="blue" ? 'blueInput' : 'yellowInput';
+  const name=document.getElementById(inputId).value.trim();
+  if(!name) return alert("Name cannot be empty");
+
+  const teamRef = ref(db, 'teams');
+  onValue(teamRef, snapshot=>{
+    const data = snapshot.val() || { main:[], waiting:[], blue:[], yellow:[] };
+    let arr = teamType==="main" ? data.main : teamType==="blue" ? data.blue : data.yellow;
+
+    if(arr.find(p=>p.name===name)) return alert("Already exists");
+    if(teamType!=="main" && arr.length>=maxTeamSize) return alert(teamType+" team full");
+    if(teamType==="main" && arr.length>=24) data.waiting.push({name,time:Date.now()});
+    else arr.push({name,time:Date.now()});
+
+    set(teamRef,data);
+    document.getElementById(inputId).value="";
+  }, {onlyOnce:true});
+}
+
+function deletePlayer(listId,index){
+  if(!confirm("Delete this player?")) return;
+  const teamRef = ref(db, 'teams');
+  onValue(teamRef, snapshot=>{
+    const data = snapshot.val() || { main:[], waiting:[], blue:[], yellow:[] };
+    let arr;
+    if(listId==="teamList") arr=data.main;
+    else if(listId==="waitingList") arr=data.waiting;
+    else if(listId==="blueList") arr=data.blue;
+    else if(listId==="yellowList") arr=data.yellow;
+
+    arr.splice(index,1);
+    set(teamRef,data);
+  }, {onlyOnce:true});
+}
+
+onValue(ref(db,'teams'), snapshot=>{
+  const data=snapshot.val()||{main:[],waiting:[],blue:[],yellow:[]};
+  renderTeamList("teamList",data.main);
+  renderTeamList("waitingList",data.waiting);
+  renderTeamList("blueList",data.blue);
+  renderTeamList("yellowList",data.yellow);
+});
+
+// ===== Chat =====
 let chatEnabled=false;
 let chatNameGlobal="";
 const chatBox=document.getElementById('chatBox');
@@ -57,7 +100,6 @@ function sendMessage(){
   if(!text) return;
   push(ref(db,'messages'), {name:chatNameGlobal,text:text,time:Date.now()});
   document.getElementById('chatInput').value="";
-  document.getElementById('sendSound').play();
 }
 
 onValue(ref(db,'messages'), snapshot=>{
@@ -65,146 +107,76 @@ onValue(ref(db,'messages'), snapshot=>{
   chatBox.innerHTML="";
   for(let key in data){
     const msg=data[key];
-    const time=new Date(msg.time).toLocaleString('en-US',{hour12:true});
     const div=document.createElement('div');
-    div.innerHTML=`<span style="color:blue">${msg.name}</span>: ${msg.text} <span class="message-time">(${time})</span>`;
-    div.style.padding='4px 2px';
+    div.innerHTML=`<strong>${msg.name}</strong>: ${msg.text}`;
     chatBox.appendChild(div);
   }
   chatBox.scrollTop=chatBox.scrollHeight;
-});
-
-/* ===== Teams System ===== */
-const teamsRef = ref(db,'teams');
-const maxTeamSize=12;
-
-function renderTeamList(listId,listData){
-  const ul=document.getElementById(listId);
-  ul.innerHTML="";
-  listData.forEach((p,i)=>{
-    const time=new Date(p.time).toLocaleString('en-US',{hour12:true});
-    const li=document.createElement('li');
-    li.innerHTML=`${i+1}. ${p.name} (${time}) <span style="cursor:pointer;color:red;" onclick="deletePlayer('${listId}',${i})">🗑️</span>`;
-    ul.appendChild(li);
-  });
 }
 
-function addPlayer(teamType){
-  const inputId=teamType==="main" ? 'nameInput' : teamType==="blue" ? 'blueInput' : 'yellowInput';
-  const name=document.getElementById(inputId).value.trim();
-  if(!name) return alert("Name cannot be empty");
-  onValue(teamsRef, snapshot=>{
-    const data=snapshot.val()||{main:[],waiting:[],blue:[],yellow:[]};
-    let teamArr=teamType==="main" ? data.main : teamType==="blue" ? data.blue : data.yellow;
-    if(teamArr.find(p=>p.name===name)) return alert("Already exists");
-    if(teamType!=="main" && teamArr.length>=maxTeamSize) return alert(teamType+" team full");
-    if(teamType==="main" && teamArr.length>=24) data.waiting.push({name,time:Date.now()});
-    else teamArr.push({name,time:Date.now()});
-    set(teamsRef,data);
-    document.getElementById(inputId).value="";
-  },{onlyOnce:true});
-}
-
-function deletePlayer(listId,index){
-  if(!confirm("Delete this player?")) return;
-  onValue(teamsRef, snapshot=>{
-    const data=snapshot.val()||{main:[],waiting:[],blue:[],yellow:[]};
-    let arr;
-    if(listId==="teamList") arr=data.main;
-    else if(listId==="waitingList") arr=data.waiting;
-    else if(listId==="blueList") arr=data.blue;
-    else if(listId==="yellowList") arr=data.yellow;
-    arr.splice(index,1);
-    set(teamsRef,data);
-  },{onlyOnce:true});
-}
-
-onValue(teamsRef, snapshot=>{
-  const data=snapshot.val()||{main:[],waiting:[],blue:[],yellow:[]};
-  renderTeamList("teamList",data.main);
-  renderTeamList("waitingList",data.waiting);
-  renderTeamList("blueList",data.blue);
-  renderTeamList("yellowList",data.yellow);
-});
-
-/* ===== Attach Functions Globally ===== */
-window.enableChat=enableChat;
-window.sendMessage=sendMessage;
+// Make functions available to HTML
 window.addMember=()=>addPlayer("main");
 window.addBlue=()=>addPlayer("blue");
 window.addYellow=()=>addPlayer("yellow");
+window.enableChat=enableChat;
+window.sendMessage=sendMessage;
 window.deletePlayer=deletePlayer;
 
 </script>
 
 <style>
-body { font-family: "Cairo", Arial, sans-serif; background-color: #121212; color: #e0e0e0; padding:10px; text-align:center; margin:0;}
+body { font-family: "Cairo", Arial, sans-serif; background:#121212; color:#fff; text-align:center; margin:0; padding:10px; }
 .nav-buttons { display:flex; justify-content:space-between; margin-bottom:20px; }
-button { padding:10px 16px; border:none; font-weight:700; font-size:15px; border-radius:8px; cursor:pointer; width:30%; max-width:130px; }
-#homeBtn { background:#d32f2f; color:#fff; }
-#blueBtn { background:#1976d2; color:#fff; }
-#yellowBtn { background:#fbc02d; color:#000; }
-.container { max-width:95%; margin:auto; background:#1e1e1ecc; padding:20px 10px; border-radius:15px; box-shadow:0 0 10px #000; display:none; }
-ul { list-style:none; padding:0; text-align:left; margin-top:10px; font-weight:bold; font-family:"Arial Black",Arial,sans-serif; }
-li { margin:6px 0; padding:8px; border-radius:12px; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
-#teamList li { background:#a8e6a1; color:black; }
-#waitingList li { background:#ffe0e0; color:black; }
-#blueList li { background:rgba(25,118,210,0.7); color:black; }
-#yellowList li { background:rgba(251,192,42,0.7); color:black; }
-#chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
-.message-time { font-size:12px; color:#aaa; margin-left:6px; }
+button { padding:10px; border:none; border-radius:8px; cursor:pointer; width:30%; max-width:130px; }
+#homeBtn{background:#d32f2f;color:#fff;} #blueBtn{background:#1976d2;color:#fff;} #yellowBtn{background:#fbc02d;color:#000;}
+.container{display:none;max-width:95%;margin:auto;padding:20px 10px;background:#1e1e1ecc;border-radius:15px;box-shadow:0 0 10px #000;}
+ul{list-style:none;padding:0;text-align:left;margin-top:10px;}
+li{margin:6px 0;padding:8px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;}
+#teamList li{background:#a8e6a1;color:black;} #waitingList li{background:#ffe0e0;color:black;}
+#blueList li{background:rgba(25,118,210,0.7);color:black;} #yellowList li{background:rgba(251,192,42,0.7);color:black;}
+#chatBox{max-height:300px;overflow-y:auto;background:#2c2c2c;padding:10px;border-radius:8px;margin-bottom:10px;text-align:left;}
 </style>
 </head>
-
 <body>
+
 <div class="nav-buttons">
   <button id="blueBtn" onclick="showSection('blue')">Blue</button>
   <button id="homeBtn" onclick="showSection('main')">Home</button>
   <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
 </div>
 
-<!-- Main Section -->
 <div id="main" class="container">
-<h1>Eternal Brothers FC</h1>
+  <h1>Eternal Brothers FC</h1>
+  <h2>Add Player to Main Team</h2>
+  <input type="text" id="nameInput" placeholder="Enter player name">
+  <button onclick="addMember()">Add</button>
 
-<h2>Add Player to Main Team</h2>
-<input type="text" id="nameInput" placeholder="Enter player name">
-<button class="addBtn" onclick="addMember()">Add</button>
+  <h2>Main Team</h2>
+  <ul id="teamList"></ul>
+  <h2>Waiting List</h2>
+  <ul id="waitingList"></ul>
 
-<h2>Main Team List (24 players max)</h2>
-<ul id="teamList"></ul>
-
-<h2>Waiting List</h2>
-<ul id="waitingList"></ul>
-
-<h2>Team Chat</h2>
-<input type="text" id="chatName" placeholder="Enter your name to enable chat">
-<button class="addBtn" onclick="enableChat()">✔️ Confirm</button>
-<div id="chatBox"></div>
-<input type="text" id="chatInput" placeholder="Type your message..." style="width:80%;" disabled>
-<button class="addBtn" id="sendBtn" onclick="sendMessage()" disabled style="background:green;">Send</button>
-<button class="addBtn" style="background:#d32f2f; font-size:12px;" onclick="chatBox.innerHTML='';">Clear Chat</button>
+  <h2>Chat</h2>
+  <input type="text" id="chatName" placeholder="Enter name to enable chat">
+  <button onclick="enableChat()">✔️ Confirm</button>
+  <div id="chatBox"></div>
+  <input type="text" id="chatInput" placeholder="Type message..." disabled>
+  <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
 </div>
 
-<!-- Blue Section -->
 <div id="blue" class="container" style="background:#1565c0aa;">
 <h2>Blue Team 🔵</h2>
 <input type="text" id="blueInput" placeholder="Enter player name">
-<button class="addBtn" onclick="addBlue()">Add</button>
+<button onclick="addBlue()">Add</button>
 <ul id="blueList"></ul>
 </div>
 
-<!-- Yellow Section -->
-<div id="yellow" class="container" style="background:#fdd835aa; color:#000;">
+<div id="yellow" class="container" style="background:#fdd835aa;color:#000;">
 <h2>Yellow Team 🟡</h2>
 <input type="text" id="yellowInput" placeholder="Enter player name">
-<button class="addBtn" onclick="addYellow()">Add</button>
+<button onclick="addYellow()">Add</button>
 <ul id="yellowList"></ul>
 </div>
 
-<!-- Audio -->
-<audio id="sendSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-<audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 </body>
 </html>
-
