@@ -1,6 +1,3 @@
-<h2>Chat</h2>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -81,6 +78,14 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
+
+  <h2>Chat</h2>
+  <input type="text" id="chatName" placeholder="Enter your name">
+  <button onclick="enableChat()">✔️ Confirm</button>
+  <div id="chatBox"></div>
+  <input type="text" id="chatInput" placeholder="Type message..." disabled>
+  <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+</div>
 
 <div id="blue" class="container" style="background:#1565c0aa;">
   <h2>Blue Team</h2>
@@ -194,10 +199,3 @@ loadPlayers(); loadBlue(); loadYellow(); loadChat();
 
 </body>
 </html>
-
-  <input type="text" id="chatName" placeholder="Enter your name">
-  <button onclick="enableChat()">✔️ Confirm</button>
-  <div id="chatBox"></div>
-  <input type="text" id="chatInput" placeholder="Type message..." disabled>
-  <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
-</div>
