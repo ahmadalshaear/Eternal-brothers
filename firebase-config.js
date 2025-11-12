@@ -1,6 +1,4 @@
-// firebase-config.js
-
-// إعدادات Firebase الخاصة بك
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAPB2dHdpBwIvPBpkFlu9EbRwbdswV7iI8",
   authDomain: "eternal-brothers-fc.firebaseapp.com",
