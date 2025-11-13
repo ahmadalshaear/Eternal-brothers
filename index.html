@@ -39,7 +39,7 @@ button {
   border-radius:15px;
   box-shadow:0 0 10px #000;
 }
-h1,h2 { margin:10px 0; }
+h1,h2,h3 { margin:10px 0; }
 input[type=text] { padding:8px; width:80%; border-radius:8px; border:1px solid #555; margin:5px 0; background:#2c2c2c; color:#fff; text-align:center; }
 ul { list-style:none; padding:0; margin-top:10px; text-align:left; font-weight:bold; }
 li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
@@ -60,14 +60,28 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .delete-btn { background:#e53935; color:#fff; }
 
 #chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
+
 .player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; }
-.player-name { position:absolute; width:100px; text-align:center; left:-30px; top:-20px; font-size:12px; color:#fff; }
+/* الاسم فوق الدائرة أفقي */
+.player-name {
+  position: absolute;
+  top: -18px;   /* فوق الدائرة */
+  left: 50%;    
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: black; /* اللون أسود */
+  white-space: nowrap;
+  font-weight: bold;
+}
+
 .field { width:100%; max-width:400px; height:250px; background:#4CAF50; margin:10px auto; border:2px solid #fff; border-radius:10px; position:relative; touch-action:none; }
+/* خطوط الملعب */
 .field .center-circle { position:absolute; width:50px;height:50px;border-radius:50%;border:2px solid #fff; top:50%; left:50%; transform:translate(-50%,-50%); }
 .field .penalty-box-left, .field .penalty-box-right { position:absolute;width:60px;height:120px;border:2px solid #fff; top:50%; transform:translateY(-50%); }
 .field .penalty-box-left { left:0; }
 .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
+
 </style>
 </head>
 <body>
@@ -77,6 +91,25 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <button id="homeBtn" onclick="showSection('main')">Home</button>
   <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
 </div>
+
+<!-- زر كتم الموسيقى -->
+<button id="muteBtn" style="
+  position: fixed;
+  top: 70px; 
+  left: 50%;
+  transform: translateX(-50%);
+  padding:5px 8px;
+  font-size:12px;
+  border-radius:5px;
+  border:none;
+  background:#333;
+  color:#fff;
+  cursor:pointer;
+  z-index:999;
+">Mute</button>
+
+<!-- الصوتية -->
+<audio id="bgMusic" src="https://drive.google.com/uc?export=download&id=1e7OhZMCjoqI9m4NRBYJS0U2TzlB_xh9Q" autoplay loop></audio>
 
 <div id="main" class="container">
   <h1>Eternal Brothers FC</h1>
@@ -104,7 +137,12 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <button onclick="addBlue()">Add</button>
   <ul id="blueList"></ul>
   <h3>Plan</h3>
-  <div id="bluePlan" class="field"></div>
+  <div id="bluePlan" class="field">
+    <div class="mid-line"></div>
+    <div class="center-circle"></div>
+    <div class="penalty-box-left"></div>
+    <div class="penalty-box-right"></div>
+  </div>
 </div>
 
 <div id="yellow" class="container" style="background:#fdd835aa; color:#000;">
@@ -113,7 +151,12 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <button onclick="addYellow()">Add</button>
   <ul id="yellowList"></ul>
   <h3>Plan</h3>
-  <div id="yellowPlan" class="field"></div>
+  <div id="yellowPlan" class="field">
+    <div class="mid-line"></div>
+    <div class="center-circle"></div>
+    <div class="penalty-box-left"></div>
+    <div class="penalty-box-right"></div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -123,6 +166,8 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let chatEnabled=false;
+const playerPositions = { blue: {}, yellow: {} };
+const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
 
 // Navigation
 function showSection(id){
@@ -131,11 +176,10 @@ function showSection(id){
 }
 showSection('main');
 
-// Add player to main team (limit 24, then waiting)
+// Main team
 async function addPlayer(){
   const name = document.getElementById("nameInput").value.trim();
   if(!name) return alert("Enter a name");
-
   const { data: team } = await supabase.from("main_team").select("id");
   if(team.length < 24){
     const { error } = await supabase.from("main_team").insert([{name,time:Date.now()}]);
@@ -145,12 +189,10 @@ async function addPlayer(){
     if(error) return alert(error.message);
     alert("Main team is full (24). Player added to waiting list.");
   }
-
   document.getElementById("nameInput").value="";
   loadPlayers();
 }
 
-// Load players and waiting list
 async function loadPlayers(){
   const { data: team } = await supabase.from("main_team").select("*").order("id");
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
@@ -170,7 +212,6 @@ async function loadPlayers(){
     </span></li>`);
 }
 
-// Move waiting player if space becomes available
 async function refillMainTeam(){
   const { data: team } = await supabase.from("main_team").select("id");
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
@@ -182,53 +223,125 @@ async function refillMainTeam(){
   loadPlayers();
 }
 
-// Blue/Yellow teams with 12 max
-async function addBlue(){
-  const name = document.getElementById("blueInput").value.trim();
-  if(!name) return;
+// Draggable markers
+function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) {
+  const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
+  const field = document.getElementById(fieldId);
 
-  const { data: team } = await supabase.from("blue_team").select("id");
-  if(team.length >= 12){
-    return alert("Blue team is full (12 players).");
+  const marker = document.createElement('div');
+  marker.classList.add('player-marker');
+  marker.style.background = team==='blue'? '#1976d2' : '#fbc02d';
+  marker.innerText = playerIndex;
+
+  // استخدم الموقع المخزن
+  if(storedPosition){
+    marker.style.left = storedPosition.left;
+    marker.style.top = storedPosition.top;
+  } else {
+    marker.style.left = '10px';
+    marker.style.top = `${30 + playerIndex * 30}px`;
   }
 
+  const label = document.createElement('div');
+  label.classList.add('player-name');
+  label.innerText = playerName;
+  label.style.color = 'black';
+  marker.appendChild(label);
+
+  let isDragging=false, offsetX, offsetY;
+
+  function startDrag(e){
+    isDragging=true;
+    const rect=marker.getBoundingClientRect();
+    if(e.type.startsWith('touch')){
+      const touch=e.touches[0];
+      offsetX=touch.clientX - rect.left;
+      offsetY=touch.clientY - rect.top;
+    } else {
+      offsetX=e.offsetX;
+      offsetY=e.offsetY;
+    }
+  }
+
+  function moveDrag(e){
+    if(!isDragging) return;
+    const rect=field.getBoundingClientRect();
+    let clientX, clientY;
+    if(e.type.startsWith('touch')){
+      const touch=e.touches[0];
+      clientX=touch.clientX;
+      clientY=touch.clientY;
+    } else {
+      clientX=e.clientX;
+      clientY=e.clientY;
+    }
+    marker.style.left = `${clientX - rect.left - offsetX}px`;
+    marker.style.top = `${clientY - rect.top - offsetY}px`;
+  }
+
+  async function endDrag(){
+    if(!isDragging) return;
+    isDragging=false;
+    playerPositions[team][playerName] = { left: marker.style.left, top: marker.style.top };
+    const table = team==='blue' ? 'blue_team' : 'yellow_team';
+    const { data: player } = await supabase.from(table).select('id').eq('name',playerName).limit(1);
+    if(player.length>0){
+      await supabase.from(table).update({position:playerPositions[team][playerName]}).eq('id', player[0].id);
+    }
+  }
+
+  marker.addEventListener('mousedown', startDrag);
+  marker.addEventListener('touchstart', startDrag);
+  document.addEventListener('mousemove', moveDrag);
+  document.addEventListener('touchmove', moveDrag);
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+
+  field.appendChild(marker);
+}
+
+// Blue team
+async function addBlue(){
+  const name=document.getElementById("blueInput").value.trim();
+  if(!name) return;
+  const { data: team } = await supabase.from("blue_team").select("id");
+  if(team.length >= 12) return alert("Blue team is full (12 players).");
   await supabase.from("blue_team").insert([{name,time:Date.now()}]);
   document.getElementById("blueInput").value="";
   loadBlue();
 }
+
 async function loadBlue(){
   const { data } = await supabase.from("blue_team").select("*").order("id");
-  const ul = document.getElementById("blueList");
-  ul.innerHTML="";
-  if(data) data.forEach((p,i)=>ul.innerHTML+=`<li>${i+1}. ${p.name}
-    <span>
-      <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button>
-      <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button>
-    </span></li>`);
+  const ul=document.getElementById("blueList");
+  const field=document.getElementById("bluePlan");
+  ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
+  if(data) data.forEach((p,i)=>{
+    ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button></span></li>`;
+    createPlayerMarker('blue', p.name, i+1, p.position);
+  });
 }
 
+// Yellow team
 async function addYellow(){
-  const name = document.getElementById("yellowInput").value.trim();
+  const name=document.getElementById("yellowInput").value.trim();
   if(!name) return;
-
   const { data: team } = await supabase.from("yellow_team").select("id");
-  if(team.length >= 12){
-    return alert("Yellow team is full (12 players).");
-  }
-
+  if(team.length >= 12) return alert("Yellow team is full (12 players).");
   await supabase.from("yellow_team").insert([{name,time:Date.now()}]);
   document.getElementById("yellowInput").value="";
   loadYellow();
 }
+
 async function loadYellow(){
   const { data } = await supabase.from("yellow_team").select("*").order("id");
-  const ul = document.getElementById("yellowList");
-  ul.innerHTML="";
-  if(data) data.forEach((p,i)=>ul.innerHTML+=`<li>${i+1}. ${p.name}
-    <span>
-      <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button>
-      <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button>
-    </span></li>`);
+  const ul=document.getElementById("yellowList");
+  const field=document.getElementById("yellowPlan");
+  ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
+  if(data) data.forEach((p,i)=>{
+    ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button></span></li>`;
+    createPlayerMarker('yellow', p.name, i+1, p.position);
+  });
 }
 
 // Edit & Delete
@@ -239,7 +352,7 @@ async function deletePlayer(table,id){
   reloadList(table);
 }
 async function editPlayer(table,id,oldName){
-  const newName = prompt("Edit name:", oldName);
+  const newName=prompt("Edit name:", oldName);
   if(!newName || newName.trim()==="") return;
   await supabase.from(table).update({name:newName.trim()}).eq("id",id);
   reloadList(table);
@@ -274,7 +387,15 @@ async function loadChat(){
   if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
 }
 
-// Load everything
+// Music Mute
+const music = document.getElementById('bgMusic');
+const muteBtn = document.getElementById('muteBtn');
+muteBtn.addEventListener('click', () => {
+  music.muted = !music.muted;
+  muteBtn.innerText = music.muted ? 'Unmute' : 'Mute';
+});
+
+// Load all
 loadPlayers(); loadBlue(); loadYellow(); loadChat();
 </script>
 
