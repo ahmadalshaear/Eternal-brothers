@@ -352,11 +352,11 @@ function reloadList(table){
   else if(table==="yellow_team") loadYellow();
 }
 
-// التعامل مع العنوان بالنقر مرتين لتحريره وتحويله لرابط عند حفظه
+// التعامل مع العنوان بالنقر مرتين لتحريره وحفظه كنص
 const addressDisplayElem = document.getElementById('addressDisplay');
 const savedAddress = localStorage.getItem('matchAddress');
 if(savedAddress){
-  addressDisplayElem.innerHTML = `<a href="${savedAddress}" target="_blank" style="color:#fff; text-decoration:underline;">${savedAddress}</a>`;
+  addressDisplayElem.textContent = savedAddress;
 }
 
 addressDisplayElem.addEventListener('dblclick', () => {
@@ -382,29 +382,33 @@ addressDisplayElem.addEventListener('dblclick', () => {
     p.style.cursor = "pointer";
     p.style.margin = "5px 0";
     p.style.fontWeight = "bold";
+    p.style.color = "#fff"; // لون النص الأبيض
 
     if(val === ""){
       p.textContent = "Click here to set match address";
       localStorage.removeItem('matchAddress');
     } else {
-      p.innerHTML = `<a href="${val}" target="_blank" style="color:#fff; text-decoration:underline;">${val}</a>`;
+      p.textContent = val; // حفظ كنص فقط
       localStorage.setItem('matchAddress', val);
     }
 
     input.replaceWith(p);
+
+    // إعادة تعيين الحدث للنقر المزدوج
     p.addEventListener('dblclick', () => {
-      p.replaceWith(input);
-      input.focus();
+      addressDisplayElem = p;
+      addressDisplayElem.dispatchEvent(new Event('dblclick'));
     });
   };
 
   input.addEventListener('blur', saveAddress);
-  input.addEventListener('keypress', e => { if(e.key === 'Enter') saveAddress(); });
+  input.addEventListener('keydown', (e) => { if(e.key==='Enter') saveAddress(); });
 });
 
-// Load all
-loadPlayers(); loadBlue(); loadYellow();
-</script>
+loadPlayers();
+loadBlue();
+loadYellow();
 
+</script>
 </body>
 </html>
