@@ -6,39 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family: "Cairo", sans-serif;
-  background-color: #121212;
-  color: #e0e0e0;
-  margin:0;
-  padding:10px;
-  text-align:center;
-}
-.nav-buttons {
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:20px;
-}
-button {
-  padding:10px 16px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:700;
-}
+body { font-family: "Cairo", sans-serif; background-color: #121212; color: #e0e0e0; margin:0; padding:10px; text-align:center; }
+.nav-buttons { display:flex; justify-content:space-between; margin-bottom:20px; }
+button { padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
 #homeBtn { background:#d32f2f; color:#fff; }
 #blueBtn { background:#1976d2; color:#fff; }
 #yellowBtn { background:#fbc02d; color:#000; }
-
-.container {
-  display:none;
-  max-width:95%;
-  margin:auto;
-  background:#1e1e1ecc;
-  padding:20px 10px;
-  border-radius:15px;
-  box-shadow:0 0 10px #000;
-}
+.container { display:none; max-width:95%; margin:auto; background:#1e1e1ecc; padding:20px 10px; border-radius:15px; box-shadow:0 0 10px #000; }
 h1,h2,h3 { margin:10px 0; }
 input[type=text] { padding:8px; width:80%; border-radius:8px; border:1px solid #555; margin:5px 0; background:#2c2c2c; color:#fff; text-align:center; }
 ul { list-style:none; padding:0; margin-top:10px; text-align:left; font-weight:bold; }
@@ -47,41 +21,18 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 #waitingList li { background:#ffe0e0; color:black; }
 #blueList li { background:rgba(25,118,210,0.7); color:black; }
 #yellowList li { background:rgba(251,192,42,0.7); color:black; }
-
-.action-btn {
-  margin-left:6px;
-  border:none;
-  border-radius:5px;
-  padding:4px 8px;
-  cursor:pointer;
-  font-weight:bold;
-}
+.action-btn { margin-left:6px; border:none; border-radius:5px; padding:4px 8px; cursor:pointer; font-weight:bold; }
 .edit-btn { background:#4caf50; color:#fff; }
 .delete-btn { background:#e53935; color:#fff; }
-
 #chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
-
 .player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; }
-/* الاسم فوق الدائرة أفقي */
-.player-name {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
-  color: black;
-  white-space: nowrap;
-  font-weight: bold;
-}
-
+.player-name { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 12px; color: black; white-space: nowrap; font-weight: bold; }
 .field { width:100%; max-width:400px; height:250px; background:#4CAF50; margin:10px auto; border:2px solid #fff; border-radius:10px; position:relative; touch-action:none; }
-/* خطوط الملعب */
 .field .center-circle { position:absolute; width:50px;height:50px;border-radius:50%;border:2px solid #fff; top:50%; left:50%; transform:translate(-50%,-50%); }
 .field .penalty-box-left, .field .penalty-box-right { position:absolute;width:60px;height:120px;border:2px solid #fff; top:50%; transform:translateY(-50%); }
 .field .penalty-box-left { left:0; }
 .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
-
 </style>
 </head>
 <body>
@@ -97,13 +48,10 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <h2>Add Player</h2>
   <input type="text" id="nameInput" placeholder="Enter player name">
   <button onclick="addPlayer()">Add</button>
-
   <h2>Main Team (24 max)</h2>
   <ul id="teamList"></ul>
-
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
-
   <h2>Chat</h2>
   <input type="text" id="chatName" placeholder="Enter your name">
   <button onclick="enableChat()">✔️ Confirm</button>
@@ -221,16 +169,12 @@ async function refillMainTeam(){
 function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) {
   const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
   const field = document.getElementById(fieldId);
-
-  // تجنب تكرار العلامات
   if(field.querySelector(`.player-marker[data-name="${playerName}"]`)) return;
-
   const marker = document.createElement('div');
   marker.classList.add('player-marker');
   marker.dataset.name = playerName;
   marker.style.background = team==='blue'? '#1976d2' : '#fbc02d';
   marker.innerText = playerIndex;
-
   if(storedPosition){
     marker.style.left = storedPosition.left;
     marker.style.top = storedPosition.top;
@@ -238,15 +182,12 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
     marker.style.left = '10px';
     marker.style.top = `${30 + playerIndex * 30}px`;
   }
-
   const label = document.createElement('div');
   label.classList.add('player-name');
   label.innerText = playerName;
   label.style.color = 'black';
   marker.appendChild(label);
-
   let isDragging=false, offsetX, offsetY;
-
   function startDrag(e){
     isDragging=true;
     const rect=marker.getBoundingClientRect();
@@ -259,7 +200,6 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
       offsetY=e.offsetY;
     }
   }
-
   function moveDrag(e){
     if(!isDragging) return;
     const rect=field.getBoundingClientRect();
@@ -275,7 +215,6 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
     marker.style.left = `${clientX - rect.left - offsetX}px`;
     marker.style.top = `${clientY - rect.top - offsetY}px`;
   }
-
   async function endDrag(){
     if(!isDragging) return;
     isDragging=false;
@@ -286,88 +225,25 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
       await supabase.from(table).update({position: playerPositions[team][playerName]}).eq('id', player[0].id);
     }
   }
-
   marker.addEventListener('mousedown', startDrag);
   marker.addEventListener('touchstart', startDrag);
   document.addEventListener('mousemove', moveDrag);
   document.addEventListener('touchmove', moveDrag);
   document.addEventListener('mouseup', endDrag);
   document.addEventListener('touchend', endDrag);
-
   field.appendChild(marker);
 }
 
-// Blue team
-async function addBlue(){
-  const name=document.getElementById("blueInput").value.trim();
-  if(!name) return;
-  const { data: team } = await supabase.from("blue_team").select("id");
-  if(team.length >= 12) return alert("Blue team is full (12 players).");
-  await supabase.from("blue_team").insert([{name,time:Date.now()}]);
-  document.getElementById("blueInput").value="";
-  loadBlue();
-}
-
-async function loadBlue(){
-  const { data } = await supabase.from("blue_team").select("*").order("id");
-  const ul=document.getElementById("blueList");
-  ul.innerHTML="";
-  if(data) data.forEach((p,i)=>{
-    ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button></span></li>`;
-    let pos = p.position || null;
-    createPlayerMarker('blue', p.name, i+1, pos);
-  });
-}
-
-// Yellow team
-async function addYellow(){
-  const name=document.getElementById("yellowInput").value.trim();
-  if(!name) return;
-  const { data: team } = await supabase.from("yellow_team").select("id");
-  if(team.length >= 12) return alert("Yellow team is full (12 players).");
-  await supabase.from("yellow_team").insert([{name,time:Date.now()}]);
-  document.getElementById("yellowInput").value="";
-  loadYellow();
-}
-
-async function loadYellow(){
-  const { data } = await supabase.from("yellow_team").select("*").order("id");
-  const ul=document.getElementById("yellowList");
-  ul.innerHTML="";
-  if(data) data.forEach((p,i)=>{
-    ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button></span></li>`;
-    let pos = p.position || null;
-    createPlayerMarker('yellow', p.name, i+1, pos);
-  });
-}
-
-// Edit & Delete
-async function deletePlayer(table,id){
-  if(!confirm("Are you sure you want to delete this player?")) return;
-  await supabase.from(table).delete().eq("id",id);
-  if(table==="main_team") await refillMainTeam();
-  reloadList(table);
-}
-async function editPlayer(table,id,oldName){
-  const newName=prompt("Edit name:", oldName);
-  if(!newName || newName.trim()==="") return;
-  await supabase.from(table).update({name:newName.trim()}).eq("id",id);
-  reloadList(table);
-}
-function reloadList(table){
-  if(table==="main_team" || table==="waiting_list") loadPlayers();
-  else if(table==="blue_team") loadBlue();
-  else if(table==="yellow_team") loadYellow();
-}
-
-// Chat
+// Chat functions
 function enableChat(){
   const name=document.getElementById('chatName').value.trim();
   if(!name) return alert("Enter your name");
   chatEnabled=true;
   document.getElementById('chatInput').disabled=false;
   document.getElementById('sendBtn').disabled=false;
+  loadChat();
 }
+
 async function sendMessage(){
   if(!chatEnabled) return;
   const name=document.getElementById('chatName').value.trim();
@@ -377,14 +253,24 @@ async function sendMessage(){
   document.getElementById('chatInput').value="";
   loadChat();
 }
+
 async function loadChat(){
   const { data } = await supabase.from("chat").select("*").order("time");
   const box = document.getElementById("chatBox");
   box.innerHTML="";
-  if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
+  if(data) data.forEach(m=>{
+    box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>`;
+  });
+  box.scrollTop = box.scrollHeight;
 }
 
-// Load all
+document.getElementById('chatInput').addEventListener('keypress', function(e){
+  if(e.key==='Enter') sendMessage();
+});
+
+setInterval(()=>{ if(chatEnabled) loadChat(); }, 1000);
+
+// Load all lists initially
 loadPlayers(); loadBlue(); loadYellow(); loadChat();
 </script>
 
