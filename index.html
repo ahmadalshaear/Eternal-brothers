@@ -91,44 +91,19 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co";
-const supabaseAnonKey = "PASTE_YOUR_ANON_KEY_HERE"; // ضع مفتاح anon هنا
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ";
 const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
 let chatEnabled=false;
 const playerPositions = { blue: {}, yellow: {} };
 
 // Navigation
-function showSection(id){
-  document.querySelectorAll('.container').forEach(c=>c.style.display='none');
-  document.getElementById(id).style.display='block';
-}
+function showSection(id){ document.querySelectorAll('.container').forEach(c=>c.style.display='none'); document.getElementById(id).style.display='block'; }
 showSection('main');
 
 // Main Team
-async function addPlayer(){
-  const name = document.getElementById("nameInput").value.trim();
-  if(!name) return alert("Enter a name");
-  const { data: team } = await supabase.from("main_team").select("id");
-  if(team.length < 24){
-    await supabase.from("main_team").insert([{name,time:Date.now()}]);
-  } else {
-    await supabase.from("waiting_list").insert([{name,time:Date.now()}]);
-    alert("Main team is full (24). Player added to waiting list.");
-  }
-  document.getElementById("nameInput").value="";
-  loadPlayers();
-}
-
-async function loadPlayers(){
-  const { data: team } = await supabase.from("main_team").select("*").order("id");
-  const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
-  const teamList = document.getElementById("teamList");
-  const waitingList = document.getElementById("waitingList");
-  teamList.innerHTML="";
-  waitingList.innerHTML="";
-  if(team) team.forEach((p,i)=>teamList.innerHTML+=`<li>${i+1}. ${p.name}</li>`);
-  if(waiting) waiting.forEach((p,i)=>waitingList.innerHTML+=`<li>${i+1}. ${p.name}</li>`);
-}
+async function addPlayer(){ const name=document.getElementById("nameInput").value.trim(); if(!name) return alert("Enter a name"); const { data: team } = await supabase.from("main_team").select("id"); if(team.length < 24){ await supabase.from("main_team").insert([{name,time:Date.now()}]); } else { await supabase.from("waiting_list").insert([{name,time:Date.now()}]); alert("Main team is full (24). Player added to waiting list."); } document.getElementById("nameInput").value=""; loadPlayers(); }
+async function loadPlayers(){ const { data: team } = await supabase.from("main_team").select("*").order("id"); const { data: waiting } = await supabase.from("waiting_list").select("*").order("id"); const teamList = document.getElementById("teamList"); const waitingList = document.getElementById("waitingList"); teamList.innerHTML=""; waitingList.innerHTML=""; if(team) team.forEach((p,i)=>teamList.innerHTML+=`<li>${i+1}. ${p.name}</li>`); if(waiting) waiting.forEach((p,i)=>waitingList.innerHTML+=`<li>${i+1}. ${p.name}</li>`); }
 
 // Blue & Yellow Team
 async function addBlue(){ const name=document.getElementById("blueInput").value.trim(); if(!name) return; await supabase.from("blue_team").insert([{name,time:Date.now()}]); document.getElementById("blueInput").value=""; loadBlue(); }
