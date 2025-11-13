@@ -59,17 +59,15 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .edit-btn { background:#4caf50; color:#fff; }
 .delete-btn { background:#e53935; color:#fff; }
 
-#chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
-
 .player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; }
 /* الاسم فوق الدائرة أفقي */
 .player-name {
   position: absolute;
-  top: -18px;
-  left: 50%;
+  top: -18px;   /* فوق الدائرة */
+  left: 50%;    
   transform: translateX(-50%);
   font-size: 12px;
-  color: black;
+  color: black; /* اللون أسود */
   white-space: nowrap;
   font-weight: bold;
 }
@@ -103,13 +101,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
-
-  <h2>Chat</h2>
-  <input type="text" id="chatName" placeholder="Enter your name">
-  <button onclick="enableChat()">✔️ Confirm</button>
-  <div id="chatBox"></div>
-  <input type="text" id="chatInput" placeholder="Type message..." disabled>
-  <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
 </div>
 
 <div id="blue" class="container" style="background:#1565c0aa;">
@@ -143,11 +134,14 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co";
-const supabaseServiceKey = "YOUR_SERVICE_ROLE_KEY"; // ضع هنا المفتاح الصحيح
+
+// API Key و Project Role
+const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ";
+
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 
-let chatEnabled=false;
 const playerPositions = { blue: {}, yellow: {} };
+const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
 
 // Navigation
 function showSection(id){
@@ -156,14 +150,15 @@ function showSection(id){
 }
 showSection('main');
 
-// تحقق من الوقت
+// تحقق من الوقت (من الأربعاء 3 ظهرًا حتى الأحد 12 ظهرًا)
 function isWithinAllowedTime(){
   const now = new Date();
-  const day = now.getDay();
+  const day = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
   const hour = now.getHours();
-  if(day===3 && hour>=15) return true;
-  if(day===4 || day===5 || day===6) return true;
-  if(day===0 && hour<12) return true;
+
+  if(day===3 && hour>=15) return true; // الأربعاء بعد 3 ظهرًا
+  if(day===4 || day===5 || day===6) return true; // الخميس، الجمعة، السبت
+  if(day===0 && hour<12) return true; // الأحد قبل 12 ظهرًا
   return false;
 }
 
@@ -222,12 +217,8 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
   const field = document.getElementById(fieldId);
 
-  // تجنب تكرار العلامات
-  if(field.querySelector(`.player-marker[data-name="${playerName}"]`)) return;
-
   const marker = document.createElement('div');
   marker.classList.add('player-marker');
-  marker.dataset.name = playerName;
   marker.style.background = team==='blue'? '#1976d2' : '#fbc02d';
   marker.innerText = playerIndex;
 
@@ -283,7 +274,7 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
     const table = team==='blue' ? 'blue_team' : 'yellow_team';
     const { data: player } = await supabase.from(table).select('id').eq('name',playerName).limit(1);
     if(player.length>0){
-      await supabase.from(table).update({position: playerPositions[team][playerName]}).eq('id', player[0].id);
+      await supabase.from(table).update({position: JSON.stringify(playerPositions[team][playerName])}).eq('id', player[0].id);
     }
   }
 
@@ -311,10 +302,11 @@ async function addBlue(){
 async function loadBlue(){
   const { data } = await supabase.from("blue_team").select("*").order("id");
   const ul=document.getElementById("blueList");
-  ul.innerHTML="";
+  const field=document.getElementById("bluePlan");
+  ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
     ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button></span></li>`;
-    let pos = p.position || null;
+    let pos = p.position ? JSON.parse(p.position) : null;
     createPlayerMarker('blue', p.name, i+1, pos);
   });
 }
@@ -333,10 +325,11 @@ async function addYellow(){
 async function loadYellow(){
   const { data } = await supabase.from("yellow_team").select("*").order("id");
   const ul=document.getElementById("yellowList");
-  ul.innerHTML="";
+  const field=document.getElementById("yellowPlan");
+  ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
     ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button></span></li>`;
-    let pos = p.position || null;
+    let pos = p.position ? JSON.parse(p.position) : null;
     createPlayerMarker('yellow', p.name, i+1, pos);
   });
 }
@@ -360,32 +353,8 @@ function reloadList(table){
   else if(table==="yellow_team") loadYellow();
 }
 
-// Chat
-function enableChat(){
-  const name=document.getElementById('chatName').value.trim();
-  if(!name) return alert("Enter your name");
-  chatEnabled=true;
-  document.getElementById('chatInput').disabled=false;
-  document.getElementById('sendBtn').disabled=false;
-}
-async function sendMessage(){
-  if(!chatEnabled) return;
-  const name=document.getElementById('chatName').value.trim();
-  const text=document.getElementById('chatInput').value.trim();
-  if(!text) return;
-  await supabase.from("chat").insert([{name,text,time:Date.now()}]);
-  document.getElementById('chatInput').value="";
-  loadChat();
-}
-async function loadChat(){
-  const { data } = await supabase.from("chat").select("*").order("time");
-  const box = document.getElementById("chatBox");
-  box.innerHTML="";
-  if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
-}
-
 // Load all
-loadPlayers(); loadBlue(); loadYellow(); loadChat();
+loadPlayers(); loadBlue(); loadYellow();
 </script>
 
 </body>
