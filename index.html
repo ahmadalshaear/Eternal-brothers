@@ -92,7 +92,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
 </div>
 
-<!-- زر كتم الموسيقى -->
+<!-- زر كتم الموسيقى ثابت أسفل زر الهوم -->
 <button id="muteBtn" style="
   position: fixed;
   top: 70px; 
@@ -108,7 +108,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   z-index:999;
 ">Mute</button>
 
-<!-- الصوتية -->
+<!-- الموسيقى تعمل تلقائياً -->
 <audio id="bgMusic" src="https://drive.google.com/uc?export=download&id=1e7OhZMCjoqI9m4NRBYJS0U2TzlB_xh9Q" autoplay loop></audio>
 
 <div id="main" class="container">
@@ -233,7 +233,6 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   marker.style.background = team==='blue'? '#1976d2' : '#fbc02d';
   marker.innerText = playerIndex;
 
-  // استخدم الموقع المخزن
   if(storedPosition){
     marker.style.left = storedPosition.left;
     marker.style.top = storedPosition.top;
@@ -384,7 +383,10 @@ async function loadChat(){
   const { data } = await supabase.from("chat").select("*").order("time");
   const box = document.getElementById("chatBox");
   box.innerHTML="";
-  if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
+  if(data) data.forEach(m=>{
+    box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>`;
+  });
+  box.scrollTop = box.scrollHeight;
 }
 
 // Music Mute
@@ -396,7 +398,10 @@ muteBtn.addEventListener('click', () => {
 });
 
 // Load all
-loadPlayers(); loadBlue(); loadYellow(); loadChat();
+loadPlayers(); 
+loadBlue(); 
+loadYellow(); 
+loadChat();
 </script>
 
 </body>
