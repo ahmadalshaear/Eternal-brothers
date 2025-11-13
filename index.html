@@ -136,8 +136,8 @@ async function loadPlayers(){
   const waitingList = document.getElementById("waitingList");
   teamList.innerHTML="";
   waitingList.innerHTML="";
-  if(team) team.forEach(p=>teamList.innerHTML+=`<li>${p.name}</li>`);
-  if(waiting) waiting.forEach(p=>waitingList.innerHTML+=`<li>${p.name}</li>`);
+  if(team) team.forEach((p,i)=>teamList.innerHTML+=`<li>${i+1}. ${p.name}</li>`);
+  if(waiting) waiting.forEach((p,i)=>waitingList.innerHTML+=`<li>${i+1}. ${p.name}</li>`);
 }
 
 // Blue/Yellow teams
@@ -152,7 +152,7 @@ async function loadBlue(){
   const { data } = await supabase.from("blue_team").select("*").order("id");
   const ul = document.getElementById("blueList");
   ul.innerHTML="";
-  if(data) data.forEach(p=>ul.innerHTML+=`<li>${p.name}</li>`);
+  if(data) data.forEach((p,i)=>ul.innerHTML+=`<li>${i+1}. ${p.name}</li>`);
 }
 
 async function addYellow(){
@@ -166,7 +166,7 @@ async function loadYellow(){
   const { data } = await supabase.from("yellow_team").select("*").order("id");
   const ul = document.getElementById("yellowList");
   ul.innerHTML="";
-  if(data) data.forEach(p=>ul.innerHTML+=`<li>${p.name}</li>`);
+  if(data) data.forEach((p,i)=>ul.innerHTML+=`<li>${i+1}. ${p.name}</li>`);
 }
 
 // Chat
