@@ -182,10 +182,16 @@ async function refillMainTeam(){
   loadPlayers();
 }
 
-// Blue/Yellow teams
+// Blue/Yellow teams with 12 max
 async function addBlue(){
   const name = document.getElementById("blueInput").value.trim();
   if(!name) return;
+
+  const { data: team } = await supabase.from("blue_team").select("id");
+  if(team.length >= 12){
+    return alert("Blue team is full (12 players).");
+  }
+
   await supabase.from("blue_team").insert([{name,time:Date.now()}]);
   document.getElementById("blueInput").value="";
   loadBlue();
@@ -204,6 +210,12 @@ async function loadBlue(){
 async function addYellow(){
   const name = document.getElementById("yellowInput").value.trim();
   if(!name) return;
+
+  const { data: team } = await supabase.from("yellow_team").select("id");
+  if(team.length >= 12){
+    return alert("Yellow team is full (12 players).");
+  }
+
   await supabase.from("yellow_team").insert([{name,time:Date.now()}]);
   document.getElementById("yellowInput").value="";
   loadYellow();
