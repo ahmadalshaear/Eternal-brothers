@@ -59,6 +59,8 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .edit-btn { background:#4caf50; color:#fff; }
 .delete-btn { background:#e53935; color:#fff; }
 
+#chatBox { max-height:300px; overflow-y:auto; background:#2c2c2c; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left; }
+
 .player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; }
 /* الاسم فوق الدائرة أفقي */
 .player-name {
@@ -101,6 +103,13 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
+
+  <h2>Chat</h2>
+  <input type="text" id="chatName" placeholder="Enter your name">
+  <button onclick="enableChat()">✔️ Confirm</button>
+  <div id="chatBox"></div>
+  <input type="text" id="chatInput" placeholder="Type message..." disabled>
+  <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
 </div>
 
 <div id="blue" class="container" style="background:#1565c0aa;">
@@ -137,6 +146,7 @@ const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co";
 const supabaseServiceKey = "YOUR_SERVICE_ROLE_KEY"; // ضع هنا المفتاح الصحيح
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 
+let chatEnabled=false;
 const playerPositions = { blue: {}, yellow: {} };
 
 // Navigation
@@ -212,6 +222,7 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
   const field = document.getElementById(fieldId);
 
+  // تجنب تكرار العلامات
   if(field.querySelector(`.player-marker[data-name="${playerName}"]`)) return;
 
   const marker = document.createElement('div');
@@ -349,8 +360,32 @@ function reloadList(table){
   else if(table==="yellow_team") loadYellow();
 }
 
+// Chat
+function enableChat(){
+  const name=document.getElementById('chatName').value.trim();
+  if(!name) return alert("Enter your name");
+  chatEnabled=true;
+  document.getElementById('chatInput').disabled=false;
+  document.getElementById('sendBtn').disabled=false;
+}
+async function sendMessage(){
+  if(!chatEnabled) return;
+  const name=document.getElementById('chatName').value.trim();
+  const text=document.getElementById('chatInput').value.trim();
+  if(!text) return;
+  await supabase.from("chat").insert([{name,text,time:Date.now()}]);
+  document.getElementById('chatInput').value="";
+  loadChat();
+}
+async function loadChat(){
+  const { data } = await supabase.from("chat").select("*").order("time");
+  const box = document.getElementById("chatBox");
+  box.innerHTML="";
+  if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
+}
+
 // Load all
-loadPlayers(); loadBlue(); loadYellow();
+loadPlayers(); loadBlue(); loadYellow(); loadChat();
 </script>
 
 </body>
