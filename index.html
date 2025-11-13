@@ -18,6 +18,7 @@ body {
   display:flex;
   justify-content:space-between;
   margin-bottom:20px;
+  position:relative;
 }
 button {
   padding:10px 16px;
@@ -29,6 +30,10 @@ button {
 #homeBtn { background:#d32f2f; color:#fff; }
 #blueBtn { background:#1976d2; color:#fff; }
 #yellowBtn { background:#fbc02d; color:#000; }
+
+/* زر الكتم صغير وثابت تحت أزرار القائمة */
+.mute-container { text-align:center; margin-bottom:10px; }
+#muteBtn { padding:6px 10px; border-radius:6px; font-weight:700; }
 
 .container {
   display:none;
@@ -82,10 +87,12 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
 
-.audio-player { margin-bottom:10px; }
 </style>
 </head>
 <body>
+
+<!-- صوت الخلفية: يبدأ تلقائياً ويحاول التشغيل عند تحميل الصفحة -->
+<audio id="bgAudio" src="https://github.com/ahmadalshaear/eternal-brothers-audio/raw/refs/heads/main/Eternal_Brothers%20_FC_new.mp3" loop></audio>
 
 <div class="nav-buttons">
   <button id="blueBtn" onclick="showSection('blue')">Blue</button>
@@ -93,15 +100,10 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
 </div>
 
-<div id="main" class="container">
-  <!-- مشغل الصوت -->
-  <div class="audio-player">
-    <audio controls>
-      <source src="https://archive.org/download/eternal-brothers-fc-new/eternal-brothers-fc-new.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
-  </div>
+<!-- زر الكتم تحت أزرار القائمة -->
+<div class="mute-container"><button id="muteBtn" onclick="toggleMute()">🔊 تشغيل / كتم</button></div>
 
+<div id="main" class="container">
   <h1>Eternal Brothers FC</h1>
   <h2>Add Player</h2>
   <input type="text" id="nameInput" placeholder="Enter player name">
@@ -223,6 +225,7 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   marker.style.background = team==='blue'? '#1976d2' : '#fbc02d';
   marker.innerText = playerIndex;
 
+  // استخدم الموقع المخزن
   if(storedPosition){
     marker.style.left = storedPosition.left;
     marker.style.top = storedPosition.top;
@@ -375,6 +378,34 @@ async function loadChat(){
   box.innerHTML="";
   if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
 }
+
+// Mute / autoplay logic
+const audioEl = document.getElementById('bgAudio');
+function updateMuteButton(){
+  const btn = document.getElementById('muteBtn');
+  btn.innerText = audioEl.muted ? '🔇 مكتوم' : '🔊 تشغيل';
+}
+function toggleMute(){
+  audioEl.muted = !audioEl.muted;
+  // إذا كان مكتوماً وأوقف التشغيل، تأكد من التشغيل
+  if(!audioEl.paused && audioEl.muted===false) audioEl.play().catch(()=>{});
+  updateMuteButton();
+}
+
+// حاول التشغيل عند تحميل الصفحة — بعض المتصفحات تمنع التشغيل التلقائي للصوت عند عدم وجود تفاعل المستخدم
+window.addEventListener('DOMContentLoaded', ()=>{
+  // اجعل الصوت غير مكتوم مبدئياً ثم حاول التشغيل
+  audioEl.muted = false;
+  audioEl.play().then(()=>{
+    updateMuteButton();
+  }).catch((e)=>{
+    // إذا رفض المتصفح التشغيل التلقائي، نضعه مكتوماً حتى يتمكن المستخدم من تشغيله عبر الزر
+    audioEl.muted = true;
+    updateMuteButton();
+    // نقوم بمحاولة تشغيل صامت (مسموح غالباً) لتخصيصه إن أمكن
+    audioEl.play().catch(()=>{});
+  });
+});
 
 // Load all
 loadPlayers(); loadBlue(); loadYellow(); loadChat();
