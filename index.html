@@ -108,11 +108,15 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   z-index:999;
 ">Mute</button>
 
-<!-- الموسيقى تعمل تلقائياً -->
-<audio id="bgMusic" src="https://www.dropbox.com/scl/fi/t3z4jgfvozwvk26fjhv22/Eternal-Brothers-FC-new.mp3?rlkey=4bea1y99z30lmeom3diqham32&st=44gj75sa&dl=0" autoplay loop></audio>
-
 <div id="main" class="container">
+  <!-- مشغل الموسيقى فوق اسم الفريق -->
+  <audio id="bgMusicPlayer" controls autoplay loop style="margin-bottom:10px;">
+    <source src="https://www.dropbox.com/s/t3z4jgfvozwvk26fjhv22/Eternal-Brothers-FC-new.mp3?raw=1" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
   <h1>Eternal Brothers FC</h1>
+
   <h2>Add Player</h2>
   <input type="text" id="nameInput" placeholder="Enter player name">
   <button onclick="addPlayer()">Add</button>
@@ -390,7 +394,7 @@ async function loadChat(){
 }
 
 // Music Mute
-const music = document.getElementById('bgMusic');
+const music = document.getElementById('bgMusicPlayer');
 const muteBtn = document.getElementById('muteBtn');
 muteBtn.addEventListener('click', () => {
   music.muted = !music.muted;
@@ -406,5 +410,3 @@ loadChat();
 
 </body>
 </html>
-
-
