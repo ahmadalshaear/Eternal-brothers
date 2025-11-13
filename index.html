@@ -170,16 +170,21 @@ async function loadPlayers(){
     </span></li>`);
 }
 
-// Move waiting player if space becomes available
+// Move waiting player if space becomes available (actual transfer)
 async function refillMainTeam(){
   const { data: team } = await supabase.from("main_team").select("id");
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
+  
   if(team.length < 24 && waiting.length > 0){
     const first = waiting[0];
+    // 1️⃣ أضف اللاعب إلى main_team
     await supabase.from("main_team").insert([{ name:first.name, time:Date.now() }]);
+    // 2️⃣ احذف اللاعب من waiting_list بعد الإضافة
     await supabase.from("waiting_list").delete().eq("id", first.id);
   }
-  loadPlayers();
+  loadPlayers(); // إعادة تحميل القوائم لتحديث الواجهة
+}
+
 }
 
 // Blue/Yellow teams
@@ -268,3 +273,4 @@ loadPlayers(); loadBlue(); loadYellow(); loadChat();
 
 </body>
 </html>
+
