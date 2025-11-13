@@ -143,9 +143,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co";
-
-// API Key و Project Role
-const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ";
+const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdsaGpqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ";
 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 
@@ -199,15 +197,15 @@ async function loadPlayers(){
   const waitingList = document.getElementById("waitingList");
   teamList.innerHTML="";
   waitingList.innerHTML="";
-  if(team) team.forEach((p,i)=>teamList.innerHTML+=`<li>${i+1}. ${p.name}
+  if(team) team.forEach((p,i)=>teamList.innerHTML+=`<li>${i+1}. ${p.name} <span style="font-size:0.8em; color:#ccc;">(${new Date(p.time).toLocaleString()})</span>
     <span>
       <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')">✏️</button>
-      <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})">🗑️</button>
+      <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id},'${p.name}')">🗑️</button>
     </span></li>`);
-  if(waiting) waiting.forEach((p,i)=>waitingList.innerHTML+=`<li>${i+1}. ${p.name}
+  if(waiting) waiting.forEach((p,i)=>waitingList.innerHTML+=`<li>${i+1}. ${p.name} <span style="font-size:0.8em; color:#ccc;">(${new Date(p.time).toLocaleString()})</span>
     <span>
       <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">✏️</button>
-      <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">🗑️</button>
+      <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id},'${p.name}')">🗑️</button>
     </span></li>`);
 }
 
@@ -315,7 +313,11 @@ async function loadBlue(){
   const field=document.getElementById("bluePlan");
   ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
-    ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button></span></li>`;
+    ul.innerHTML+=`<li>${i+1}. ${p.name} <span style="font-size:0.8em; color:#ccc;">(${new Date(p.time).toLocaleString()})</span>
+    <span>
+      <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button>
+      <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id},'${p.name}')">🗑️</button>
+    </span></li>`;
     createPlayerMarker('blue', p.name, i+1, p.position);
   });
 }
@@ -337,17 +339,28 @@ async function loadYellow(){
   const field=document.getElementById("yellowPlan");
   ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
-    ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button></span></li>`;
+    ul.innerHTML+=`<li>${i+1}. ${p.name} <span style="font-size:0.8em; color:#ccc;">(${new Date(p.time).toLocaleString()})</span>
+    <span>
+      <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button>
+      <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id},'${p.name}')">🗑️</button>
+    </span></li>`;
     createPlayerMarker('yellow', p.name, i+1, p.position);
   });
 }
 
 // Edit & Delete
-async function deletePlayer(table,id){
+async function deletePlayer(table,id,playerName){
   if(!confirm("Are you sure you want to delete this player?")) return;
+
   await supabase.from(table).delete().eq("id",id);
+
+  // إرسال رسالة للشات باللون الأحمر
+  const message = `<span style="color:red;"><b>${playerName}</b> has removed themselves!</span>`;
+  await supabase.from("chat").insert([{name:"System", text:message, time:Date.now()}]);
+
   if(table==="main_team") await refillMainTeam();
   reloadList(table);
+  loadChat();
 }
 async function editPlayer(table,id,oldName){
   const newName=prompt("Edit name:", oldName);
@@ -382,7 +395,7 @@ async function loadChat(){
   const { data } = await supabase.from("chat").select("*").order("time");
   const box = document.getElementById("chatBox");
   box.innerHTML="";
-  if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
+  if(data) data.forEach(m=>{ box.innerHTML+=`<div>${m.text}</div>` });
 }
 
 // Load all
