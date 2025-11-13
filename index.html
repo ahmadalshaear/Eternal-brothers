@@ -82,6 +82,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
 
+.audio-player { margin-bottom:10px; }
 </style>
 </head>
 <body>
@@ -92,31 +93,16 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <button id="yellowBtn" onclick="showSection('yellow')">Yellow</button>
 </div>
 
-<!-- زر كتم الموسيقى ثابت أسفل زر الهوم -->
-<button id="muteBtn" style="
-  position: fixed;
-  top: 70px; 
-  left: 50%;
-  transform: translateX(-50%);
-  padding:5px 8px;
-  font-size:12px;
-  border-radius:5px;
-  border:none;
-  background:#333;
-  color:#fff;
-  cursor:pointer;
-  z-index:999;
-">Mute</button>
-
 <div id="main" class="container">
-  <!-- مشغل الموسيقى فوق اسم الفريق -->
-  <audio id="bgMusicPlayer" controls autoplay loop style="margin-bottom:10px;">
-    <source src="https://archive.org/details/eternal-brothers-fc-new.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
+  <!-- مشغل الصوت -->
+  <div class="audio-player">
+    <audio controls>
+      <source src="https://archive.org/download/eternal-brothers-fc-new/eternal-brothers-fc-new.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
 
   <h1>Eternal Brothers FC</h1>
-
   <h2>Add Player</h2>
   <input type="text" id="nameInput" placeholder="Enter player name">
   <button onclick="addPlayer()">Add</button>
@@ -387,27 +373,12 @@ async function loadChat(){
   const { data } = await supabase.from("chat").select("*").order("time");
   const box = document.getElementById("chatBox");
   box.innerHTML="";
-  if(data) data.forEach(m=>{
-    box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>`;
-  });
-  box.scrollTop = box.scrollHeight;
+  if(data) data.forEach(m=>{ box.innerHTML+=`<div><b>${m.name}:</b> ${m.text}</div>` });
 }
 
-// Music Mute
-const music = document.getElementById('bgMusicPlayer');
-const muteBtn = document.getElementById('muteBtn');
-muteBtn.addEventListener('click', () => {
-  music.muted = !music.muted;
-  muteBtn.innerText = music.muted ? 'Unmute' : 'Mute';
-});
-
 // Load all
-loadPlayers(); 
-loadBlue(); 
-loadYellow(); 
-loadChat();
+loadPlayers(); loadBlue(); loadYellow(); loadChat();
 </script>
 
 </body>
 </html>
-
