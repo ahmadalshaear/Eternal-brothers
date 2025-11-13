@@ -131,15 +131,26 @@ function showSection(id){
 }
 showSection('main');
 
-// Add player to main team
+// Add player to main team (limit 24, then waiting)
 async function addPlayer(){
   const name = document.getElementById("nameInput").value.trim();
   if(!name) return alert("Enter a name");
-  const { error } = await supabase.from("main_team").insert([{name,time:Date.now()}]);
-  if(error) return alert(error.message);
+
+  const { data: team } = await supabase.from("main_team").select("id");
+  if(team.length < 24){
+    const { error } = await supabase.from("main_team").insert([{name,time:Date.now()}]);
+    if(error) return alert(error.message);
+  } else {
+    const { error } = await supabase.from("waiting_list").insert([{name,time:Date.now()}]);
+    if(error) return alert(error.message);
+    alert("Main team is full (24). Player added to waiting list.");
+  }
+
   document.getElementById("nameInput").value="";
   loadPlayers();
 }
+
+// Load players and waiting list
 async function loadPlayers(){
   const { data: team } = await supabase.from("main_team").select("*").order("id");
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
@@ -157,6 +168,18 @@ async function loadPlayers(){
       <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">✏️</button>
       <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">🗑️</button>
     </span></li>`);
+}
+
+// Move waiting player if space becomes available
+async function refillMainTeam(){
+  const { data: team } = await supabase.from("main_team").select("id");
+  const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
+  if(team.length < 24 && waiting.length > 0){
+    const first = waiting[0];
+    await supabase.from("main_team").insert([{ name:first.name, time:Date.now() }]);
+    await supabase.from("waiting_list").delete().eq("id", first.id);
+  }
+  loadPlayers();
 }
 
 // Blue/Yellow teams
@@ -200,6 +223,7 @@ async function loadYellow(){
 async function deletePlayer(table,id){
   if(!confirm("Are you sure you want to delete this player?")) return;
   await supabase.from(table).delete().eq("id",id);
+  if(table==="main_team") await refillMainTeam();
   reloadList(table);
 }
 async function editPlayer(table,id,oldName){
