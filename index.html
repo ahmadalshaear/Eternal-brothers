@@ -284,7 +284,7 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
     const table = team==='blue' ? 'blue_team' : 'yellow_team';
     const { data: player } = await supabase.from(table).select('id').eq('name',playerName).limit(1);
     if(player.length>0){
-      await supabase.from(table).update({position:playerPositions[team][playerName]}).eq('id', player[0].id);
+      await supabase.from(table).update({position: JSON.stringify(playerPositions[team][playerName])}).eq('id', player[0].id);
     }
   }
 
@@ -316,7 +316,8 @@ async function loadBlue(){
   ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
     ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button></span></li>`;
-    createPlayerMarker('blue', p.name, i+1, p.position);
+    let pos = p.position ? JSON.parse(p.position) : null;
+    createPlayerMarker('blue', p.name, i+1, pos);
   });
 }
 
@@ -338,7 +339,8 @@ async function loadYellow(){
   ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
     ul.innerHTML+=`<li>${i+1}. ${p.name}<span><button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button><button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button></span></li>`;
-    createPlayerMarker('yellow', p.name, i+1, p.position);
+    let pos = p.position ? JSON.parse(p.position) : null;
+    createPlayerMarker('yellow', p.name, i+1, pos);
   });
 }
 
