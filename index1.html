@@ -355,11 +355,12 @@ async function deletePlayer(table,id){
 
   if(table==="main_team") {
     await refillMainTeam();
-    // عرض البالون الأحمر
+    // عرض البالون الأحمر وحفظه في localStorage
     const msgDiv = document.getElementById("mainListMessage");
     if(playerData){
       msgDiv.textContent = `The player (${playerData.name}) has left the main list`;
       msgDiv.style.display = "block";
+      localStorage.setItem("lastLeftPlayer", playerData.name);
     }
   }
 
@@ -372,6 +373,7 @@ async function editPlayer(table,id,oldName){
   await supabase.from(table).update({name:newName.trim()}).eq("id",id);
   reloadList(table);
 }
+
 function reloadList(table){
   if(table==="main_team" || table==="waiting_list") loadPlayers();
   else if(table==="blue_team") loadBlue();
@@ -379,10 +381,18 @@ function reloadList(table){
 }
 
 // التعامل مع العنوان بالنقر مرتين لتحريره وحفظه كنص
-const addressDisplayElem = document.getElementById('addressDisplay');
+let addressDisplayElem = document.getElementById('addressDisplay');
 const savedAddress = localStorage.getItem('matchAddress');
 if(savedAddress){
   addressDisplayElem.textContent = savedAddress;
+}
+
+// عند تحميل الصفحة، إعادة عرض البالون الأحمر إذا كان موجودًا
+const lastLeft = localStorage.getItem("lastLeftPlayer");
+if(lastLeft){
+  const msgDiv = document.getElementById("mainListMessage");
+  msgDiv.textContent = `The player (${lastLeft}) has left the main list`;
+  msgDiv.style.display = "block";
 }
 
 addressDisplayElem.addEventListener('dblclick', () => {
