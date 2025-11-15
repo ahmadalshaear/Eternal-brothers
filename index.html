@@ -98,7 +98,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   </p>
 
   <p id="addressDisplay" style="margin:5px 0; font-weight:bold; cursor:pointer; color:#9c27b0;">
-    Click here to set match address
+    Loading address...
   </p>
 
   <h2>Add Player</h2>
@@ -384,12 +384,19 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   field.appendChild(marker);
 }
 
-// ---- MATCH ADDRESS ----
+// ---- MATCH ADDRESS (Shared) ----
 const addressDisplayElem = document.getElementById('addressDisplay');
-const savedAddress = localStorage.getItem('matchAddress');
-if(savedAddress){
-  addressDisplayElem.textContent = savedAddress;
+
+// تحميل العنوان من Supabase عند الفتح
+async function loadAddress() {
+  const { data } = await supabase.from('match_info').select('address').limit(1);
+  if(data && data.length>0){
+    addressDisplayElem.textContent = data[0].address || "Click here to set match address";
+  } else {
+    addressDisplayElem.textContent = "Click here to set match address";
+  }
 }
+loadAddress();
 
 addressDisplayElem.addEventListener('dblclick', () => {
   const currentText = addressDisplayElem.textContent.includes("Click here") ? "" : addressDisplayElem.textContent;
@@ -407,7 +414,7 @@ addressDisplayElem.addEventListener('dblclick', () => {
   addressDisplayElem.replaceWith(input);
   input.focus();
 
-  const saveAddress = () => {
+  const saveAddress = async () => {
     const val = input.value.trim();
     const p = document.createElement('p');
     p.id = "addressDisplay";
@@ -416,10 +423,18 @@ addressDisplayElem.addEventListener('dblclick', () => {
     p.style.fontWeight = "bold";
     p.style.color = "#9c27b0";
     p.textContent = val === "" ? "Click here to set match address" : val;
-    
-    input.replaceWith(p);
-    localStorage.setItem('matchAddress', val);
 
+    input.replaceWith(p);
+
+    // تحديث العنوان في Supabase
+    const { data: existing } = await supabase.from('match_info').select('id').limit(1);
+    if(existing.length>0){
+      await supabase.from('match_info').update({ address: val }).eq('id', existing[0].id);
+    } else {
+      await supabase.from('match_info').insert([{ address: val }]);
+    }
+
+    // اعادة اضافة الـ dblclick
     p.addEventListener('dblclick', () => {
       p.replaceWith(input);
       input.focus();
