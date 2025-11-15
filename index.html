@@ -58,6 +58,15 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 }
 .edit-btn { background:#4caf50; color:#fff; }
 .delete-btn { background:#e53935; color:#fff; }
+.player-name-editable { 
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.player-name-editable:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
 
 .player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:grab; user-select:none; }
 .player-name {
@@ -78,6 +87,76 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
 
+#blueFormationSelect { background:#2c2c2c; color:#fff; border:1px solid #555; }
+#yellowFormationSelect { background:#2c2c2c; color:#000; border:1px solid #555; }
+
+/* 🆕 CHAT STYLES */
+.chat-container {
+  width: 100%; 
+  max-width: 100%; 
+  margin: 20px 0 0 0;
+  background: #242424;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 0 5px #000;
+  text-align: right; /* RTL support for chat elements */
+}
+.chat-messages {
+  height: 250px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 5px;
+  background: #1e1e1e;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column-reverse; /* Display latest messages at the bottom */
+  text-align: right;
+}
+.message {
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #333;
+  word-wrap: break-word;
+  max-width: 90%;
+  align-self: flex-start; /* Default alignment */
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: right;
+}
+.my-message {
+  background: #d32f2f; /* Red/Maroon for own messages */
+  color: #fff;
+  align-self: flex-end; /* Align to the left/end for own messages */
+  text-align: right;
+}
+.message-header {
+  font-weight: bold;
+  font-size: 12px;
+  color: #888;
+  display: block;
+  margin-bottom: 4px;
+}
+.my-message .message-header {
+  color: #f7f7f7;
+}
+.chat-input-group {
+  display: flex;
+  gap: 5px;
+}
+#chatNameInput {
+  width: 30%;
+  text-align: right;
+}
+#chatMsgInput {
+  flex-grow: 1;
+  text-align: right;
+}
+#sendChatBtn {
+  background: #d32f2f;
+  color: #fff;
+  padding: 8px 15px;
+}
 </style>
 </head>
 <body>
@@ -98,7 +177,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   </p>
 
   <p id="addressDisplay" style="margin:5px 0; font-weight:bold; cursor:pointer; color:#9c27b0;">
-    Loading address...
+    Click here to set match address
   </p>
 
   <h2>Add Player</h2>
@@ -114,14 +193,31 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <p style="margin-top:15px; font-size:12px; color:#ccc;">
     We might need to change the football field at any time. Please follow the group chat in case of any changes
   </p>
-</div>
+  
+  <div class="chat-container">
+    <h2>Group Chat</h2>
+    <div id="chatMessages" class="chat-messages">
+      </div>
+    <div class="chat-input-group">
+      <input type="text" id="chatNameInput" placeholder="Your Name" value="" style="width: 25%; text-align: right;">
+      <input type="text" id="chatMsgInput" placeholder="Write a message..." style="width: 60%; text-align: right;">
+      <button id="sendChatBtn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+  </div>
 
 <div id="blue" class="container" style="background:#1565c0aa;">
   <h2>Blue Team</h2>
   <input type="text" id="blueInput" placeholder="Enter player name">
   <button onclick="addBlue()">Add</button>
   <ul id="blueList"></ul>
-  <h3>Plan</h3>
+  
+  <h3>Plan Management</h3>
+  <div style="margin-bottom: 10px;">
+    <select id="blueFormationSelect" style="padding: 8px; border-radius: 8px;"></select>
+    <button onclick="loadFormation('blue')" style="background:#4CAF50; color:#fff;">Load</button>
+    <button onclick="saveFormation('blue')" style="background:#FF9800; color:#fff;">Save</button>
+  </div>
   <div id="bluePlan" class="field">
     <div class="mid-line"></div>
     <div class="center-circle"></div>
@@ -135,7 +231,13 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <input type="text" id="yellowInput" placeholder="Enter player name">
   <button onclick="addYellow()">Add</button>
   <ul id="yellowList"></ul>
-  <h3>Plan</h3>
+
+  <h3>Plan Management</h3>
+  <div style="margin-bottom: 10px;">
+    <select id="yellowFormationSelect" style="padding: 8px; border-radius: 8px;"></select>
+    <button onclick="loadFormation('yellow')" style="background:#4CAF50; color:#fff;">Load</button>
+    <button onclick="saveFormation('yellow')" style="background:#FF9800; color:#fff;">Save</button>
+  </div>
   <div id="yellowPlan" class="field">
     <div class="mid-line"></div>
     <div class="center-circle"></div>
@@ -146,9 +248,13 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co";
-const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ";
+// =========================================================================================
+// ⚠️⚠️⚠️ يجب تحديث المفاتيح هنا ⚠️⚠️⚠️
+// =========================================================================================
+const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; //  ⚠️ استبدل هذا بعنوان URL الخاص بك من Supabase
+const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ"; // ⚠️ استبدل هذا بمفتاح Anon (Public) Key الخاص بك من Supabase
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
+// =========================================================================================
 
 const playerPositions = { blue: {}, yellow: {} };
 const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
@@ -190,32 +296,40 @@ async function addPlayer(){
 }
 
 async function loadPlayers(){
-  const { data: team } = await supabase.from("main_team").select("*").order("id");
-  const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
-  const teamList = document.getElementById("teamList");
-  const waitingList = document.getElementById("waitingList");
-  teamList.innerHTML = "";
-  waitingList.innerHTML = "";
+  try {
+    const { data: team } = await supabase.from("main_team").select("*").order("id");
+    const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
+    const teamList = document.getElementById("teamList");
+    const waitingList = document.getElementById("waitingList");
+    teamList.innerHTML = "";
+    waitingList.innerHTML = "";
 
-  if(team) team.forEach((p,i) => {
-    teamList.innerHTML += `
-      <li>${i+1}. ${p.name}
-        <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')">&#10003;</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})">&#128465;</button>
-        </span>
-      </li>`;
-  });
+    if(team) team.forEach((p,i) => {
+      // تعديل: استخدام span لتمكين النقر المزدوج للتعديل
+      const nameSpan = `<span class="player-name-editable" data-table="main_team" data-id="${p.id}" data-name="${p.name}">${p.name}</span>`;
+      
+      teamList.innerHTML += `
+        <li>${i+1}. ${nameSpan}
+          <span>
+            <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})">&#128465;</button>
+          </span>
+        </li>`;
+    });
 
-  if(waiting) waiting.forEach((p,i) => {
-    waitingList.innerHTML += `
-      <li>${i+1}. ${p.name}
-        <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">&#10003;</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">&#128465;</button>
-        </span>
-      </li>`;
-  });
+    if(waiting) waiting.forEach((p,i) => {
+      // تعديل: استخدام span لتمكين النقر المزدوج للتعديل
+      const nameSpan = `<span class="player-name-editable" data-table="waiting_list" data-id="${p.id}" data-name="${p.name}">${p.name}</span>`;
+
+      waitingList.innerHTML += `
+        <li>${i+1}. ${nameSpan}
+          <span>
+            <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">&#128465;</button>
+          </span>
+        </li>`;
+    });
+    
+    setupEditListener(); // إضافة مستمع النقر المزدوج
+  } catch(err){ console.error(err); }
 }
 
 async function refillMainTeam(){
@@ -246,16 +360,20 @@ async function loadBlue(){
   const field=document.getElementById("bluePlan");
   ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
+    // تعديل: استخدام span لتمكين النقر المزدوج للتعديل
+    const nameSpan = `<span class="player-name-editable" data-table="blue_team" data-id="${p.id}" data-name="${p.name}">${p.name}</span>`;
+
     ul.innerHTML += `
-      <li>${i+1}. ${p.name}
+      <li>${i+1}. ${nameSpan}
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">&#10003;</button>
           <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">&#128465;</button>
         </span>
       </li>`;
-    let pos = p.position ? JSON.parse(p.position) : null;
-    createPlayerMarker('blue', p.name, i+1, pos);
+    // We no longer use individual player positions in the DB for initial load, 
+    // positions are managed by the Formation system now.
+    createPlayerMarker('blue', p.name, i+1); 
   });
+  setupEditListener(); // إضافة مستمع النقر المزدوج
 }
 
 // ---- YELLOW TEAM ----
@@ -275,19 +393,23 @@ async function loadYellow(){
   const field=document.getElementById("yellowPlan");
   ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
   if(data) data.forEach((p,i)=>{
+    // تعديل: استخدام span لتمكين النقر المزدوج للتعديل
+    const nameSpan = `<span class="player-name-editable" data-table="yellow_team" data-id="${p.id}" data-name="${p.name}">${p.name}</span>`;
+
     ul.innerHTML += `
-      <li>${i+1}. ${p.name}
+      <li>${i+1}. ${nameSpan}
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">&#10003;</button>
           <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">&#128465;</button>
         </span>
       </li>`;
-    let pos = p.position ? JSON.parse(p.position) : null;
-    createPlayerMarker('yellow', p.name, i+1, pos);
+    // We no longer use individual player positions in the DB for initial load, 
+    // positions are managed by the Formation system now.
+    createPlayerMarker('yellow', p.name, i+1); 
   });
+  setupEditListener(); // إضافة مستمع النقر المزدوج
 }
 
-// ---- EDIT & DELETE ----
+// ---- EDIT & DELETE (تم تحديث دالة editPlayer لإعادة تحميل القائمة بعد التعديل) ----
 async function deletePlayer(table,id){
   if(!confirm("Are you sure you want to delete this player?")) return;
   await supabase.from(table).delete().eq("id",id);
@@ -298,7 +420,12 @@ async function deletePlayer(table,id){
 async function editPlayer(table,id,oldName){
   const newName=prompt("Edit name:", oldName);
   if(!newName || newName.trim()==="") return;
-  await supabase.from(table).update({name:newName.trim()}).eq('id',id);
+  
+  // تحديث الاسم في قاعدة البيانات
+  const { error } = await supabase.from(table).update({name:newName.trim()}).eq('id',id);
+  if(error) return alert(error.message);
+
+  // إعادة تحميل القائمة لتحديث الواجهة بالاسم الجديد
   reloadList(table);
 }
 
@@ -308,8 +435,21 @@ function reloadList(table){
   else if(table==="yellow_team") loadYellow();
 }
 
-// ---- PLAYER MARKERS ----
-function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) {
+// دالة جديدة: تفعيل تعديل الاسم بالنقر المزدوج
+function setupEditListener() {
+  document.querySelectorAll('.player-name-editable').forEach(span => {
+    span.addEventListener('dblclick', function() {
+      const table = this.getAttribute('data-table');
+      const id = parseInt(this.getAttribute('data-id'));
+      const oldName = this.getAttribute('data-name');
+      
+      editPlayer(table, id, oldName);
+    });
+  });
+}
+
+// ---- PLAYER MARKERS (Updated to use playerPositions object) ----
+function createPlayerMarker(team, playerName, playerIndex) {
   const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
   const field = document.getElementById(fieldId);
 
@@ -318,13 +458,14 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   marker.style.background = team==='blue'? '#1976d2' : '#fbc02d';
   marker.innerText = playerIndex;
 
-  if(storedPosition){
-    marker.style.left = storedPosition.left;
-    marker.style.top = storedPosition.top;
-  } else {
-    marker.style.left = '10px';
-    marker.style.top = `${30 + playerIndex * 30}px`;
-  }
+  // Set initial position (or existing position if already dragged)
+  let pos = playerPositions[team][playerName] || { 
+    left: '10px', 
+    top: `${30 + playerIndex * 30}px` 
+  };
+  marker.style.left = pos.left;
+  marker.style.top = pos.top;
+  playerPositions[team][playerName] = pos; // Ensure it's tracked in the object
 
   const label = document.createElement('div');
   label.classList.add('player-name');
@@ -349,6 +490,7 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
 
   function moveDrag(e){
     if(!isDragging) return;
+    e.preventDefault(); // Prevent scrolling on mobile during drag
     const rect=field.getBoundingClientRect();
     let clientX, clientY;
     if(e.type.startsWith('touch')){
@@ -359,19 +501,29 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
       clientX=e.clientX;
       clientY=e.clientY;
     }
-    marker.style.left = `${clientX - rect.left - offsetX}px`;
-    marker.style.top = `${clientY - rect.top - offsetY}px`;
+    
+    // Calculate new position relative to the field
+    let newLeft = clientX - rect.left - offsetX;
+    let newTop = clientY - rect.top - offsetY;
+
+    // Boundary checks (keep marker inside field)
+    newLeft = Math.max(0, Math.min(newLeft, rect.width - marker.offsetWidth));
+    newTop = Math.max(0, Math.min(newTop, rect.height - marker.offsetHeight));
+
+    marker.style.left = `${newLeft}px`;
+    marker.style.top = `${newTop}px`;
   }
 
-  async function endDrag(){
+  function endDrag(){
     if(!isDragging) return;
     isDragging=false;
-    playerPositions[team][playerName] = { left: marker.style.left, top: marker.style.top };
-    const table = team==='blue' ? 'blue_team' : 'yellow_team';
-    const { data: player } = await supabase.from(table).select('id').eq('name',playerName).limit(1);
-    if(player.length>0){
-      await supabase.from(table).update({position: JSON.stringify(playerPositions[team][playerName])}).eq('id', player[0].id);
-    }
+    // Update the position in the local playerPositions object (will be saved later by saveFormation)
+    playerPositions[team][playerName] = { 
+      left: marker.style.left, 
+      top: marker.style.top 
+    };
+    // Note: The previous code was updating the player's individual DB entry on endDrag,
+    // which is now replaced by the 'saveFormation' logic.
   }
 
   marker.addEventListener('mousedown', startDrag);
@@ -384,69 +536,318 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   field.appendChild(marker);
 }
 
-// ---- MATCH ADDRESS (Shared) ----
-const addressDisplayElem = document.getElementById('addressDisplay');
+// ----------------------------------------------------------------------
+// ---- NEW FORMATION MANAGEMENT FUNCTIONS --------------------------------
+// ----------------------------------------------------------------------
 
-// تحميل العنوان من Supabase عند الفتح
-async function loadAddress() {
-  const { data } = await supabase.from('match_info').select('address').limit(1);
-  if(data && data.length>0){
-    addressDisplayElem.textContent = data[0].address || "Click here to set match address";
-  } else {
-    addressDisplayElem.textContent = "Click here to set match address";
+// Function to load formation names into the dropdown
+async function loadFormationNames(team) {
+  const select = document.getElementById(`${team}FormationSelect`);
+  select.innerHTML = '<option value="">-- Select Formation --</option>'; 
+
+  const { data, error } = await supabase
+    .from('formations')
+    .select('name')
+    .eq('team_color', team)
+    .order('name');
+
+  if (error) {
+    console.error(`Error loading ${team} formations:`, error);
+    return;
   }
+
+  data.forEach(f => {
+    const option = document.createElement('option');
+    option.value = f.name;
+    option.textContent = f.name;
+    select.appendChild(option);
+  });
 }
-loadAddress();
 
-addressDisplayElem.addEventListener('dblclick', () => {
-  const currentText = addressDisplayElem.textContent.includes("Click here") ? "" : addressDisplayElem.textContent;
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.value = currentText;
-  input.style.width = "80%";
-  input.style.padding = "5px";
-  input.style.borderRadius = "8px";
-  input.style.border = "1px solid #555";
-  input.style.background = "#2c2c2c";
-  input.style.color = "#fff";
-  input.style.textAlign = "center";
+// Function to save the current player positions as a new formation
+async function saveFormation(team) {
+  const formationName = prompt("Enter a name for this formation (e.g., 4-4-2):");
+  if (!formationName || formationName.trim() === "") return alert("Formation name cannot be empty.");
 
-  addressDisplayElem.replaceWith(input);
-  input.focus();
+  const playerPositionsData = {};
+  const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
+  const field = document.getElementById(fieldId);
+  
+  // 1. Collect current positions from the local playerPositions object
+  // (This ensures we get the latest position even if markers were not moved recently)
+  Object.keys(playerPositions[team]).forEach(playerName => {
+    playerPositionsData[playerName] = playerPositions[team][playerName];
+  });
+  
+  if (Object.keys(playerPositionsData).length === 0) {
+    return alert(`Please add players to the ${team} team first.`);
+  }
 
-  const saveAddress = async () => {
-    const val = input.value.trim();
-    const p = document.createElement('p');
-    p.id = "addressDisplay";
-    p.style.cursor = "pointer";
-    p.style.margin = "5px 0";
-    p.style.fontWeight = "bold";
-    p.style.color = "#9c27b0";
-    p.textContent = val === "" ? "Click here to set match address" : val;
+  // 2. Check if a formation with this name already exists
+  const { data: existing } = await supabase
+    .from('formations')
+    .select('id')
+    .eq('team_color', team)
+    .eq('name', formationName.trim())
+    .limit(1);
 
-    input.replaceWith(p);
+  if (existing.length > 0) {
+    // Update existing formation
+    const { error } = await supabase
+      .from('formations')
+      .update({ positions_json: playerPositionsData })
+      .eq('id', existing[0].id);
 
-    // تحديث العنوان في Supabase
-    const { data: existing } = await supabase.from('match_info').select('id').limit(1);
-    if(existing.length>0){
-      await supabase.from('match_info').update({ address: val }).eq('id', existing[0].id);
+    if (error) return alert(`Error updating formation: ${error.message}`);
+    alert(`Formation "${formationName.trim()}" updated successfully!`);
+  } else {
+    // Insert new formation
+    const { error } = await supabase.from('formations').insert([{
+      team_color: team,
+      name: formationName.trim(),
+      positions_json: playerPositionsData
+    }]);
+
+    if (error) return alert(`Error saving formation: ${error.message}`);
+    alert(`Formation "${formationName.trim()}" saved successfully!`);
+  }
+  
+  loadFormationNames(team); // Refresh the list
+}
+
+// Function to load a saved formation onto the field
+async function loadFormation(team) {
+  const select = document.getElementById(`${team}FormationSelect`);
+  const formationName = select.value;
+  if (!formationName) return alert("Please select a formation to load.");
+
+  const { data, error } = await supabase
+    .from('formations')
+    .select('positions_json')
+    .eq('team_color', team)
+    .eq('name', formationName)
+    .limit(1);
+
+  if (error || data.length === 0) return alert("Error loading formation data.");
+  
+  const positions = data[0].positions_json;
+  const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
+  const field = document.getElementById(fieldId);
+
+  // 1. Update player markers' positions and the local tracking object
+  field.querySelectorAll('.player-marker').forEach(marker => {
+    const playerName = marker.querySelector('.player-name').innerText;
+    
+    if (positions[playerName]) {
+      marker.style.left = positions[playerName].left;
+      marker.style.top = positions[playerName].top;
+      
+      // Update the global playerPositions object for future saving/editing
+      playerPositions[team][playerName] = positions[playerName];
     } else {
-      await supabase.from('match_info').insert([{ address: val }]);
+      // If player is not in this formation data, move them off-field or to a default bench position
+      marker.style.left = '5px'; 
+      marker.style.top = '5px'; 
+      playerPositions[team][playerName] = { left: '5px', top: '5px' }; // Update local state
+    }
+  });
+  
+  alert(`Formation "${formationName}" loaded.`);
+}
+
+// ----------------------------------------------------------------------
+// ---- MATCH ADDRESS & INITIAL LOAD --------------------------------------
+// ----------------------------------------------------------------------
+
+async function loadAddress() {
+  try {
+    const addressDisplayElem = document.getElementById('addressDisplay');
+    const { data, error } = await supabase.from('match_info').select('id, match_info').limit(1);
+    if(error) throw error;
+
+    if(data && data.length > 0){
+      addressDisplayElem.textContent = data[0].match_info || "Click here to set match address";
+    } else {
+      addressDisplayElem.textContent = "Click here to set match address";
     }
 
-    // اعادة اضافة الـ dblclick
-    p.addEventListener('dblclick', () => {
-      p.replaceWith(input);
-      input.focus();
-    });
-  };
+    addressDisplayElem.addEventListener('dblclick', () => {
+      const currentText = addressDisplayElem.textContent.includes("Click here") ? "" : addressDisplayElem.textContent;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentText;
+      input.style.width = "80%";
+      input.style.padding = "5px";
+      input.style.borderRadius = "8px";
+      input.style.border = "1px solid #555";
+      input.style.background = "#2c2c2c";
+      input.style.color = "#fff";
+      input.style.textAlign = "center";
 
-  input.addEventListener('blur', saveAddress);
-  input.addEventListener('keypress', e => { if(e.key === 'Enter') saveAddress(); });
+      addressDisplayElem.replaceWith(input);
+      input.focus();
+
+      const saveAddress = async () => {
+        const val = input.value.trim();
+        const p = document.createElement('p');
+        p.id = "addressDisplay";
+        p.style.cursor = "pointer";
+        p.style.margin = "5px 0";
+        p.style.fontWeight = "bold";
+        p.style.color = "#9c27b0";
+        p.textContent = val === "" ? "Click here to set match address" : val;
+
+        input.replaceWith(p);
+
+        try {
+          const { data: existing } = await supabase.from('match_info').select('id').limit(1);
+          if(existing && existing.length > 0){
+            await supabase.from('match_info').update({ match_info: val }).eq('id', existing[0].id);
+          } else {
+            await supabase.from('match_info').insert([{ match_info: val }]);
+          }
+        } catch(err){
+          console.error("Error saving match_info:", err);
+        }
+
+        p.addEventListener('dblclick', () => {
+          p.replaceWith(input);
+          input.focus();
+        });
+      };
+
+      input.addEventListener('blur', saveAddress);
+      input.addEventListener('keypress', e => { if(e.key === 'Enter') saveAddress(); });
+    });
+  } catch(err){
+    console.error("Error loading match_info:", err);
+    document.getElementById('addressDisplay').textContent = "Error loading address";
+  }
+}
+
+// ----------------------------------------------------------------------
+// ---- 🆕 CHAT FUNCTIONS (مُعدّل لـ AM/PM والأرقام الغربية) -----------
+// ----------------------------------------------------------------------
+
+function renderMessage(message) {
+  const messagesContainer = document.getElementById('chatMessages');
+  const msgDiv = document.createElement('div');
+  msgDiv.classList.add('message');
+  
+  // A basic way to check if the message is 'yours' (you can refine this logic)
+  const storedName = localStorage.getItem('chat_username');
+  if (storedName && storedName.trim() === message.username.trim()) {
+    msgDiv.classList.add('my-message');
+  }
+
+  // استخدام 'en-US' لفرض تنسيق AM/PM والأرقام الغربية
+  const date = new Date(message.created_at).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true, 
+    numberingSystem: 'latn' 
+  });
+
+  // تطبيق dir="rtl" على الأجزاء العربية لضمان المحاذاة الصحيحة
+  msgDiv.innerHTML = `
+    <span class="message-header" dir="rtl">${message.username} <span dir="ltr">${date}</span></span>
+    <span dir="rtl">${message.content}</span>
+  `;
+  
+  messagesContainer.prepend(msgDiv); 
+}
+
+async function loadChatMessages() {
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50); // Load latest 50 messages
+
+  if (error) {
+    console.error('Error loading chat messages:', error);
+    return;
+  }
+
+  const messagesContainer = document.getElementById('chatMessages');
+  messagesContainer.innerHTML = ''; // Clear existing messages
+  data.forEach(renderMessage);
+}
+
+async function sendMessage() {
+  const nameInput = document.getElementById('chatNameInput');
+  const msgInput = document.getElementById('chatMsgInput');
+  
+  const username = nameInput.value.trim();
+  const content = msgInput.value.trim();
+
+  if (!username) {
+    return alert("Please enter your name.");
+  }
+  if (!content) {
+    return alert("Message cannot be empty.");
+  }
+
+  // Save name to local storage
+  localStorage.setItem('chat_username', username);
+
+  // Insert message into Supabase
+  const { error } = await supabase
+    .from('chat_messages')
+    .insert([{ username, content }]); 
+
+  if (error) {
+    console.error('Error sending message:', error);
+    return alert(`Error sending message: ${error.message}`);
+  }
+
+  msgInput.value = ''; // Clear the message input
+}
+
+// Function to handle Realtime updates
+function setupRealtimeChat() {
+  const channel = supabase
+    .channel('chat-room-updates')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+      (payload) => {
+        // payload.new contains the new message data
+        renderMessage(payload.new);
+      }
+    )
+    .subscribe();
+}
+
+// ----------------------------------------------------------------------
+// ---- INITIAL LOAD & SETUP ----------------------------------------------
+// ----------------------------------------------------------------------
+
+// Load username from local storage if available
+const storedUsername = localStorage.getItem('chat_username');
+if (storedUsername) {
+  document.getElementById('chatNameInput').value = storedUsername;
+}
+
+// Add event listener for sending message with Enter key
+document.getElementById('chatMsgInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendMessage();
+  }
 });
 
-// ---- INITIAL LOAD ----
-loadPlayers(); loadBlue(); loadYellow();
+loadPlayers(); 
+loadBlue(); 
+loadYellow(); 
+loadAddress();
+
+loadFormationNames('blue');
+loadFormationNames('yellow');
+
+// 🆕 Load initial chat messages and set up Realtime
+loadChatMessages();
+setupRealtimeChat();
+
 </script>
 </body>
 </html>
