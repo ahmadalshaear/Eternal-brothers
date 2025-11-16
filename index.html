@@ -188,6 +188,13 @@ li {
   box-shadow: 0 0 5px #000;
   text-align: left; /* Reverted to LTR */
 }
+.team-chat-container {
+  background: none; /* Inherit background from parent .container */
+  box-shadow: none;
+  margin: 5px 0 0 0;
+  padding: 0;
+}
+
 .chat-messages {
   height: 250px;
   overflow-y: auto;
@@ -199,6 +206,15 @@ li {
   flex-direction: column;
   text-align: left; /* Reverted to LTR */
 }
+
+/* Specific background for team chats */
+#blueChatMessages {
+    background: rgba(25, 118, 210, 0.1); /* Lighter blue */
+}
+#yellowChatMessages {
+    background: rgba(251, 192, 42, 0.1); /* Lighter yellow */
+}
+
 .message {
   margin-bottom: 8px;
   padding: 8px;
@@ -232,24 +248,22 @@ li {
   gap: 5px;
 }
 /* Reverting input order for LTR */
-#chatNameInput {
+#chatNameInput, .team-chat-input-group input[type=text]:first-child {
   width: 30%;
   text-align: center; 
-  order: 1; /* Was 3 */
+  order: 1; 
 }
-#chatMsgInput {
+#chatMsgInput, .team-chat-input-group input[type=text]:nth-child(2) {
   flex-grow: 1;
   text-align: left; 
   order: 2;
 }
-#sendChatBtn {
+#sendChatBtn, .team-chat-input-group button {
   background: #d32f2f;
   color: #fff;
   padding: 8px 15px;
-  order: 3; /* Was 1 */
+  order: 3; 
 }
-
-/* тЪая╕П Removed Toast Notifications Styles as requested */
 
 </style>
 </head>
@@ -270,14 +284,14 @@ li {
   </div>
   <div class="nav-buttons-bottom">
     <button id="audioToggleBtn" onclick="toggleAudio()">
-        🔊 
+         
     </button>
   </div>
 </div>
 
 <div id="main" class="container">
   <h1 style="margin-top:0; font-size:28px; display:flex; align-items:center; justify-content:center; gap:8px;">
-    ⚽ <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> ⚽
+     <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> 
   </h1>
 
   <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">
@@ -339,6 +353,16 @@ li {
     <div class="penalty-box-left"></div>
     <div class="penalty-box-right"></div>
   </div>
+
+  <div class="chat-container team-chat-container">
+    <h3 style="color: #fff;">Blue Team Chat </h3>
+    <div id="blueChatMessages" class="chat-messages"></div>
+    <div class="chat-input-group team-chat-input-group">
+      <input type="text" id="blueChatNameInput" placeholder="Your name" value="">
+      <input type="text" id="blueChatMsgInput" placeholder="Message to Blue Team...">
+      <button onclick="sendTeamMessage('blue')">Send</button>
+    </div>
+  </div>
 </div>
 
 <div id="yellow" class="container" style="background:#fdd835aa; color:#000;">
@@ -360,12 +384,22 @@ li {
     <div class="penalty-box-left"></div>
     <div class="penalty-box-right"></div>
   </div>
+
+  <div class="chat-container team-chat-container">
+    <h3 style="color: #000;">Yellow Team Chat </h3>
+    <div id="yellowChatMessages" class="chat-messages"></div>
+    <div class="chat-input-group team-chat-input-group">
+      <input type="text" id="yellowChatNameInput" placeholder="Your name" value="">
+      <input type="text" id="yellowChatMsgInput" placeholder="Message to Yellow Team...">
+      <button onclick="sendTeamMessage('yellow')">Send</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // =========================================================================================
-// 🚧🚧🚧 Replace your keys here 🚧🚧🚧
+//  Replace your keys here 
 // =========================================================================================
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; 
 const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ"; 
@@ -430,6 +464,18 @@ function getColorForUsername(username) {
 function showSection(id){
   document.querySelectorAll('.container').forEach(c=>c.style.display='none');
   document.getElementById(id).style.display='block';
+
+  // Load team chats when section is shown
+  if (id === 'blue') {
+    loadTeamChatMessages('blue');
+    // Ensure chat name input is populated from global chat name
+    document.getElementById('blueChatNameInput').value = localStorage.getItem('chat_username') || '';
+  } else if (id === 'yellow') {
+    loadTeamChatMessages('yellow');
+    document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || '';
+  } else if (id === 'main') {
+    loadChatMessages();
+  }
 }
 showSection('main');
 
@@ -442,22 +488,22 @@ function toggleAudio() {
     audio.play().then(() => {
         audioInitialized = true;
         audio.muted = false; 
-        toggleBtn.innerHTML = '🔊'; 
+        toggleBtn.innerHTML = ''; 
     }).catch(e => {
         console.error("Autoplay prevented. Click again to toggle.", e);
         audioInitialized = true;
         audio.muted = true;
-        toggleBtn.innerHTML = '🔇'; 
+        toggleBtn.innerHTML = ''; 
     });
     return;
   }
   
   if (audio.muted) {
     audio.muted = false;
-    toggleBtn.innerHTML = '🔊'; 
+    toggleBtn.innerHTML = ''; 
   } else {
     audio.muted = true;
-    toggleBtn.innerHTML = '🔇'; 
+    toggleBtn.innerHTML = ''; 
   }
 }
 
@@ -542,8 +588,8 @@ async function checkAndClearData() {
 
         // --- 3. Execute Cleanup ---
         
-        // List tables to clear (excluding app_config and system-related tables if any)
-        const tablesToClear = ["main_team", "waiting_list", "blue_team", "yellow_team", "chat_messages"];
+        // List tables to clear (including new chat tables)
+        const tablesToClear = ["main_team", "waiting_list", "blue_team", "yellow_team", "chat_messages", "blue_chat", "yellow_chat"];
         
         await Promise.all(tablesToClear.map(table => {
             // Delete all rows where id is not 0 (assuming id 0 might be a placeholder/config if used)
@@ -561,6 +607,8 @@ async function checkAndClearData() {
         loadBlue();
         loadYellow();
         loadChatMessages();
+        loadTeamChatMessages('blue');
+        loadTeamChatMessages('yellow');
     } else {
         // console.log("No weekly cleanup required yet."); 
     }
@@ -585,7 +633,7 @@ async function addPlayer(){
     if(error) return alert(error.message);
     
     // Log the system message once here, immediately after successful insert
-    const message = `➕ ${name} joined the Main Team!`;
+    const message = ` ${name} joined the Main Team!`;
     await sendSystemMessageToChat(name, message);
 
   } else {
@@ -614,8 +662,8 @@ async function loadPlayers(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')">✏️</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})">❌</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')"></button>
+          <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})"></button>
         </span>
       </li>`;
   });
@@ -628,8 +676,8 @@ async function loadPlayers(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">✏️</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">❌</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')"></button>
+          <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})"></button>
         </span>
       </li>`;
   });
@@ -673,8 +721,8 @@ async function loadBlue(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">❌</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')"></button>
+          <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})"></button>
         </span>
       </li>`;
     let pos = p.position ? JSON.parse(p.position) : null;
@@ -709,8 +757,8 @@ async function loadYellow(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">❌</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')"></button>
+          <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})"></button>
         </span>
       </li>`;
     let pos = p.position ? JSON.parse(p.position) : null;
@@ -872,7 +920,7 @@ async function deletePlayer(table,id){
   
   // Send chat alert BEFORE deletion on the database (for history log, only once)
   if (isMainTeam && playerName) {
-      const message = `➖ ${playerName} left the Main Team.`;
+      const message = ` ${playerName} left the Main Team.`;
       await sendSystemMessageToChat(playerName, message);
   }
 
@@ -996,7 +1044,7 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
 }
 
 // ----------------------------------------------------------------------
-// 🚨🚨🚨 FIXED: MATCH ADDRESS PERSISTENCE (Double-Click Edit without Prompts/Alerts) 🚨🚨🚨
+//  FIXED: MATCH ADDRESS PERSISTENCE (Double-Click Edit without Prompts/Alerts) 
 // ----------------------------------------------------------------------
 
 const addressDisplayElem = document.getElementById('addressDisplay');
@@ -1130,8 +1178,11 @@ async function sendSystemMessageToChat(playerName, content) {
     }
 }
 
-function renderMessage(message) {
-  const messagesContainer = document.getElementById('chatMessages');
+// Modified renderMessage to accept container ID
+function renderMessage(message, containerId) {
+  const messagesContainer = document.getElementById(containerId);
+  if (!messagesContainer) return;
+
   const msgDiv = document.createElement('div');
   msgDiv.classList.add('message');
   
@@ -1181,7 +1232,7 @@ async function loadChatMessages() {
 
   const messagesContainer = document.getElementById('chatMessages');
   messagesContainer.innerHTML = ''; 
-  data.forEach(renderMessage);
+  data.forEach(msg => renderMessage(msg, 'chatMessages'));
   
   messagesContainer.scrollTop = messagesContainer.scrollHeight; 
 }
@@ -1215,6 +1266,70 @@ async function sendMessage() {
   
   playNotificationSound();
 }
+
+// ----------------------------------------------------------------------
+// ---- NEW TEAM CHAT FUNCTIONS -----------------------------------------
+// ----------------------------------------------------------------------
+
+async function loadTeamChatMessages(team) {
+    const table = `${team}_chat`; // 'blue_chat' or 'yellow_chat'
+    const containerId = `${team}ChatMessages`;
+
+    const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .order('created_at', { ascending: true }) 
+        .limit(50); 
+
+    const messagesContainer = document.getElementById(containerId);
+    if (error) {
+        console.error(`Error loading ${team} chat messages:`, error);
+        messagesContainer.innerHTML = '<div class="message">Error loading chat. Make sure the table exists.</div>';
+        return;
+    }
+
+    messagesContainer.innerHTML = ''; 
+    data.forEach(msg => renderMessage(msg, containerId));
+    messagesContainer.scrollTop = messagesContainer.scrollHeight; 
+}
+
+async function sendTeamMessage(team) {
+    const nameInputId = `${team}ChatNameInput`;
+    const msgInputId = `${team}ChatMsgInput`;
+    const table = `${team}_chat`; 
+
+    const username = document.getElementById(nameInputId).value.trim();
+    const content = document.getElementById(msgInputId).value.trim();
+
+    if (!username) {
+        return alert("Please enter your name.");
+    }
+    if (!content) {
+        return alert("Cannot send an empty message.");
+    }
+
+    // Also update the global chat name for consistency
+    localStorage.setItem('chat_username', username); 
+    document.getElementById('chatNameInput').value = username;
+    document.getElementById('blueChatNameInput').value = username;
+    document.getElementById('yellowChatNameInput').value = username;
+
+    const { error } = await supabase
+        .from(table)
+        .insert([{ username, content }]); 
+
+    if (error) {
+        console.error(`Error sending ${team} message:`, error);
+        return alert(`Error sending message: ${error.message}`);
+    }
+
+    document.getElementById(msgInputId).value = ''; 
+    playNotificationSound();
+}
+
+// ----------------------------------------------------------------------
+// ---- HISTORY & REALTIME SETUP ----------------------------------------
+// ----------------------------------------------------------------------
 
 // NEW/MODIFIED: Function to load and display system history (with duplication fix)
 async function loadSystemHistory(toggle = true) {
@@ -1261,14 +1376,14 @@ async function loadSystemHistory(toggle = true) {
     
     if (item.content.includes('joined')) {
         color = '#81c784'; // Light green for join
-        label = '➕ Joined: ';
+        label = ' Joined: ';
     } else if (item.content.includes('left')) {
         color = '#ef9a9a'; // Light red for leave
-        label = '➖ Left: ';
+        label = ' Left: ';
     }
     
     // Clean up content to show player name clearly
-    const playerName = item.content.replace('➕ ', '').replace('➖ ', '').replace(' joined the Main Team!', '').replace(' left the Main Team.', '');
+    const playerName = item.content.replace(' ', '').replace(' ', '').replace(' joined the Main Team!', '').replace(' left the Main Team.', '');
 
     historyList.innerHTML += `
       <li style="color:${color}; border-bottom: 1px dotted #333; padding-bottom: 5px; margin-bottom: 5px;">
@@ -1280,9 +1395,9 @@ async function loadSystemHistory(toggle = true) {
 }
 
 function setupRealtime() {
-  // 1. CHAT MESSAGES REALTIME
-  const chatChannel = supabase
-    .channel('chat-room-updates')
+  // 1. GLOBAL CHAT MESSAGES REALTIME
+  supabase
+    .channel('global-chat-updates')
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'chat_messages' },
@@ -1292,27 +1407,62 @@ function setupRealtime() {
 
         // Check if the message is a System Alert
         if (incomingUsername.startsWith('System-Alert-(')) {
-            // Update history log if the container is visible
             const historyContainer = document.getElementById('systemHistoryContainer');
             if (historyContainer.style.display === 'block') {
                  loadSystemHistory(false); 
             }
-            // STOP: Do not render system alerts in the main chat.
             return; 
         }
         
-        // This is a regular chat message
         if (storedName && storedName.trim() !== incomingUsername) {
             playNotificationSound();
         }
         
-        renderMessage(payload.new);
+        renderMessage(payload.new, 'chatMessages'); // Use renderMessage with container ID
       }
     )
     .subscribe();
     
-    // 2. MAIN TEAM REALTIME UPDATES
-    const teamChannel = supabase
+    // 2. BLUE TEAM CHAT REALTIME
+    supabase
+    .channel('blue-chat-updates')
+    .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'blue_chat' },
+        (payload) => {
+            const storedName = localStorage.getItem('chat_username');
+            if (storedName && storedName.trim() !== payload.new.username.trim()) {
+                playNotificationSound();
+            }
+            // Only update if on the blue page
+            if(document.getElementById('blue').style.display === 'block') {
+              renderMessage(payload.new, 'blueChatMessages');
+            }
+        }
+    )
+    .subscribe();
+
+    // 3. YELLOW TEAM CHAT REALTIME
+    supabase
+    .channel('yellow-chat-updates')
+    .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'yellow_chat' },
+        (payload) => {
+            const storedName = localStorage.getItem('chat_username');
+            if (storedName && storedName.trim() !== payload.new.username.trim()) {
+                playNotificationSound();
+            }
+            // Only update if on the yellow page
+            if(document.getElementById('yellow').style.display === 'block') {
+              renderMessage(payload.new, 'yellowChatMessages');
+            }
+        }
+    )
+    .subscribe();
+    
+    // 4. MAIN TEAM REALTIME UPDATES
+    supabase
     .channel('main-team-updates')
     // Listen for all changes (INSERT, UPDATE, DELETE) to trigger list reload and possible refill
     .on(
@@ -1358,14 +1508,29 @@ function setupRealtime() {
 const storedUsername = localStorage.getItem('chat_username');
 if (storedUsername) {
   document.getElementById('chatNameInput').value = storedUsername;
+  // Also pre-fill the team chat name inputs
+  document.getElementById('blueChatNameInput').value = storedUsername;
+  document.getElementById('yellowChatNameInput').value = storedUsername;
 }
 
-// Add event listener for sending message with Enter key
+// Add event listener for sending global message with Enter key
 document.getElementById('chatMsgInput').addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
     sendMessage();
   }
 });
+// Add event listeners for sending team messages with Enter key
+document.getElementById('blueChatMsgInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendTeamMessage('blue');
+  }
+});
+document.getElementById('yellowChatMsgInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendTeamMessage('yellow');
+  }
+});
+
 
 // ** NEW: Check and perform scheduled cleanup (Sunday 6 PM) **
 checkAndClearData(); 
@@ -1374,6 +1539,7 @@ loadPlayers();
 loadBlue(); 
 loadYellow(); 
 loadChatMessages();
+// Note: Team chats are loaded when their section is opened via showSection()
 loadMatchAddress(); 
 setupRealtime();
 </script>
