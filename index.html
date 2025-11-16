@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+/* ... (Keep existing styles) ... */
 body {
   font-family: "Cairo", sans-serif;
   background-color: #121212;
@@ -264,7 +265,7 @@ li {
   padding: 8px 15px;
   order: 3; 
 }
-
+/* ... (Keep existing styles) ... */
 </style>
 </head>
 <body>
@@ -276,7 +277,8 @@ li {
     <source src="https://www.soundjay.com/button/button-3.mp3" type="audio/mp3">
 </audio>
 
-<div id="toastContainer"></div> <div class="nav-controls">
+<div id="toastContainer"></div> 
+<div class="nav-controls">
   <div class="nav-buttons-top">
     <button id="blueBtn" onclick="showSection('blue')">Blue</button>
     <button id="homeBtn" onclick="showSection('main')">Home</button>
@@ -284,14 +286,14 @@ li {
   </div>
   <div class="nav-buttons-bottom">
     <button id="audioToggleBtn" onclick="toggleAudio()">
-         
+        🔊
     </button>
   </div>
 </div>
 
 <div id="main" class="container">
   <h1 style="margin-top:0; font-size:28px; display:flex; align-items:center; justify-content:center; gap:8px;">
-     <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> 
+    ⚽ <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> ⚽
   </h1>
 
   <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">
@@ -355,7 +357,7 @@ li {
   </div>
 
   <div class="chat-container team-chat-container">
-    <h3 style="color: #fff;">Blue Team Chat </h3>
+    <h3 style="color: #fff;">Blue Team Chat 💬</h3>
     <div id="blueChatMessages" class="chat-messages"></div>
     <div class="chat-input-group team-chat-input-group">
       <input type="text" id="blueChatNameInput" placeholder="Your name" value="">
@@ -386,7 +388,7 @@ li {
   </div>
 
   <div class="chat-container team-chat-container">
-    <h3 style="color: #000;">Yellow Team Chat </h3>
+    <h3 style="color: #000;">Yellow Team Chat 💬</h3>
     <div id="yellowChatMessages" class="chat-messages"></div>
     <div class="chat-input-group team-chat-input-group">
       <input type="text" id="yellowChatNameInput" placeholder="Your name" value="">
@@ -399,8 +401,9 @@ li {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // =========================================================================================
-//  Replace your keys here 
+// ❌❌❌ WARNING: The following code block contains modified JavaScript for fixing button icons and system messages. ❌❌❌
 // =========================================================================================
+
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; 
 const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ"; 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
@@ -488,22 +491,22 @@ function toggleAudio() {
     audio.play().then(() => {
         audioInitialized = true;
         audio.muted = false; 
-        toggleBtn.innerHTML = ''; 
+        toggleBtn.innerHTML = '🔊'; // FIXED: Use reliable emoji/text
     }).catch(e => {
         console.error("Autoplay prevented. Click again to toggle.", e);
         audioInitialized = true;
         audio.muted = true;
-        toggleBtn.innerHTML = ''; 
+        toggleBtn.innerHTML = '🔇'; // FIXED: Use reliable emoji/text
     });
     return;
   }
   
   if (audio.muted) {
     audio.muted = false;
-    toggleBtn.innerHTML = ''; 
+    toggleBtn.innerHTML = '🔊'; // FIXED: Use reliable emoji/text
   } else {
     audio.muted = true;
-    toggleBtn.innerHTML = ''; 
+    toggleBtn.innerHTML = '🔇'; // FIXED: Use reliable emoji/text
   }
 }
 
@@ -633,7 +636,7 @@ async function addPlayer(){
     if(error) return alert(error.message);
     
     // Log the system message once here, immediately after successful insert
-    const message = ` ${name} joined the Main Team!`;
+    const message = `ℹ️ ${name} joined the Main Team!`; // FIXED EMOJI
     await sendSystemMessageToChat(name, message);
 
   } else {
@@ -662,8 +665,8 @@ async function loadPlayers(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')"></button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})"></button>
+          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')">✏️</button> 
+          <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})">🗑️</button>
         </span>
       </li>`;
   });
@@ -676,8 +679,8 @@ async function loadPlayers(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')"></button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})"></button>
+          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">✏️</button>
+          <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">🗑️</button>
         </span>
       </li>`;
   });
@@ -721,8 +724,8 @@ async function loadBlue(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')"></button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})"></button>
+          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button>
+          <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button>
         </span>
       </li>`;
     let pos = p.position ? JSON.parse(p.position) : null;
@@ -757,8 +760,8 @@ async function loadYellow(){
             <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
         </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')"></button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})"></button>
+          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button>
+          <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button>
         </span>
       </li>`;
     let pos = p.position ? JSON.parse(p.position) : null;
@@ -920,7 +923,7 @@ async function deletePlayer(table,id){
   
   // Send chat alert BEFORE deletion on the database (for history log, only once)
   if (isMainTeam && playerName) {
-      const message = ` ${playerName} left the Main Team.`;
+      const message = `ℹ️ ${playerName} left the Main Team.`; // FIXED EMOJI
       await sendSystemMessageToChat(playerName, message);
   }
 
@@ -1376,14 +1379,14 @@ async function loadSystemHistory(toggle = true) {
     
     if (item.content.includes('joined')) {
         color = '#81c784'; // Light green for join
-        label = ' Joined: ';
+        label = '✅ Joined: '; // FIXED EMOJI
     } else if (item.content.includes('left')) {
         color = '#ef9a9a'; // Light red for leave
-        label = ' Left: ';
+        label = '❌ Left: '; // FIXED EMOJI
     }
     
     // Clean up content to show player name clearly
-    const playerName = item.content.replace(' ', '').replace(' ', '').replace(' joined the Main Team!', '').replace(' left the Main Team.', '');
+    const playerName = item.content.replace('ℹ️ ', '').replace('✅ ', '').replace('❌ ', '').replace(' joined the Main Team!', '').replace(' left the Main Team.', '').trim(); // FIXED: Cleanup for new Emojis
 
     historyList.innerHTML += `
       <li style="color:${color}; border-bottom: 1px dotted #333; padding-bottom: 5px; margin-bottom: 5px;">
