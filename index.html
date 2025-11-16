@@ -96,11 +96,28 @@ li {
     justify-content:space-between; 
     align-items:center;
     flex-direction: row; /* Reverted to LTR order */
+    /* Ensure list items are large enough to hold the time */
+    min-height: 40px; 
 }
 #teamList li { background:#a8e6a1; color:black; }
 #waitingList li { background:#ffe0e0; color:black; }
 #blueList li { background:rgba(25,118,210,0.7); color:black; }
-#yellowList li { background:rgba(251,192,42,0.7); color:black; }
+#yellowList li { background:rgba(251,192,42,0.7); color:#000; }
+
+.player-info {
+    /* Changed to flex row to ensure name and time are on the same line */
+    display: flex;
+    flex-direction: row; 
+    align-items: center; /* Vertically center content */
+    font-size: 16px;
+    font-weight: bold;
+}
+.player-time {
+    font-size: 12px;
+    font-weight: normal;
+    color: #616161; /* Darker color for time */
+    margin-left: 5px; /* Add space after name */
+}
 
 .action-btn {
   margin-left:6px;
@@ -146,6 +163,20 @@ li {
 .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
 
+.formation-controls button {
+    margin: 5px 3px;
+    background: #009688; /* Teal color for formation buttons */
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+/* New style for the dynamic button to make it stand out */
+.formation-controls .dynamic-btn {
+    background: #FF9800; /* Orange */
+    font-weight: 700;
+}
+
 /* CHAT STYLES LTR */
 .chat-container {
   width: 100%; 
@@ -189,15 +220,12 @@ li {
   text-align: left; /* Reverted to LTR */
   border: 1px solid #d32f2f; 
 }
-.message-header {
-  font-weight: bold;
-  font-size: 12px;
-  color: #888; 
-  display: block;
-  margin-bottom: 4px;
-}
-.my-message .message-header {
-  color: #f7f7f7;
+.system-message {
+    font-style: italic;
+    align-self: center !important;
+    max-width: 100% !important;
+    text-align: center !important;
+    /* Since we stop rendering in chat, this style is only for the history list now */
 }
 .chat-input-group {
   display: flex;
@@ -221,6 +249,8 @@ li {
   order: 3; /* Was 1 */
 }
 
+/* ⚠️ Removed Toast Notifications Styles as requested */
+
 </style>
 </head>
 <body>
@@ -232,7 +262,7 @@ li {
     <source src="https://www.soundjay.com/button/button-3.mp3" type="audio/mp3">
 </audio>
 
-<div class="nav-controls">
+<div id="toastContainer"></div> <div class="nav-controls">
   <div class="nav-buttons-top">
     <button id="blueBtn" onclick="showSection('blue')">Blue</button>
     <button id="homeBtn" onclick="showSection('main')">Home</button>
@@ -247,7 +277,7 @@ li {
 
 <div id="main" class="container">
   <h1 style="margin-top:0; font-size:28px; display:flex; align-items:center; justify-content:center; gap:8px;">
-    &#9889; <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> &#9889;
+    ⚡ <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> ⚡
   </h1>
 
   <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">
@@ -267,7 +297,13 @@ li {
 
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
-
+  
+  <button onclick="loadSystemHistory()" style="background:#6a1b9a; color:#fff; margin-top:15px; width:80%;">Show Join/Leave History</button>
+  <div id="systemHistoryContainer" style="margin-top:10px; padding:10px; background:#2c2c2c; border-radius:8px; max-width: 400px; margin-left: auto; margin-right: auto; text-align:left; display:none;">
+      <h3 style="margin-top:0;">Event History</h3>
+      <ul id="historyList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;">
+          </ul>
+  </div>
   <p style="margin-top:15px; font-size:12px; color:#ccc;">
     We might need to change the football field at any time. Please follow the group chat in case of any changes
   </p>
@@ -289,6 +325,13 @@ li {
   <input type="text" id="blueInput" placeholder="Enter player name">
   <button onclick="addBlue()">Add</button>
   <ul id="blueList"></ul>
+  
+  <div class="formation-controls">
+    <button onclick="applyFormation('blue', '4-4-2')">4-4-2</button>
+    <button onclick="applyFormation('blue', '3-4-3')">3-4-3</button>
+    <button class="dynamic-btn" onclick="applyDynamicPlan('blue')">Apply Dynamic Plan</button>
+  </div>
+  
   <h3>Plan</h3>
   <div id="bluePlan" class="field">
     <div class="mid-line"></div>
@@ -303,6 +346,13 @@ li {
   <input type="text" id="yellowInput" placeholder="Enter player name">
   <button onclick="addYellow()">Add</button>
   <ul id="yellowList"></ul>
+  
+  <div class="formation-controls">
+    <button onclick="applyFormation('yellow', '4-4-2')">4-4-2</button>
+    <button onclick="applyFormation('yellow', '3-4-3')">3-4-3</button>
+    <button class="dynamic-btn" onclick="applyDynamicPlan('yellow')">Apply Dynamic Plan</button>
+  </div>
+  
   <h3>Plan</h3>
   <div id="yellowPlan" class="field">
     <div class="mid-line"></div>
@@ -326,6 +376,40 @@ const playerPositions = { blue: {}, yellow: {} };
 const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
 let audioInitialized = false; 
 
+// ----------------------------------------------------------------------
+// ---- FIXED FORMATION DEFINITIONS (12 Players) ------------------------
+// ----------------------------------------------------------------------
+const FORMATIONS = {
+    '4-4-2': [
+        { left: '5%', top: '50%' },  // 1. GK
+        { left: '25%', top: '10%' }, // 2. DR
+        { left: '25%', top: '30%' }, // 3. DC1
+        { left: '25%', top: '70%' }, // 4. DC2
+        { left: '25%', top: '90%' }, // 5. DL
+        { left: '55%', top: '10%' }, // 6. MR
+        { left: '55%', top: '30%' }, // 7. MC1
+        { left: '55%', top: '70%' }, // 8. MC2
+        { left: '55%', top: '90%' }, // 9. ML
+        { left: '80%', top: '35%' }, // 10. FW1
+        { left: '80%', top: '65%' }, // 11. FW2
+        { left: '40%', top: '50%' }, // 12. SUB (Extra)
+    ],
+    '3-4-3': [
+        { left: '5%', top: '50%' },  // 1. GK
+        { left: '20%', top: '30%' }, // 2. DC1
+        { left: '20%', top: '50%' }, // 3. DC2
+        { left: '20%', top: '70%' }, // 4. DC3
+        { left: '45%', top: '10%' }, // 5. MR
+        { left: '45%', top: '35%' }, // 6. MC1
+        { left: '45%', top: '65%' }, // 7. MC2
+        { left: '45%', top: '90%' }, // 8. ML
+        { left: '75%', top: '25%' }, // 9. FW1
+        { left: '75%', top: '50%' }, // 10. FW2
+        { left: '75%', top: '75%' }, // 11. FW3
+        { left: '10%', top: '95%' }, // 12. SUB (Extra)
+    ]
+};
+
 function stringToHash(str) {
   let hash = 0;
   if (str.length === 0) return hash;
@@ -342,7 +426,6 @@ function getColorForUsername(username) {
     const index = hash % nameColors.length;
     return nameColors[index];
 }
-
 
 function showSection(id){
   document.querySelectorAll('.container').forEach(c=>c.style.display='none');
@@ -378,18 +461,116 @@ function toggleAudio() {
   }
 }
 
-
+// ----------------------------------------------------------------------
+// ---- TIME RESTRICTION LOGIC (Wednesday 3 PM to Sunday 12 PM) ---------
+// ----------------------------------------------------------------------
 function isWithinAllowedTime(){
-  const now = new Date();
-  const day = now.getDay();
-  const hour = now.getHours();
-  if(day===3 && hour>=15) return true;
-  if(day===4 || day===5 || day===6) return true;
-  if(day===0 && hour<12) return true;
-  return false;
+    const now = new Date();
+    // 0 = Sunday, 1 = Monday, ..., 3 = Wednesday, ..., 6 = Saturday
+    const currentDay = now.getDay(); 
+    const currentHour = now.getHours(); // 0-23
+    const currentMinute = now.getMinutes();
+
+    // الشرط: من الأربعاء 3:00 مساءً (15:00) حتى الأحد 12:00 ظهراً (12:00)
+
+    // 1. أيام الأسبوع المسموح بها: الأربعاء، الخميس، الجمعة، السبت، الأحد
+    if (currentDay >= 3 && currentDay <= 6) { 
+        // الأربعاء (3): يجب أن يكون الوقت 3:00 مساءً (15:00) أو بعدها
+        if (currentDay === 3) {
+            return currentHour >= 15;
+        }
+        // الخميس (4), الجمعة (5), السبت (6): مسموح به في أي وقت
+        return true; 
+    } else if (currentDay === 0) {
+        // الأحد (0): يجب أن يكون الوقت 12:00 ظهراً (12:00) أو قبلها
+        if (currentHour < 12) {
+            return true;
+        } else if (currentHour === 12 && currentMinute === 0) {
+            return true;
+        }
+        return false; // الأحد بعد 12:00 ظهراً
+    }
+
+    // الإثنين (1) والثلاثاء (2) ليسا مسموحين
+    return false;
+}
+// ----------------------------------------------------------------------
+
+// ----------------------------------------------------------------------
+// ---- HELPER FUNCTION: Format Time ------------------------------------
+// ----------------------------------------------------------------------
+function formatPlayerTime(timestamp) {
+    if (!timestamp) return '';
+    // If the timestamp is a string (ISO format from Supabase), convert it to a number/Date
+    const date = new Date(timestamp);
+    
+    // Format to 12-hour time (e.g., 10:30 PM)
+    return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        numberingSystem: 'latn' 
+    });
 }
 
+// ----------------------------------------------------------------------
+// ---- WEEKLY CLEANUP FUNCTION: SUNDAY 6:00 PM (18:00) -----------------
+// ----------------------------------------------------------------------
+async function checkAndClearData() {
+    const now = new Date();
+    
+    // 1. حساب نقطة وقت التنظيف المستهدفة (آخر يوم أحد في الساعة 6:00 مساءً)
+    let cleanupTimepoint = new Date(now);
+    const currentDay = now.getDay(); // 0 = Sunday
+    const currentHour = now.getHours();
+    
+    // تعيين التاريخ على آخر يوم أحد (بما في ذلك اليوم إذا كان هو الأحد)
+    cleanupTimepoint.setDate(now.getDate() - currentDay);
+    cleanupTimepoint.setHours(18, 0, 0, 0); // تعيين الوقت إلى 6:00 مساءً (18:00)
+    
+    // إذا كان اليوم هو الأحد، ولكن الوقت لم يمر بعد الـ 6 مساءً، 
+    // يجب أن تكون نقطة التنظيف المستهدفة هي الأحد 6 مساءً من الأسبوع الماضي.
+    if (currentDay === 0 && currentHour < 18) {
+        cleanupTimepoint.setDate(cleanupTimepoint.getDate() - 7);
+    } 
+    
+    const lastCleanupTimestamp = localStorage.getItem('last_cleanup_timestamp');
+    // إذا لم يكن هناك ختم زمني، ابدأ من الصفر لضمان التشغيل عند أول تحميل بعد الأحد 6 مساءً
+    let lastCleanupDate = lastCleanupTimestamp ? new Date(parseInt(lastCleanupTimestamp)) : new Date(0);
+
+    // 2. التحقق مما إذا كان التنظيف مطلوبًا (إذا كان الوقت المستهدَف أحدث من آخر تنظيف تم)
+    if (cleanupTimepoint.getTime() > lastCleanupDate.getTime()) {
+        console.log("Weekly cleanup required. Clearing data..."); 
+
+        // --- 3. تنفيذ التنظيف ---
+        
+        // مسح جميع قوائم اللاعبين ومحادثات الدردشة
+        const tablesToClear = ["main_team", "waiting_list", "blue_team", "yellow_team", "chat_messages"];
+        
+        await Promise.all(tablesToClear.map(table => {
+            return supabase.from(table).delete().neq('id', 0)
+                .then(() => console.log(`Table ${table} cleared.`)) 
+                .catch(error => console.error(`Error clearing table ${table}:`, error)); 
+        }));
+        
+        // 4. تحديث وقت آخر تنظيف
+        localStorage.setItem('last_cleanup_timestamp', now.getTime().toString());
+        console.log("Cleanup complete. Timestamp updated."); 
+        
+        // 5. تحديث القوائم بعد المسح
+        loadPlayers();
+        loadBlue();
+        loadYellow();
+        loadChatMessages();
+    } else {
+        // console.log("No weekly cleanup required yet."); 
+    }
+}
+
+
+// ----------------------------------------------------------------------
 // ---- MAIN & WAITING TEAM ----
+// ----------------------------------------------------------------------
 async function addPlayer(){
   if(!isWithinAllowedTime()){
     // Translated alert
@@ -397,16 +578,24 @@ async function addPlayer(){
   }
   const name = document.getElementById("nameInput").value.trim();
   if(!name) return alert("Enter a name"); // Translated alert
+  
   const { data: team } = await supabase.from("main_team").select("id");
+  
   if(team.length < 24){
     const { error } = await supabase.from("main_team").insert([{name,time:Date.now()}]);
     if(error) return alert(error.message);
+    
+    // Log the system message once here, immediately after successful insert
+    const message = `✅ ${name} joined the Main Team!`;
+    await sendSystemMessageToChat(name, message);
+
   } else {
     const { error } = await supabase.from("waiting_list").insert([{name,time:Date.now()}]);
     if(error) return alert(error.message);
     // Translated alert
     alert("Main team is full (24). Player added to waiting list.");
   }
+  
   document.getElementById("nameInput").value="";
   loadPlayers();
 }
@@ -420,20 +609,28 @@ async function loadPlayers(){
   waitingList.innerHTML = "";
 
   if(team) team.forEach((p,i) => {
+    const time = formatPlayerTime(p.time); 
     teamList.innerHTML += `
-      <li>${i+1}. ${p.name}
+      <li>
+        <div class="player-info">
+            <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
+        </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')">📝</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')">✏️</button>
           <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})">🗑️</button>
         </span>
       </li>`;
   });
 
   if(waiting) waiting.forEach((p,i) => {
+    const time = formatPlayerTime(p.time); 
     waitingList.innerHTML += `
-      <li>${i+1}. ${p.name}
+      <li>
+        <div class="player-info">
+            <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
+        </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">📝</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">✏️</button>
           <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">🗑️</button>
         </span>
       </li>`;
@@ -445,13 +642,15 @@ async function refillMainTeam(){
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
   if(team.length < 24 && waiting.length > 0){
     const first = waiting[0];
+    // NOTE: Logging for this automatic insert is NOT needed as it's a side effect.
     await supabase.from("main_team").insert([{ name:first.name, time:Date.now() }]);
     await supabase.from("waiting_list").delete().eq("id", first.id);
   }
-  loadPlayers();
 }
 
-// ---- BLUE TEAM ----
+// ----------------------------------------------------------------------
+// ---- BLUE TEAM -------------------------------------------------------
+// ----------------------------------------------------------------------
 async function addBlue(){
   const name=document.getElementById("blueInput").value.trim();
   if(!name) return;
@@ -470,10 +669,14 @@ async function loadBlue(){
   ul.innerHTML=""; 
   field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`; 
   if(data) data.forEach((p,i)=>{
+    const time = formatPlayerTime(p.time); 
     ul.innerHTML += `
-      <li>${i+1}. ${p.name}
+      <li>
+        <div class="player-info">
+            <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
+        </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">📝</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">✏️</button>
           <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">🗑️</button>
         </span>
       </li>`;
@@ -482,7 +685,9 @@ async function loadBlue(){
   });
 }
 
-// ---- YELLOW TEAM ----
+// ----------------------------------------------------------------------
+// ---- YELLOW TEAM -----------------------------------------------------
+// ----------------------------------------------------------------------
 async function addYellow(){
   const name=document.getElementById("yellowInput").value.trim();
   if(!name) return;
@@ -501,10 +706,14 @@ async function loadYellow(){
   ul.innerHTML=""; 
   field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`; 
   if(data) data.forEach((p,i)=>{
+    const time = formatPlayerTime(p.time); 
     ul.innerHTML += `
-      <li>${i+1}. ${p.name}
+      <li>
+        <div class="player-info">
+            <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
+        </div>
         <span>
-          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">📝</button>
+          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">✏️</button>
           <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">🗑️</button>
         </span>
       </li>`;
@@ -513,12 +722,172 @@ async function loadYellow(){
   });
 }
 
-// ---- EDIT & DELETE ----
+// ----------------------------------------------------------------------
+// ---- FIXED FORMATION APPLICATION (12 Players) ------------------------
+// ----------------------------------------------------------------------
+async function applyFormation(team, formationName) {
+    const table = team === 'blue' ? 'blue_team' : 'yellow_team';
+    const formation = FORMATIONS[formationName];
+    
+    // 1. Get the current list of players (up to 12)
+    const { data: players, error } = await supabase.from(table).select('id').order('id', { ascending: true });
+    
+    if (error || !players || players.length === 0) {
+        // Translated alert
+        alert(`No players found in the ${team} team to apply formation.`);
+        return;
+    }
+
+    const updates = players.slice(0, 12).map((player, index) => {
+        const pos = formation[index];
+        const positionString = JSON.stringify({ 
+            left: pos.left, 
+            top: pos.top 
+        });
+        
+        // 2. Prepare the update query for each player
+        return supabase.from(table)
+            .update({ position: positionString })
+            .eq('id', player.id)
+            .select(); 
+    });
+
+    // 3. Execute all updates simultaneously
+    const results = await Promise.all(updates);
+    
+    // 4. Alert and rely on Realtime
+    // Translated alert
+    alert(`${formationName} formation applied successfully to the ${team} team.`);
+}
+
+// ----------------------------------------------------------------------
+// ---- NEW DYNAMIC FORMATION LOGIC -------------------------------------
+// ----------------------------------------------------------------------
+
+// Function to generate positions dynamically based on player count (N)
+function getDynamicFormation(N) {
+    if (N === 0) return [];
+
+    // Define slices based on player index (1 to 12+) and the target X-coordinate
+    // X: Left % of the field. Y_count: Max players allocated to this line.
+    const distributionMap = [];
+    distributionMap.push({ X: 5, Y_count: 1 }); // P1: GK @ 5%
+    distributionMap.push({ X: 25, Y_count: 4 }); // P2-P5: DEF @ 25%
+    distributionMap.push({ X: 55, Y_count: 4 }); // P6-P9: MID @ 55%
+    distributionMap.push({ X: 80, Y_count: 3 }); // P10-P12: ATT @ 80%
+    
+    // Handle Substitutes if N > 12 (Though team max is 12, this is safe)
+    if (N > 12) {
+        distributionMap.push({ X: 10, Y_count: N - 12 }); 
+    }
+
+    const positions = [];
+    let currentPlayerIndex = 1;
+
+    for (const zone of distributionMap) {
+        if (currentPlayerIndex > N) break;
+
+        // Calculate how many actual players will be in this zone
+        let playersInZone = Math.min(zone.Y_count, N - currentPlayerIndex + 1);
+        if (playersInZone === 0) continue;
+        
+        // Distribution parameters (Y-axis spread)
+        const Y_min = 10;
+        const Y_max = 90;
+        // Calculate the step size between players for even vertical spread
+        let deltaY = playersInZone > 1 ? (Y_max - Y_min) / (playersInZone - 1) : 0;
+
+        for (let j = 0; j < playersInZone; j++) {
+            let top;
+            if (playersInZone === 1) {
+                top = 50; // Center if only one player in the line (e.g., GK)
+            } else {
+                top = Y_min + j * deltaY;
+            }
+
+            positions.push({
+                left: `${zone.X}%`,
+                top: `${top.toFixed(2)}%`
+            });
+
+            currentPlayerIndex++;
+        }
+    }
+    return positions;
+}
+
+// Function to apply the dynamic plan based on current player count
+async function applyDynamicPlan(team) {
+    const table = team === 'blue' ? 'blue_team' : 'yellow_team';
+    
+    // 1. Get the current list of players and count (N)
+    const { data: players, error } = await supabase.from(table).select('id').order('id', { ascending: true });
+    
+    if (error || !players || players.length === 0) {
+        alert(`No players found in the ${team} team to apply the dynamic plan.`);
+        return;
+    }
+    
+    const N = players.length;
+    
+    // 2. Generate the dynamic formation based on N
+    const dynamicFormation = getDynamicFormation(N);
+    
+    // 3. Prepare the update queries
+    const updates = players.map((player, index) => {
+        // Only update up to the number of generated positions (N should match).
+        if (index < dynamicFormation.length) {
+            const pos = dynamicFormation[index];
+            const positionString = JSON.stringify({ 
+                left: pos.left, 
+                top: pos.top 
+            });
+            return supabase.from(table)
+                .update({ position: positionString })
+                .eq('id', player.id)
+                .select();
+        }
+        return null; 
+    }).filter(update => update !== null); 
+
+    // 4. Execute all updates simultaneously
+    const results = await Promise.all(updates);
+    
+    // 5. Alert and rely on Realtime
+    alert(`Dynamic plan applied successfully for ${N} players in the ${team} team.`);
+}
+// ----------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------
+// ---- DELETE FUNCTION -------------------------------------------------
+// ----------------------------------------------------------------------
 async function deletePlayer(table,id){
+  let playerName = "";
+  let isMainTeam = table === "main_team";
+
+  // If deleting from main_team, find the name and send chat alert
+  if (isMainTeam) {
+      const { data, error } = await supabase.from(table).select('name').eq("id", id).single();
+      if (data) {
+          playerName = data.name;
+      }
+  }
+  
   // Translated confirm message
   if(!confirm("Are you sure you want to delete this player?")) return;
+  
+  // Send chat alert BEFORE deletion on the database (for history log, only once)
+  if (isMainTeam && playerName) {
+      const message = `❌ ${playerName} left the Main Team.`;
+      await sendSystemMessageToChat(playerName, message);
+  }
+
   await supabase.from(table).delete().eq("id",id);
-  if(table==="main_team") await refillMainTeam();
+  
+  // Note: For 'main_team', the delete event is handled by Realtime, 
+  // but we still call refill and reloadList for other tables.
+  if(table==="main_team") await refillMainTeam(); 
   reloadList(table);
 }
 
@@ -547,9 +916,11 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   marker.innerText = playerIndex;
 
   if(storedPosition){
+    // Use stored coordinates (from drag or applied formation)
     marker.style.left = storedPosition.left;
     marker.style.top = storedPosition.top;
   } else {
+    // Default fallback position
     marker.style.left = '10px';
     marker.style.top = `${30 + playerIndex * 30}px`;
   }
@@ -604,12 +975,23 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
     if(!isDragging) return;
     isDragging=false;
     
-    playerPositions[team][playerName] = { left: marker.style.left, top: marker.style.top };
+    // Save position as percentages for responsiveness
+    const fieldRect = field.getBoundingClientRect();
+    const leftPercent = (parseFloat(marker.style.left) / fieldRect.width) * 100;
+    const topPercent = (parseFloat(marker.style.top) / fieldRect.height) * 100;
+    
+    const positionData = { 
+        left: `${leftPercent.toFixed(2)}%`, 
+        top: `${topPercent.toFixed(2)}%` 
+    };
+    
+    playerPositions[team][playerName] = positionData;
     
     const table = team==='blue' ? 'blue_team' : 'yellow_team';
+    // Find the player's ID and update their position
     const { data: player } = await supabase.from(table).select('id').eq('name',playerName).limit(1);
     if(player.length>0){
-      await supabase.from(table).update({position: JSON.stringify(playerPositions[team][playerName])}).eq('id', player[0].id);
+      await supabase.from(table).update({position: JSON.stringify(positionData)}).eq('id', player[0].id);
     }
   }
 
@@ -623,61 +1005,104 @@ function createPlayerMarker(team, playerName, playerIndex, storedPosition=null) 
   field.appendChild(marker);
 }
 
-// ---- MATCH ADDRESS ----
+// ----------------------------------------------------------------------
+// 🚨🚨🚨 FIXED: MATCH ADDRESS PERSISTENCE (Using UPDATE then INSERT) 🚨🚨🚨
+// ----------------------------------------------------------------------
+
 const addressDisplayElem = document.getElementById('addressDisplay');
-const savedAddress = localStorage.getItem('matchAddress');
-if(savedAddress){
-  addressDisplayElem.textContent = savedAddress;
+
+// Function to load the address from Supabase
+async function loadMatchAddress() {
+    const { data, error } = await supabase
+        .from('app_config')
+        .select('match_address')
+        .eq('id', 1) 
+        .single(); 
+        
+    if (error && error.code !== 'PGRST116' && error.details !== 'The result contains 0 rows') {
+        console.error("Error loading address from DB:", error);
+    } 
+
+    const savedAddress = data ? data.match_address : null;
+
+    if (savedAddress && savedAddress.trim() !== '') {
+        addressDisplayElem.textContent = savedAddress;
+    } else {
+        addressDisplayElem.textContent = "Click here to set match address";
+    }
 }
 
-addressDisplayElem.addEventListener('dblclick', () => {
-  const currentText = addressDisplayElem.textContent.includes("Click here") ? "" : addressDisplayElem.textContent;
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.value = currentText;
-  input.style.width = "80%";
-  input.style.padding = "5px";
-  input.style.borderRadius = "8px";
-  input.style.border = "1px solid #555";
-  input.style.background = "#2c2c2c";
-  input.style.color = "#fff";
-  input.style.textAlign = "center";
-
-  addressDisplayElem.replaceWith(input);
-  input.focus();
-
-  const saveAddress = () => {
-    const val = input.value.trim();
-    const p = document.createElement('p');
-    p.id = "addressDisplay";
-    p.style.cursor = "pointer";
-    p.style.margin = "5px 0";
-    p.style.fontWeight = "bold";
-    p.style.color = "#9c27b0";
-    p.textContent = val === "" ? "Click here to set match address" : val;
+// Function to save the address to Supabase (FIXED: Uses UPDATE, then INSERT if UPDATE fails)
+async function saveMatchAddress(address) {
+    const defaultText = "Click here to set match address";
+    const addressToSave = address.trim() || '';
     
-    input.replaceWith(p);
-    localStorage.setItem('matchAddress', val);
+    // 1. محاولة التحديث: إذا كان السجل (id=1) موجوداً، قم بتحديثه مباشرة.
+    const { data: updateData, error: updateError } = await supabase
+        .from('app_config')
+        .update({ match_address: addressToSave })
+        .eq('id', 1) 
+        .select();
 
-    p.addEventListener('dblclick', () => {
-      p.replaceWith(input);
-      input.focus();
-    });
-  };
+    if (updateError) {
+        console.error("Error during UPDATE attempt:", updateError.message);
+    }
+    
+    // 2. التحقق: إذا فشل التحديث (أي لم يتم العثور على سجل بالـ id=1)
+    if (!updateData || updateData.length === 0) {
+        // إذا فشل التحديث، نقوم بالإدخال (INSERT) للمرة الأولى
+        const { error: insertError } = await supabase
+            .from('app_config')
+            .insert([{ id: 1, match_address: addressToSave }]);
+            
+        if (insertError) {
+            // إذا فشل الإدخال، فهناك مشكلة أخرى (غالباً في السياسات)
+            console.error("Error during INSERT attempt:", insertError.message);
+            alert(`Failed to save address to database. Please check RLS Policies. Error: ${insertError.message}`);
+            return;
+        }
+    }
+    
+    // 3. تحديث واجهة المستخدم (في كلتا الحالتين)
+    addressDisplayElem.textContent = addressToSave || defaultText;
+    // alert("Match address saved successfully across all devices."); // Removed alert for cleaner UX
+}
 
-  input.addEventListener('blur', saveAddress);
-  input.addEventListener('keypress', e => { if(e.key === 'Enter') saveAddress(); });
+
+// Attach the click handler to the display element
+addressDisplayElem.addEventListener('click', async () => {
+    const currentText = addressDisplayElem.textContent.includes("Click here") ? "" : addressDisplayElem.textContent;
+    
+    // Translated prompt
+    const newAddress = prompt("Enter the match address:", currentText);
+    
+    if (newAddress !== null) { // User didn't click Cancel
+        const trimmedAddress = newAddress.trim();
+        await saveMatchAddress(trimmedAddress);
+    }
 });
 
 
 // ----------------------------------------------------------------------
-// ---- CHAT FUNCTIONS ----------------------------------------
+// ---- CHAT & HISTORY FUNCTIONS ----------------------------------------
 // ----------------------------------------------------------------------
 
 function playNotificationSound() {
     const sound = document.getElementById('notification-sound');
     sound.currentTime = 0; 
     sound.play().catch(e => console.log("Notification sound blocked:", e));
+}
+
+// Function to log system events to the chat_messages table (for history)
+async function sendSystemMessageToChat(playerName, content) {
+    const systemUsername = `System-Alert-(${playerName})`; 
+    const { error } = await supabase
+        .from('chat_messages')
+        .insert([{ username: systemUsername, content }]); 
+    
+    if (error) {
+        console.error('Error sending system message:', error);
+    }
 }
 
 function renderMessage(message) {
@@ -687,6 +1112,7 @@ function renderMessage(message) {
   
   const storedName = localStorage.getItem('chat_username');
   const isMyMessage = storedName && storedName.trim() === message.username.trim();
+  
   const nameColor = getColorForUsername(message.username);
 
   if (isMyMessage) {
@@ -702,9 +1128,11 @@ function renderMessage(message) {
     hour12: true, 
     numberingSystem: 'latn' 
   });
+  
+  const timeSpan = `<span style="color:#888;">${date}</span>`;
 
   msgDiv.innerHTML = `
-    <span class="message-header" style="color: ${nameColor};">${message.username} <span style="color:#888;">${date}</span></span>
+    <span class="message-header" style="color: ${nameColor};">${message.username} ${timeSpan}</span>
     <span>${message.content}</span>
   `;
   
@@ -712,10 +1140,12 @@ function renderMessage(message) {
   messagesContainer.scrollTop = messagesContainer.scrollHeight; 
 }
 
+// MODIFIED: Exclude system messages when loading initial chat
 async function loadChatMessages() {
   const { data, error } = await supabase
     .from('chat_messages')
     .select('*')
+    .not('username', 'like', 'System-Alert-%') // Exclude System Alerts
     .order('created_at', { ascending: true }) 
     .limit(50); 
 
@@ -764,8 +1194,72 @@ async function sendMessage() {
   playNotificationSound();
 }
 
-function setupRealtimeChat() {
-  const channel = supabase
+// NEW/MODIFIED: Function to load and display system history (with duplication fix)
+async function loadSystemHistory(toggle = true) {
+  const historyContainer = document.getElementById('systemHistoryContainer');
+  const historyList = document.getElementById('historyList');
+  
+  // Only toggle visibility if requested (i.e., when button is clicked)
+  if (toggle) {
+    historyContainer.style.display = historyContainer.style.display === 'block' ? 'none' : 'block';
+  }
+  
+  if (historyContainer.style.display === 'none') return;
+  
+  // FIX: Clear the list COMPLETELY on every load to prevent duplicates
+  historyList.innerHTML = '<li>Loading history...</li>'; 
+
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('content, created_at')
+    .like('username', 'System-Alert-%') // Filter for system messages
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error('Error loading system history:', error);
+    historyList.innerHTML = '<li>Error loading history.</li>';
+    return;
+  }
+
+  if (data.length === 0) {
+    historyList.innerHTML = '<li>No recent join/leave events.</li>';
+    return;
+  }
+  
+  historyList.innerHTML = ''; // Final clear before inserting elements
+  
+  data.forEach(item => {
+    // Formatting Date and Time
+    const date = new Date(item.created_at).toLocaleDateString('en-US');
+    const time = new Date(item.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    
+    let color = '#fff';
+    let label = 'Event: ';
+    
+    if (item.content.includes('joined')) {
+        color = '#81c784'; // Light green for join
+        label = '✅ Joined: ';
+    } else if (item.content.includes('left')) {
+        color = '#ef9a9a'; // Light red for leave
+        label = '❌ Left: ';
+    }
+    
+    // Clean up content to show player name clearly
+    const playerName = item.content.replace('✅ ', '').replace('❌ ', '').replace(' joined the Main Team!', '').replace(' left the Main Team.', '');
+
+    historyList.innerHTML += `
+      <li style="color:${color}; border-bottom: 1px dotted #333; padding-bottom: 5px; margin-bottom: 5px;">
+        ${label} **${playerName}**
+        <span style="float:right; color:#999; font-size:12px;">${date} at ${time}</span>
+      </li>
+    `;
+  });
+}
+
+function setupRealtime() {
+  // 1. CHAT MESSAGES REALTIME
+  const chatChannel = supabase
     .channel('chat-room-updates')
     .on(
       'postgres_changes',
@@ -774,6 +1268,18 @@ function setupRealtimeChat() {
         const storedName = localStorage.getItem('chat_username'); 
         const incomingUsername = payload.new.username.trim();
 
+        // Check if the message is a System Alert
+        if (incomingUsername.startsWith('System-Alert-(')) {
+            // Update history log if the container is visible
+            const historyContainer = document.getElementById('systemHistoryContainer');
+            if (historyContainer.style.display === 'block') {
+                 loadSystemHistory(false); 
+            }
+            // STOP: Do not render system alerts in the main chat.
+            return; 
+        }
+        
+        // This is a regular chat message
         if (storedName && storedName.trim() !== incomingUsername) {
             playNotificationSound();
         }
@@ -782,7 +1288,45 @@ function setupRealtimeChat() {
       }
     )
     .subscribe();
+    
+    // 2. MAIN TEAM REALTIME UPDATES
+    const teamChannel = supabase
+    .channel('main-team-updates')
+    // Listen for all changes (INSERT, UPDATE, DELETE) to trigger list reload and possible refill
+    .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'main_team' },
+        async (payload) => {
+            loadPlayers(); // Refresh the list
+            if(payload.eventType === 'DELETE') {
+                await refillMainTeam(); // Check and refill only on delete
+            }
+        }
+    )
+    .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'waiting_list' },
+        async (payload) => {
+            loadPlayers(); 
+        }
+    )
+    .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'blue_team' },
+        async (payload) => {
+            loadBlue(); 
+        }
+    )
+    .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'yellow_team' },
+        async (payload) => {
+            loadYellow(); 
+        }
+    )
+    .subscribe();
 }
+
 
 // ----------------------------------------------------------------------
 // ---- INITIAL LOAD & SETUP ----------------------------------------------
@@ -801,11 +1345,15 @@ document.getElementById('chatMsgInput').addEventListener('keypress', (e) => {
   }
 });
 
+// ** NEW: Check and perform scheduled cleanup (Sunday 6 PM) **
+checkAndClearData(); 
+
 loadPlayers(); 
 loadBlue(); 
 loadYellow(); 
 loadChatMessages();
-setupRealtimeChat();
+loadMatchAddress(); 
+setupRealtime();
 </script>
 </body>
 </html>
