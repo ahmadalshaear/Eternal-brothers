@@ -708,7 +708,7 @@ li {
 
 // Supabase Configuration
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; 
-const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ"; 
+const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ"; 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 
 // Global state variables
@@ -2388,7 +2388,9 @@ function setupRealtime() {
     document.getElementById('yellowChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
 
     await loadSystemConfig(); 
-    await checkAndClearData(); 
+    
+    // 🔴🔴🔴 DISABLED AUTOMATIC DELETION TO PREVENT DATA LOSS 🔴🔴🔴
+    // await checkAndClearData(); // <--- This line is now disabled permanently.
     
     loadMatchAddress(); 
 
