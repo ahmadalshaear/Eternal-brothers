@@ -54,7 +54,7 @@ button {
     font-weight: 700;
 }
 
-/* -------------------- 2. NAV CONTROLS -------------------- */
+/* -------------------- 2. NAV CONTROLS (UPDATED) -------------------- */
 .nav-controls {
   margin-bottom: 20px;
   display: flex;
@@ -71,42 +71,53 @@ button {
 }
 .nav-buttons-bottom {
   display: flex;
-  justify-content: center; 
+  justify-content: space-between; 
   width: 100%;
   max-width: 400px;
 }
-#homeBtn, #blueBtn, #yellowBtn {
+#homeBtn, #blueBtn, #yellowBtn, #addressBtn { /* Added #addressBtn */
     width: 100%; 
     margin: 0 5px; 
+    font-size: 14px; 
 }
 #homeBtn { background:#d32f2f; color:#fff; }
 #blueBtn { background:#1976d2; color:#fff; }
 #yellowBtn { background:#fbc02d; color:#000; }
+#addressBtn { 
+    background:#9c27b0; 
+    color:#fff; 
+    font-size: 14px; 
+    margin-right: 5px; /* Ensures consistent margin with the group */
+    /* NEW: Adjusted to show address summary */
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; 
+    max-width: 160px;
+}
 
-/* New Settings Button Style */
+/* New Settings/Audio Button Style Group */
 .settings-audio-group {
     display: flex;
     gap: 5px; 
-    width: 100%;
+    /* The group width is calculated to occupy roughly the space of two buttons, 
+       maintaining symmetry with the address button. */
+    width: calc(66.66% - 5px); /* Adjusted for better visual balance */
     justify-content: center;
 }
-#audioToggleBtn { 
+/* Ensure these buttons are smaller and fit into the new layout */
+#audioToggleBtn, #settingsBtn { 
   background: #616161 !important;
   color: #fff !important;
-  font-size: 16px;
-  padding: 8px 12px;
-  width: calc(50% - 2.5px); 
-  margin: 0; 
+  font-size: 14px; /* Smaller font for a smaller look */
+  padding: 8px 5px !important; /* Smaller padding */
+  width: 50% !important; /* Half of the settings-audio-group */
+  margin: 0 !important; 
   border-radius: 8px; 
+  box-sizing: border-box; 
 }
 #settingsBtn {
   background: #795548 !important;
-  color: #fff !important;
-  font-size: 16px;
-  padding: 8px 12px;
-  width: calc(50% - 2.5px);
-  margin: 0; 
-  border-radius: 8px; 
 }
 
 /* -------------------- 3. LISTS & PLAYER INFO -------------------- */
@@ -457,6 +468,14 @@ li {
 .danger-btn:hover {
     background-color: #e57373;
 }
+
+/* NEW ADDRESS INPUT STYLE */
+#matchAddressInput {
+    width: 100%;
+    text-align: left;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
 </style>
 </head>
 <body>
@@ -477,28 +496,24 @@ li {
     <button id="yellowBtn" onclick="showSection('yellow')">Yellow Team</button>
   </div>
   <div class="nav-buttons-bottom">
+    <button id="addressBtn" onclick="openGoogleMaps()">Address 📍</button> 
     <div class="settings-audio-group">
         <button id="audioToggleBtn" onclick="toggleBackgroundMusic()">
             Audio</button>
         <button id="settingsBtn" onclick="showSettingsModal()">
-            &#9881;</button> 
+            ⚙</button> 
     </div>
   </div>
 </div>
-
 <div id="main" class="container">
   <h1 style="margin-top:0; font-size:28px; display:flex; align-items:center; justify-content:center; gap:8px;">
-    &#9917; <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> &#9917;
+    ⚽ <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> ⚽
   </h1>
 
   <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">
     The game will be at 9:40 AM
   </p>
 
-  <p id="addressDisplay" style="margin:5px 0; font-weight:bold; cursor:pointer; color:#9c27b0;">
-    Click here to set match address
-  </p>
-  
   <div id="playerManagement">
     <h2>Add Player</h2>
     <input type="text" id="nameInput" placeholder="Enter player name">
@@ -531,7 +546,7 @@ li {
       <input type="text" id="chatMsgInput" placeholder="Type a message...">
       
       <input type="file" id="globalChatFile" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'global')">
-      <button class="img-upload-btn" onclick="document.getElementById('globalChatFile').click()">&#128247;</button>
+      <button class="img-upload-btn" onclick="document.getElementById('globalChatFile').click()">📷</button>
       
       <button id="sendChatBtn" onclick="sendMessage()">Send</button>
     </div>
@@ -562,14 +577,14 @@ li {
   </div>
 
   <div class="chat-container team-chat-container">
-    <h3>Blue Team Chat &#128489;</h3>
+    <h3>Blue Team Chat 🗩</h3>
     <div id="blueChatMessages" class="chat-messages"></div>
     <div class="chat-input-group team-chat-input-group">
       <input type="text" id="blueChatNameInput" placeholder="Your name" value="">
       <input type="text" id="blueChatMsgInput" placeholder="Message to Blue Team...">
       
       <input type="file" id="blueChatFile" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'blue')">
-      <button class="img-upload-btn" onclick="document.getElementById('blueChatFile').click()">&#128247;</button>
+      <button class="img-upload-btn" onclick="document.getElementById('blueChatFile').click()">📷</button>
       
       <button id="sendBlueChatBtn" onclick="sendTeamMessage('blue')">Send</button>
     </div>
@@ -600,14 +615,14 @@ li {
   </div>
 
   <div class="chat-container team-chat-container">
-    <h3 style="color: #000;">Yellow Team Chat &#128489;</h3>
+    <h3 style="color: #000;">Yellow Team Chat 🗩</h3>
     <div id="yellowChatMessages" class="chat-messages"></div>
     <div class="chat-input-group team-chat-input-group">
       <input type="text" id="yellowChatNameInput" placeholder="Your name" value="">
       <input type="text" id="yellowChatMsgInput" placeholder="Message to Yellow Team...">
       
       <input type="file" id="yellowChatFile" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'yellow')">
-      <button class="img-upload-btn" onclick="document.getElementById('yellowChatFile').click()">&#128247;</button>
+      <button class="img-upload-btn" onclick="document.getElementById('yellowChatFile').click()">📷</button>
       
       <button id="sendYellowChatBtn" onclick="sendTeamMessage('yellow')">Send</button>
     </div>
@@ -637,6 +652,9 @@ li {
         <div id="settingsControls" style="display:none; flex-grow: 1; display: flex; flex-direction: column; min-height: 0;">
             
             <div class="settings-options-container">
+                <h2>Match Details</h2>
+                <label for="matchAddressInput" style="font-weight: bold; display: block; margin-bottom: 5px;">Match Address (Google Maps)</label>
+                <input type="text" id="matchAddressInput" placeholder="Enter full match address or coordinates">
                 <h2>System Options</h2>
                 <div class="setting-item">
                     <label for="allowPlayerEdit">Allow Player Add/Edit/Delete (Main Lists)</label>
@@ -715,6 +733,7 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 let currentPositionTarget = { team: null, playerId: null, playerName: null };
 const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
 let audioInitialized = false; 
+let matchAddress = "Address 📍"; // NEW: Default Address text for the button
 
 // Admin PINs
 const ADMIN_PASSWORD = "2023"; 
@@ -727,7 +746,7 @@ let systemConfig = {
     allowFormationEdit: true, 
     allowAddressEdit: true, 
     allowChat: true, 
-    allowImageUpload: true, // NEW SETTING
+    allowImageUpload: true, 
     allowMusic: true, 
     enforceTimeRestriction: true, 
     requireIndividualPin: true, 
@@ -816,7 +835,7 @@ function getColorForUsername(username) {
 }
 
 // =========================================================================================
-// ---- 2. UI & AUDIO CONTROL ----
+// ---- 2. UI & AUDIO CONTROL (UPDATED) ----
 // =========================================================================================
 
 function showSection(id){
@@ -858,19 +877,36 @@ function toggleBackgroundMusic() {
     }
 }
 
+// UPDATED FUNCTION: Open Google Maps with the saved address
+async function openGoogleMaps() {
+    const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
+    const savedAddress = data ? data.match_address : null;
+
+    if (!savedAddress || savedAddress.trim() === '' || savedAddress.includes("set match address")) {
+        alert("لم يتم تعيين عنوان المباراة بعد. يرجى من المسؤول تعيين العنوان في الإعدادات.");
+        return;
+    }
+    
+    // Encode the address for the URL
+    // Fix: Use the correct Google Maps URL format
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`;
+    window.open(mapUrl, '_blank');
+}
 
 // =========================================================================================
-// ---- 3. SYSTEM SETTINGS & PIN CHECKS ----
+// ---- 3. SYSTEM SETTINGS & PIN CHECKS (MODIFIED) ----
 // =========================================================================================
 
-function showSettingsModal() {
+async function showSettingsModal() {
     document.getElementById('settingsPassword').value = '';
     document.getElementById('passwordError').style.display = 'none';
     document.getElementById('passwordSection').style.display = 'block';
-    const controls = document.getElementById('settingsControls');
-    controls.style.display = 'none';
-    controls.style.display = 'none'; 
+    document.getElementById('settingsControls').style.display = 'none'; 
     document.getElementById('settingsModalOverlay').style.display = 'flex';
+    
+    // NEW: Load current match address into the settings field
+    const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
+    document.getElementById('matchAddressInput').value = data ? data.match_address : '';
 }
 
 function authenticateSettings() {
@@ -887,7 +923,7 @@ function authenticateSettings() {
         document.getElementById('allowFormationEdit').checked = systemConfig.allowFormationEdit;
         document.getElementById('allowAddressEdit').checked = systemConfig.allowAddressEdit;
         document.getElementById('allowChat').checked = systemConfig.allowChat;
-        document.getElementById('allowImageUpload').checked = systemConfig.allowImageUpload; // LOAD NEW SETTING
+        document.getElementById('allowImageUpload').checked = systemConfig.allowImageUpload; 
         document.getElementById('allowMusic').checked = systemConfig.allowMusic;
         document.getElementById('enforceTimeRestriction').checked = systemConfig.enforceTimeRestriction;
         document.getElementById('requireIndividualPin').checked = systemConfig.requireIndividualPin;
@@ -905,28 +941,36 @@ async function saveSettings() {
         allowFormationEdit: document.getElementById('allowFormationEdit').checked,
         allowAddressEdit: document.getElementById('allowAddressEdit').checked,
         allowChat: document.getElementById('allowChat').checked,
-        allowImageUpload: document.getElementById('allowImageUpload').checked, // SAVE NEW SETTING
+        allowImageUpload: document.getElementById('allowImageUpload').checked, 
         allowMusic: document.getElementById('allowMusic').checked,
         enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked,
         requireIndividualPin: document.getElementById('requireIndividualPin').checked,
         requireTeamPinForAdd: document.getElementById('requireTeamPinForAdd').checked,
     };
     
+    // NEW: Get match address from input field
+    const newMatchAddress = document.getElementById('matchAddressInput').value.trim();
+
     const { error } = await supabase
         .from('app_config')
-        .update({ system_config: JSON.stringify(newConfig) })
+        .update({ 
+            system_config: JSON.stringify(newConfig),
+            match_address: newMatchAddress 
+        }) // NEW: Include address update
         .eq('id', 1);
 
     if (error) {
-        console.error('Error saving system config:', error);
+        console.error('Error saving system config and address:', error);
         alert(`Failed to save settings: ${error.message}`);
         return;
     }
     
     systemConfig = newConfig;
+    matchAddress = newMatchAddress; // NEW: Update local state
+    loadMatchAddress(); // NEW: Refresh the address button display
     applyUIRestrictions();
     document.getElementById('settingsModalOverlay').style.display = 'none';
-    alert('System settings saved successfully!');
+    alert('System settings and address saved successfully!');
 }
 
 async function clearTableData(tableName, confirmMessage, friendlyName) {
@@ -1152,7 +1196,6 @@ function applyUIRestrictions() {
     document.querySelector('.team-chat-container #blueChatMessages + .chat-input-group').style.display = chatControls;
     document.querySelector('.team-chat-container #yellowChatMessages + .chat-input-group').style.display = chatControls;
     
-    // HIDE/SHOW IMAGE BUTTONS BASED ON NEW SETTING
     const displayImages = (systemConfig.allowChat && systemConfig.allowImageUpload) ? 'flex' : 'none';
     document.querySelectorAll('.img-upload-btn').forEach(btn => {
         btn.style.display = displayImages;
@@ -1160,7 +1203,7 @@ function applyUIRestrictions() {
 }
 
 // =========================================================================================
-// ---- 4. TIME & WEEKLY CLEANUP ----
+// ---- 4. TIME & WEEKLY CLEANUP (MODIFIED) ----
 // =========================================================================================
 
 function isWithinAllowedTime(){
@@ -1226,6 +1269,7 @@ async function checkAndClearData() {
                 .catch(error => console.error(`Error clearing table ${table}:`, error)); 
         }));
         
+        // NEW: Updated default match address text
         const defaultMatchAddress = "Click here to set match address"; 
         const { error: configError } = await supabase
             .from('app_config')
@@ -1958,10 +2002,8 @@ async function selectPosition(positionCode) {
 
 
 // =========================================================================================
-// ---- 10. ADDRESS, CHAT, HISTORY, REALTIME ----
+// ---- 10. ADDRESS, CHAT, HISTORY, REALTIME (UPDATED) ----
 // =========================================================================================
-
-// UPDATED: Address Management Logic
 
 function showToast(message) {
     const container = document.getElementById('toastContainer');
@@ -1972,20 +2014,33 @@ function showToast(message) {
     setTimeout(() => { toast.remove(); }, 3000);
 }
 
+// UPDATED FUNCTION: Only load the address and update the button text
 async function loadMatchAddress() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
-    const savedAddress = data ? data.match_address : null;
+    const savedAddress = data ? data.match_address : "Address 📍";
+    matchAddress = savedAddress;
     
-    const displayElem = document.getElementById('addressDisplay');
-    if(displayElem) {
-        displayElem.textContent = (savedAddress && savedAddress.trim() !== '') ? savedAddress : "Click here to set match address";
+    const addressBtn = document.getElementById('addressBtn');
+    if (savedAddress.length > 20 && !savedAddress.includes("set match address")) {
+        // Show a truncated version or just "Address" on the button
+        addressBtn.textContent = "Match Address 📍"; 
+    } else if (savedAddress.includes("set match address")) {
+         addressBtn.textContent = "Set Address 📍"; 
+    } else {
+        addressBtn.textContent = `${savedAddress} 📍`;
     }
 }
 
+// Function no longer needed since address editing moved to Settings modal only
+function setupAddressEditor() {
+    // This function is obsolete and remains for compatibility but does nothing new.
+    console.log("setupAddressEditor is disabled/modified.");
+}
+
+// Function is now part of saveSettings() - kept for modularity/re-use if needed
 async function saveMatchAddress(address) {
     if (!systemConfig.allowAddressEdit) {
         alert("Match address editing is currently disabled by the system administrator.");
-        loadMatchAddress(); 
         return;
     }
     const addressToSave = address.trim() || '';
@@ -2001,67 +2056,7 @@ async function saveMatchAddress(address) {
         return;
     }
     
-    const displayElem = document.getElementById('addressDisplay');
-    if(displayElem) {
-        displayElem.textContent = addressToSave || "Click here to set match address";
-    }
     showToast("Address Saved Successfully!");
-}
-
-let addressDoubleClickHandler = null;
-function setupAddressEditor() {
-    let addressDisplayElem = document.getElementById('addressDisplay');
-    
-    if (addressDoubleClickHandler) {
-        addressDisplayElem.removeEventListener('dblclick', addressDoubleClickHandler, false);
-    }
-
-    addressDoubleClickHandler = function() {
-        addressDisplayElem = document.getElementById('addressDisplay'); 
-        
-        if (!systemConfig.allowAddressEdit) {
-            alert("Match address editing is currently disabled by the system administrator.");
-            return;
-        }
-        
-        const currentText = addressDisplayElem.textContent.includes("Click here") ? "" : addressDisplayElem.textContent.trim();
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = currentText;
-        input.id = 'addressDisplay'; 
-        input.style.cssText = 'padding: 5px; width: 80%; border-radius: 5px; border: 1px solid #9c27b0; margin: 0; background: #2c2c2c; color: #fff; text-align: center; font-family: "Cairo", sans-serif; font-size: 16px; font-weight: bold;';
-        
-        addressDisplayElem.replaceWith(input);
-        input.focus();
-        
-        const saveAndReplace = async () => {
-            if (document.getElementById('addressDisplay') !== input) return; 
-            
-            const newAddress = input.value;
-            
-            const p = document.createElement('p');
-            p.id = 'addressDisplay'; 
-            p.style.cssText = 'margin:5px 0; font-weight:bold; cursor:pointer; color:#9c27b0;'; 
-            p.textContent = newAddress || "Click here to set match address";
-
-            input.replaceWith(p); 
-            
-            p.addEventListener('dblclick', addressDoubleClickHandler, false); 
-            
-            await saveMatchAddress(newAddress); 
-        };
-        
-        input.addEventListener('blur', saveAndReplace, { once: true });
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault(); 
-                input.removeEventListener('blur', saveAndReplace, { once: true }); 
-                saveAndReplace();
-            }
-        });
-    };
-    
-    addressDisplayElem.addEventListener('dblclick', addressDoubleClickHandler, false);
 }
 
 function playNotificationSound() {
@@ -2086,7 +2081,6 @@ async function handleImageUpload(inputElement, context) {
     const file = inputElement.files[0];
     if (!file) return;
     
-    // NEW GUARD: Check if image upload is allowed
     if (!systemConfig.allowImageUpload) {
         alert("Image uploads are currently disabled by the system administrator.");
         inputElement.value = '';
@@ -2274,14 +2268,14 @@ async function loadSystemHistory(toggle = true) {
     // Color Logic
     if (contentLower.includes('joined')) {
         bgColor = '#2e7d32'; // Green
-        icon = '&#10004;';
+        icon = '✔';
     } else if (contentLower.includes('left')) {
         bgColor = '#c62828'; // Red
-        icon = '&#10006;';
+        icon = '✖';
     } else if (contentLower.includes('moved') || contentLower.includes('waiting list')) {
         bgColor = '#f57f17'; // Orange
         textColor = '#000';
-        icon = '&#9888;';
+        icon = '⚠';
     }
 
     historyList.innerHTML += `
@@ -2400,7 +2394,7 @@ function setupRealtime() {
         loadYellow(); 
         loadChatMessages();
     }
-    setupAddressEditor(); 
+    setupAddressEditor(); // Still called, but function body is empty/modified
     setupRealtime();
 })();
 </script>
