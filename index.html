@@ -241,7 +241,7 @@ li {
   text-align: left; 
   border: 1px solid transparent; 
   color: #e0e0e0;
-  position: relative; /* For positioning buttons inside if needed */
+  position: relative; 
 }
 .my-message {
   background: #d32f2f;
@@ -250,11 +250,10 @@ li {
   text-align: left; 
   border: 1px solid #d32f2f; 
 }
-/* NEW STYLE FOR DELETE BUTTON */
 .delete-msg-btn {
     background: transparent !important;
     border: none;
-    color: #ffeb3b; /* Yellowish for visibility on red */
+    color: #ffeb3b; 
     cursor: pointer;
     font-size: 14px;
     margin-left: 8px;
@@ -821,12 +820,12 @@ function showSection(id){
   applyUIRestrictions();
 
   if (id === 'blue') {
-    sessionStorage.removeItem('blue_captain_unlocked');
+    // FIXED: REMOVED sessionStorage.removeItem('blue_captain_unlocked');
     loadTeamChatMessages('blue');
     document.getElementById('blueChatNameInput').value = localStorage.getItem('chat_username') || '';
     setupDraggable('blue'); 
   } else if (id === 'yellow') {
-    sessionStorage.removeItem('yellow_captain_unlocked');
+    // FIXED: REMOVED sessionStorage.removeItem('yellow_captain_unlocked');
     loadTeamChatMessages('yellow');
     document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || '';
     setupDraggable('yellow'); 
@@ -1075,6 +1074,7 @@ async function canControlPlan(team) {
         return false;
     }
 
+    // CHECK SESSION FIRST
     if (sessionStorage.getItem(`${team}_captain_unlocked`) === 'true') {
         return true;
     }
@@ -1101,7 +1101,7 @@ async function canControlPlan(team) {
     const enteredPin = prompt(`Enter 4-digit Captain PIN for ${team} team to edit the plan:`);
 
     if (enteredPin === storedPin) {
-        sessionStorage.setItem(`${team}_captain_unlocked`, 'true'); 
+        sessionStorage.setItem(`${team}_captain_unlocked`, 'true'); // SAVES UNLOCK
         return true; 
     } else {
         alert("Incorrect Captain PIN. Action cancelled.");
@@ -1955,12 +1955,28 @@ async function selectPosition(positionCode) {
 // ---- 10. ADDRESS, CHAT, HISTORY, REALTIME ----
 // =========================================================================================
 
-const addressDisplayElem = document.getElementById('addressDisplay');
+// UPDATED: Address Management Logic
+
+function showToast(message) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.innerText = message;
+    toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; box-shadow:0 2px 10px rgba(0,0,0,0.5); z-index:3000; font-weight:bold;';
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 3000);
+}
+
 async function loadMatchAddress() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     const savedAddress = data ? data.match_address : null;
-    addressDisplayElem.textContent = (savedAddress && savedAddress.trim() !== '') ? savedAddress : "Click here to set match address";
+    
+    const displayElem = document.getElementById('addressDisplay');
+    if(displayElem) {
+        displayElem.textContent = (savedAddress && savedAddress.trim() !== '') ? savedAddress : "Click here to set match address";
+    }
 }
+
+// ------------ FIX APPLIED HERE (Using Upsert) ------------
 async function saveMatchAddress(address) {
     if (!systemConfig.allowAddressEdit) {
         alert("Match address editing is currently disabled by the system administrator.");
@@ -1968,41 +1984,71 @@ async function saveMatchAddress(address) {
         return;
     }
     const addressToSave = address.trim() || '';
-    const { data: updateData } = await supabase.from('app_config').update({ match_address: addressToSave }).eq('id', 1).select();
-    if (!updateData || updateData.length === 0) {
-        await supabase.from('app_config').insert([{ id: 1, match_address: addressToSave }]);
+
+    // Use upsert to handle both insert (if missing) and update (if present)
+    const { error } = await supabase
+        .from('app_config')
+        .upsert({ id: 1, match_address: addressToSave })
+        .select();
+
+    if (error) {
+        console.error("Error saving address:", error);
+        alert("Failed to save address. Check connection.");
+        return;
     }
-    document.getElementById('addressDisplay').textContent = addressToSave || "Click here to set match address";
+    
+    const displayElem = document.getElementById('addressDisplay');
+    if(displayElem) {
+        displayElem.textContent = addressToSave || "Click here to set match address";
+    }
+    showToast("Address Saved Successfully!");
 }
+// ----------------------------------------------------------
 
 let addressDoubleClickHandler = null;
 function setupAddressEditor() {
+    let addressDisplayElem = document.getElementById('addressDisplay');
+    
     if (addressDoubleClickHandler) {
         addressDisplayElem.removeEventListener('dblclick', addressDoubleClickHandler, false);
     }
 
     addressDoubleClickHandler = function() {
+        addressDisplayElem = document.getElementById('addressDisplay'); // Re-fetch to be safe
+        
         if (!systemConfig.allowAddressEdit) {
             alert("Match address editing is currently disabled by the system administrator.");
             return;
         }
+        
         const currentText = addressDisplayElem.textContent.includes("Click here") ? "" : addressDisplayElem.textContent.trim();
         const input = document.createElement('input');
         input.type = 'text';
         input.value = currentText;
+        input.id = 'addressDisplay'; 
         input.style.cssText = 'padding: 5px; width: 80%; border-radius: 5px; border: 1px solid #9c27b0; margin: 0; background: #2c2c2c; color: #fff; text-align: center; font-family: "Cairo", sans-serif; font-size: 16px; font-weight: bold;';
+        
         addressDisplayElem.replaceWith(input);
         input.focus();
         
         const saveAndReplace = async () => {
-            if (input.parentNode === null) return; 
+            if (document.getElementById('addressDisplay') !== input) return; 
+            
             const newAddress = input.value;
+            
+            // Create text element
             const p = document.createElement('p');
-            p.id = 'addressDisplay';
+            p.id = 'addressDisplay'; 
             p.style.cssText = 'margin:5px 0; font-weight:bold; cursor:pointer; color:#9c27b0;'; 
+            p.textContent = newAddress || "Click here to set match address";
+
             input.replaceWith(p); 
-            await saveMatchAddress(newAddress); 
+            
+            // Re-attach listener immediately
             p.addEventListener('dblclick', addressDoubleClickHandler, false); 
+            
+            // Save to DB
+            await saveMatchAddress(newAddress); 
         };
         
         input.addEventListener('blur', saveAndReplace, { once: true });
@@ -2014,6 +2060,7 @@ function setupAddressEditor() {
             }
         });
     };
+    
     addressDisplayElem.addEventListener('dblclick', addressDoubleClickHandler, false);
 }
 
@@ -2300,14 +2347,28 @@ function setupRealtime() {
     supabase.channel('main-team-updates')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, async (payload) => { loadPlayers(); })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, async (payload) => { loadPlayers(); })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, async (payload) => { loadBlue(); sessionStorage.removeItem('blue_captain_unlocked'); })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, async (payload) => { loadYellow(); sessionStorage.removeItem('yellow_captain_unlocked'); })
+    
+    // FIXED: Removed sessionStorage clearing from here to persist login
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, async (payload) => { 
+        loadBlue(); 
+        // sessionStorage.removeItem('blue_captain_unlocked'); <-- DELETED
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, async (payload) => { 
+        loadYellow(); 
+        // sessionStorage.removeItem('yellow_captain_unlocked'); <-- DELETED
+    })
+    
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'id=eq.1' },
         async (payload) => {
+            // Update System Config
             if (payload.new.system_config) {
                 const loadedConfig = JSON.parse(payload.new.system_config);
                 systemConfig = { ...systemConfig, ...loadedConfig }; 
                 applyUIRestrictions();
+            }
+            // Update Address (FIXED)
+            if (payload.new.match_address !== undefined) {
+                loadMatchAddress();
             }
         }
     )
@@ -2329,12 +2390,14 @@ function setupRealtime() {
     await loadSystemConfig(); 
     await checkAndClearData(); 
     
+    // FIXED: Load Address Always
+    loadMatchAddress(); 
+
     if (new Date().getDay() !== 0 || new Date().getHours() < 18) {
         loadPlayers(); 
         loadBlue(); 
         loadYellow(); 
         loadChatMessages();
-        loadMatchAddress(); 
     }
     setupAddressEditor(); 
     setupRealtime();
