@@ -659,6 +659,10 @@ li {
                     <input type="checkbox" id="allowChat">
                 </div>
                 <div class="setting-item">
+                    <label for="allowImageUpload">Allow Image Uploads in Chat</label>
+                    <input type="checkbox" id="allowImageUpload">
+                </div>
+                <div class="setting-item">
                     <label for="allowMusic">Allow Toggling Music</label>
                     <input type="checkbox" id="allowMusic">
                 </div>
@@ -723,6 +727,7 @@ let systemConfig = {
     allowFormationEdit: true, 
     allowAddressEdit: true, 
     allowChat: true, 
+    allowImageUpload: true, // NEW SETTING
     allowMusic: true, 
     enforceTimeRestriction: true, 
     requireIndividualPin: true, 
@@ -820,12 +825,10 @@ function showSection(id){
   applyUIRestrictions();
 
   if (id === 'blue') {
-    // FIXED: REMOVED sessionStorage.removeItem('blue_captain_unlocked');
     loadTeamChatMessages('blue');
     document.getElementById('blueChatNameInput').value = localStorage.getItem('chat_username') || '';
     setupDraggable('blue'); 
   } else if (id === 'yellow') {
-    // FIXED: REMOVED sessionStorage.removeItem('yellow_captain_unlocked');
     loadTeamChatMessages('yellow');
     document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || '';
     setupDraggable('yellow'); 
@@ -884,6 +887,7 @@ function authenticateSettings() {
         document.getElementById('allowFormationEdit').checked = systemConfig.allowFormationEdit;
         document.getElementById('allowAddressEdit').checked = systemConfig.allowAddressEdit;
         document.getElementById('allowChat').checked = systemConfig.allowChat;
+        document.getElementById('allowImageUpload').checked = systemConfig.allowImageUpload; // LOAD NEW SETTING
         document.getElementById('allowMusic').checked = systemConfig.allowMusic;
         document.getElementById('enforceTimeRestriction').checked = systemConfig.enforceTimeRestriction;
         document.getElementById('requireIndividualPin').checked = systemConfig.requireIndividualPin;
@@ -901,6 +905,7 @@ async function saveSettings() {
         allowFormationEdit: document.getElementById('allowFormationEdit').checked,
         allowAddressEdit: document.getElementById('allowAddressEdit').checked,
         allowChat: document.getElementById('allowChat').checked,
+        allowImageUpload: document.getElementById('allowImageUpload').checked, // SAVE NEW SETTING
         allowMusic: document.getElementById('allowMusic').checked,
         enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked,
         requireIndividualPin: document.getElementById('requireIndividualPin').checked,
@@ -956,7 +961,6 @@ async function clearGroupChat() {
     }
 }
 
-// MODIFIED: Function to clear the system_history table
 async function clearSystemHistory() {
     const confirmMessage = "Are you sure you want to clear all System History logs?";
     if (!confirm(confirmMessage)) return;
@@ -1074,7 +1078,6 @@ async function canControlPlan(team) {
         return false;
     }
 
-    // CHECK SESSION FIRST
     if (sessionStorage.getItem(`${team}_captain_unlocked`) === 'true') {
         return true;
     }
@@ -1101,7 +1104,7 @@ async function canControlPlan(team) {
     const enteredPin = prompt(`Enter 4-digit Captain PIN for ${team} team to edit the plan:`);
 
     if (enteredPin === storedPin) {
-        sessionStorage.setItem(`${team}_captain_unlocked`, 'true'); // SAVES UNLOCK
+        sessionStorage.setItem(`${team}_captain_unlocked`, 'true'); 
         return true; 
     } else {
         alert("Incorrect Captain PIN. Action cancelled.");
@@ -1148,6 +1151,12 @@ function applyUIRestrictions() {
     document.querySelector('.chat-container .chat-input-group').style.display = chatControls;
     document.querySelector('.team-chat-container #blueChatMessages + .chat-input-group').style.display = chatControls;
     document.querySelector('.team-chat-container #yellowChatMessages + .chat-input-group').style.display = chatControls;
+    
+    // HIDE/SHOW IMAGE BUTTONS BASED ON NEW SETTING
+    const displayImages = (systemConfig.allowChat && systemConfig.allowImageUpload) ? 'flex' : 'none';
+    document.querySelectorAll('.img-upload-btn').forEach(btn => {
+        btn.style.display = displayImages;
+    });
 }
 
 // =========================================================================================
@@ -1367,7 +1376,6 @@ async function refillMainTeam(){
   }
 }
 
-// MODIFIED: Deletion Logic to ensure notification and correct colors
 async function deletePlayer(table, id){
   let playerName = "";
   let isMainTeam = table === "main_team";
@@ -1406,10 +1414,8 @@ async function deletePlayer(table, id){
       return;
   }
 
-  // Send notification for main/waiting list deletion
   if ((table === "main_team" || table === "waiting_list") && playerName) {
       const listName = table === "main_team" ? "Main Team" : "Waiting List";
-      // Using "left" keyword triggers red balloon
       const message = `Player ${playerName} left the ${listName}.`; 
       await sendSystemMessageToChat(playerName, message);
   }
@@ -1976,7 +1982,6 @@ async function loadMatchAddress() {
     }
 }
 
-// ------------ FIX APPLIED HERE (Using Upsert) ------------
 async function saveMatchAddress(address) {
     if (!systemConfig.allowAddressEdit) {
         alert("Match address editing is currently disabled by the system administrator.");
@@ -1985,7 +1990,6 @@ async function saveMatchAddress(address) {
     }
     const addressToSave = address.trim() || '';
 
-    // Use upsert to handle both insert (if missing) and update (if present)
     const { error } = await supabase
         .from('app_config')
         .upsert({ id: 1, match_address: addressToSave })
@@ -2003,7 +2007,6 @@ async function saveMatchAddress(address) {
     }
     showToast("Address Saved Successfully!");
 }
-// ----------------------------------------------------------
 
 let addressDoubleClickHandler = null;
 function setupAddressEditor() {
@@ -2014,7 +2017,7 @@ function setupAddressEditor() {
     }
 
     addressDoubleClickHandler = function() {
-        addressDisplayElem = document.getElementById('addressDisplay'); // Re-fetch to be safe
+        addressDisplayElem = document.getElementById('addressDisplay'); 
         
         if (!systemConfig.allowAddressEdit) {
             alert("Match address editing is currently disabled by the system administrator.");
@@ -2036,7 +2039,6 @@ function setupAddressEditor() {
             
             const newAddress = input.value;
             
-            // Create text element
             const p = document.createElement('p');
             p.id = 'addressDisplay'; 
             p.style.cssText = 'margin:5px 0; font-weight:bold; cursor:pointer; color:#9c27b0;'; 
@@ -2044,10 +2046,8 @@ function setupAddressEditor() {
 
             input.replaceWith(p); 
             
-            // Re-attach listener immediately
             p.addEventListener('dblclick', addressDoubleClickHandler, false); 
             
-            // Save to DB
             await saveMatchAddress(newAddress); 
         };
         
@@ -2070,7 +2070,6 @@ function playNotificationSound() {
     sound.play().catch(e => console.log("Notification sound blocked:", e));
 }
 
-// MODIFIED: Write to system_history
 async function sendSystemMessageToChat(playerName, content) {
     const { error } = await supabase
         .from('system_history')
@@ -2086,6 +2085,14 @@ async function sendSystemMessageToChat(playerName, content) {
 async function handleImageUpload(inputElement, context) {
     const file = inputElement.files[0];
     if (!file) return;
+    
+    // NEW GUARD: Check if image upload is allowed
+    if (!systemConfig.allowImageUpload) {
+        alert("Image uploads are currently disabled by the system administrator.");
+        inputElement.value = '';
+        return;
+    }
+    
     if (!systemConfig.allowChat) {
         alert("Sending messages is currently disabled by the system administrator.");
         inputElement.value = '';
@@ -2162,7 +2169,6 @@ function renderMessage(message, containerId) {
       contentHtml = `<img src="${imageUrl}" class="chat-uploaded-img" onclick="window.open(this.src, '_blank')">`;
   }
   
-  // NEW: Add Delete Button if it is my message
   let deleteBtnHtml = '';
   if (isMyMessage) {
       let tableName = 'chat_messages';
@@ -2183,7 +2189,6 @@ async function deleteSingleMessage(table, id) {
     if(error) {
         alert("Error deleting message: " + error.message);
     }
-    // No need to reload manually, realtime subscription will handle it
 }
 
 async function loadChatMessages() {
@@ -2240,7 +2245,6 @@ async function sendTeamMessage(team) {
     playNotificationSound();
 }
 
-// MODIFIED: Load from system_history table with Colored Balloons
 async function loadSystemHistory(toggle = true) {
   const historyContainer = document.getElementById('systemHistoryContainer');
   const historyList = document.getElementById('historyList');
@@ -2306,7 +2310,6 @@ function setupRealtime() {
     )
     .subscribe();
     
-    // MODIFIED: System History Updates
     supabase.channel('system-history-updates')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' },
       (payload) => {
@@ -2348,14 +2351,11 @@ function setupRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, async (payload) => { loadPlayers(); })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, async (payload) => { loadPlayers(); })
     
-    // FIXED: Removed sessionStorage clearing from here to persist login
     .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, async (payload) => { 
         loadBlue(); 
-        // sessionStorage.removeItem('blue_captain_unlocked'); <-- DELETED
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, async (payload) => { 
         loadYellow(); 
-        // sessionStorage.removeItem('yellow_captain_unlocked'); <-- DELETED
     })
     
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'id=eq.1' },
@@ -2366,7 +2366,7 @@ function setupRealtime() {
                 systemConfig = { ...systemConfig, ...loadedConfig }; 
                 applyUIRestrictions();
             }
-            // Update Address (FIXED)
+            // Update Address
             if (payload.new.match_address !== undefined) {
                 loadMatchAddress();
             }
@@ -2390,7 +2390,6 @@ function setupRealtime() {
     await loadSystemConfig(); 
     await checkAndClearData(); 
     
-    // FIXED: Load Address Always
     loadMatchAddress(); 
 
     if (new Date().getDay() !== 0 || new Date().getHours() < 18) {
