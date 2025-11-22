@@ -54,7 +54,7 @@ button {
     font-weight: 700;
 }
 
-/* -------------------- 2. NAV CONTROLS (UPDATED) -------------------- */
+/* -------------------- 2. NAV CONTROLS -------------------- */
 .nav-controls {
   margin-bottom: 20px;
   display: flex;
@@ -74,44 +74,43 @@ button {
   justify-content: space-between; 
   width: 100%;
   max-width: 400px;
+  gap: 5px;
 }
-#homeBtn, #blueBtn, #yellowBtn, #addressBtn { /* Added #addressBtn */
-    width: 100%; 
-    margin: 0 5px; 
+#homeBtn, #blueBtn, #yellowBtn, #addressBtn, #arcadeBtn { 
+    border-radius: 8px;
     font-size: 14px; 
 }
-#homeBtn { background:#d32f2f; color:#fff; }
-#blueBtn { background:#1976d2; color:#fff; }
-#yellowBtn { background:#fbc02d; color:#000; }
+#homeBtn { background:#d32f2f; color:#fff; width: 100%; margin: 0 5px; }
+#blueBtn { background:#1976d2; color:#fff; width: 100%; margin: 0 5px; }
+#yellowBtn { background:#fbc02d; color:#000; width: 100%; margin: 0 5px; }
+
+/* Address & Arcade & Settings Layout */
 #addressBtn { 
     background:#9c27b0; 
     color:#fff; 
-    font-size: 14px; 
-    margin-right: 5px; /* Ensures consistent margin with the group */
-    /* NEW: Adjusted to show address summary */
     white-space: nowrap; 
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block; 
-    max-width: 160px;
+    flex: 2; /* Address takes more space */
+}
+#arcadeBtn {
+    background: #673AB7;
+    color: #fff;
+    flex: 1; /* Game button */
 }
 
-/* New Settings/Audio Button Style Group */
 .settings-audio-group {
     display: flex;
     gap: 5px; 
-    /* The group width is calculated to occupy roughly the space of two buttons, 
-       maintaining symmetry with the address button. */
-    width: calc(66.66% - 5px); /* Adjusted for better visual balance */
+    flex: 1.5;
     justify-content: center;
 }
-/* Ensure these buttons are smaller and fit into the new layout */
 #audioToggleBtn, #settingsBtn { 
   background: #616161 !important;
   color: #fff !important;
-  font-size: 14px; /* Smaller font for a smaller look */
-  padding: 8px 5px !important; /* Smaller padding */
-  width: 50% !important; /* Half of the settings-audio-group */
+  font-size: 14px; 
+  padding: 8px 5px !important; 
+  width: 50% !important; 
   margin: 0 !important; 
   border-radius: 8px; 
   box-sizing: border-box; 
@@ -296,7 +295,7 @@ li {
   background: #555 !important;
   color: #fff !important;
   padding: 8px 12px !important;
-  order: 3;
+  order: 4;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -306,7 +305,7 @@ li {
   background: #d32f2f;
   color: #fff;
   padding: 8px 15px;
-  order: 4; 
+  order: 5; 
 }
 .chat-uploaded-img {
     max-width: 100%;
@@ -317,13 +316,24 @@ li {
     border: 1px solid #555;
 }
 
-/* -------------------- 6. POSITION MENU MODAL STYLES -------------------- */
+/* NEW: TEAM ADD BUTTON IN CHAT */
+.team-add-btn {
+  background: #009688 !important; 
+  color: #fff !important;
+  padding: 8px 12px !important;
+  order: 3; 
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-right: 5px;
+}
+
+/* -------------------- 6. MODALS STYLES -------------------- */
 .position-menu-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
@@ -335,14 +345,8 @@ li {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    width: 90%;
-    max-width: 350px;
+    width: 90%; max-width: 350px;
     text-align: center;
-}
-.position-menu-box h3 {
-    margin-top: 0;
-    color: #fff;
-    font-size: 18px;
 }
 .position-menu-grid {
     display: grid;
@@ -358,123 +362,67 @@ li {
     border-radius: 6px;
     transition: background-color 0.2s;
 }
-.position-menu-grid button:hover {
-    background-color: #d32f2f;
-}
+.position-menu-grid button:hover { background-color: #d32f2f; }
 
-/* -------------------- 7. SETTINGS MODAL STYLES -------------------- */
+/* Settings Modal */
 .settings-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.9);
     display: none; 
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    padding: 10px;
+    justify-content: center; align-items: center;
+    z-index: 2000; padding: 10px;
 }
 .settings-modal-content {
-    background-color: #1e1e1e;
-    padding: 25px;
-    border-radius: 15px;
+    background-color: #1e1e1e; padding: 25px; border-radius: 15px;
     box-shadow: 0 5px 25px rgba(0, 0, 0, 0.8);
-    width: 95%;
-    max-width: 450px;
-    text-align: left;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh; 
+    width: 95%; max-width: 450px;
+    text-align: left; color: #fff;
+    display: flex; flex-direction: column; max-height: 90vh; 
 }
-.settings-modal-content h2 {
+.settings-modal-content h2 { text-align: center; color: #d32f2f; margin-bottom: 20px; flex-shrink: 0; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
+.setting-item:last-child { border-bottom: none; }
+.setting-item input[type="checkbox"] { transform: scale(1.5); cursor: pointer; }
+.password-input-group { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
+.password-input-group input[type="password"] { width: 70%; text-align: center; font-size: 16px; }
+.settings-options-container { overflow-y: auto; padding: 10px; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; flex-grow: 1; }
+.settings-footer { text-align: center; margin-top: 0; flex-shrink: 0; padding-top: 15px; border-top: 1px solid #333; }
+#saveSettingsBtn { background: #1976d2; color: #fff; width: 100%; padding: 12px; }
+
+.danger-zone { margin-top: 20px; padding-top: 10px; border-top: 1px solid #555; }
+.danger-zone h2 { color: #ffeb3b; text-align: center; font-size: 18px; }
+.danger-btn { background-color: #d32f2f; color: #fff; width: 100%; padding: 10px; margin-top: 8px; font-size: 14px; }
+.danger-btn:hover { background-color: #e57373; }
+#matchAddressInput { width: 100%; text-align: left; margin-top: 5px; margin-bottom: 15px; }
+
+/* NEW: MINI MODAL FOR CHAT TEAM ADD & ARCADE */
+.mini-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2500;
+}
+.mini-modal-box {
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 10px;
+    width: 85%;
+    max-width: 300px;
     text-align: center;
-    color: #d32f2f;
-    margin-bottom: 20px;
-    flex-shrink: 0; 
+    border: 1px solid #555;
+    box-shadow: 0 4px 15px #000;
 }
-.setting-item {
+.mini-modal-box input {
+    width: 90% !important;
+    margin-bottom: 15px;
+}
+.team-select-btns {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #333;
-}
-.setting-item:last-child {
-    border-bottom: none;
-}
-.setting-item label {
-    font-weight: 600;
-    font-size: 15px;
-}
-.setting-item input[type="checkbox"] {
-    transform: scale(1.5);
-    cursor: pointer;
-}
-.password-input-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: space-around;
     gap: 10px;
-    margin-bottom: 20px;
-}
-.password-input-group input[type="password"] {
-    width: 70%;
-    text-align: center;
-    font-size: 16px;
-}
-.settings-options-container {
-    overflow-y: auto; 
-    padding: 10px;
-    border: 1px solid #333;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    flex-grow: 1; 
-}
-.settings-footer {
-    text-align: center;
-    margin-top: 0; 
-    flex-shrink: 0; 
-    padding-top: 15px; 
-    border-top: 1px solid #333;
-}
-#saveSettingsBtn {
-    background: #1976d2;
-    color: #fff;
-    width: 100%;
-    padding: 12px;
-}
-
-.danger-zone {
-    margin-top: 20px;
-    padding-top: 10px;
-    border-top: 1px solid #555;
-}
-.danger-zone h2 {
-    color: #ffeb3b; 
-    text-align: center;
-    font-size: 18px;
-}
-.danger-btn {
-    background-color: #d32f2f; 
-    color: #fff;
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    font-size: 14px;
-}
-.danger-btn:hover {
-    background-color: #e57373;
-}
-
-/* NEW ADDRESS INPUT STYLE */
-#matchAddressInput {
-    width: 100%;
-    text-align: left;
-    margin-top: 5px;
-    margin-bottom: 15px;
 }
 </style>
 </head>
@@ -497,6 +445,7 @@ li {
   </div>
   <div class="nav-buttons-bottom">
     <button id="addressBtn" onclick="openGoogleMaps()">Address 📍</button> 
+    <button id="arcadeBtn" onclick="openGameCenter()">Games 🎮</button>
     <div class="settings-audio-group">
         <button id="audioToggleBtn" onclick="toggleBackgroundMusic()">
             Audio</button>
@@ -505,13 +454,14 @@ li {
     </div>
   </div>
 </div>
+
 <div id="main" class="container">
   <h1 style="margin-top:0; font-size:28px; display:flex; align-items:center; justify-content:center; gap:8px;">
     ⚽ <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> ⚽
   </h1>
 
   <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">
-    The game will be at 9:40 AM
+    The Game will be on Sunday at 9:40AM
   </p>
 
   <div id="playerManagement">
@@ -545,6 +495,8 @@ li {
       <input type="text" id="chatNameInput" placeholder="Your name" value="" style="text-align: center;">
       <input type="text" id="chatMsgInput" placeholder="Type a message...">
       
+      <button class="team-add-btn" onclick="openTeamAddModal()" title="Add Player to Team">➕⚽</button>
+
       <input type="file" id="globalChatFile" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'global')">
       <button class="img-upload-btn" onclick="document.getElementById('globalChatFile').click()">📷</button>
       
@@ -716,6 +668,57 @@ li {
         </div>
     </div>
 </div>
+
+<div id="teamAddModalOverlay" class="mini-modal-overlay">
+    <div class="mini-modal-box">
+        <h3 style="color:#fff; margin-top:0;">Add Player to Team</h3>
+        <p style="font-size:12px; color:#ccc;">Same rules apply (PIN/Settings)</p>
+        <input type="text" id="chatTeamAddInput" placeholder="Enter Player Name">
+        
+        <div class="team-select-btns">
+            <button onclick="confirmAddToTeam('blue')" style="background:#1565c0; color:#fff; flex:1;">Blue</button>
+            <button onclick="confirmAddToTeam('yellow')" style="background:#fdd835; color:#000; flex:1;">Yellow</button>
+        </div>
+        <button onclick="closeTeamAddModal()" style="background:#555; color:#fff; margin-top:10px; width:100%;">Cancel</button>
+    </div>
+</div>
+
+<div id="gameCenterOverlay" class="mini-modal-overlay">
+    <div class="mini-modal-box" style="max-width: 360px; background: #222; border: 2px solid #673AB7;">
+        <h3 style="color:#fff; margin-top:0; font-family: 'Courier New', monospace;">🕹️ ETERNAL ARCADE 🕹️</h3>
+        
+        <div id="gameMenu">
+            <p style="color:#ccc; font-size:12px;">Select a Game:</p>
+            <button onclick="startGame('juggling')" style="background:linear-gradient(45deg, #FF9800, #F57C00); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">⚽ Keepy Uppy</button>
+            <button onclick="startGame('flappy')" style="background:linear-gradient(45deg, #2196F3, #1976D2); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">🚀 Flappy Ball</button>
+            <button onclick="startGame('penalty')" style="background:linear-gradient(45deg, #4CAF50, #388E3C); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">🥅 Penalty Rush</button>
+        </div>
+
+        <div id="gameArea" style="display:none; position:relative;">
+            <canvas id="gameCanvas" width="320" height="400" style="background:#333; border-radius:8px; cursor:pointer; box-shadow: 0 0 15px rgba(103, 58, 183, 0.5);"></canvas>
+            <div id="scoreDisplay" style="position:absolute; top:10px; left:10px; color:#fff; font-size:20px; font-weight:bold; pointer-events:none; text-shadow: 2px 2px #000;">Score: 0</div>
+            <div id="startPrompt" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-weight:bold; pointer-events:none; text-align:center; text-shadow: 2px 2px #000; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px;">Tap to Start!</div>
+            <button onclick="exitGame()" style="background:#d32f2f; margin-top:5px; width:100%;">Exit to Menu</button>
+        </div>
+
+        <div id="leaderboardSection" style="margin-top:15px; border-top:1px solid #555; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#FFD700; margin:5px 0;">🏆 High Scores</h4>
+                <select id="lbGameSelector" onchange="loadLeaderboard(this.value)" style="background:#333; color:#fff; border:1px solid #555; font-size:12px;">
+                    <option value="juggling">Keepy Uppy</option>
+                    <option value="flappy">Flappy Ball</option>
+                    <option value="penalty">Penalty Rush</option>
+                </select>
+            </div>
+            <ul id="leaderboardList" style="font-size:12px; max-height:100px; overflow-y:auto; text-align:left; padding:5px; background:#111; border-radius:5px;">
+                <li style="color:#aaa;">Loading...</li>
+            </ul>
+        </div>
+
+        <button onclick="closeGameCenter()" id="closeGameBtn" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close Arcade</button>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script> 
 
@@ -733,7 +736,7 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 let currentPositionTarget = { team: null, playerId: null, playerName: null };
 const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
 let audioInitialized = false; 
-let matchAddress = "Address 📍"; // NEW: Default Address text for the button
+let matchAddress = "Address 📍"; 
 
 // Admin PINs
 const ADMIN_PASSWORD = "2023"; 
@@ -835,7 +838,7 @@ function getColorForUsername(username) {
 }
 
 // =========================================================================================
-// ---- 2. UI & AUDIO CONTROL (UPDATED) ----
+// ---- 2. UI & AUDIO CONTROL ----
 // =========================================================================================
 
 function showSection(id){
@@ -877,7 +880,6 @@ function toggleBackgroundMusic() {
     }
 }
 
-// UPDATED FUNCTION: Open Google Maps with the saved address
 async function openGoogleMaps() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     const savedAddress = data ? data.match_address : null;
@@ -887,14 +889,12 @@ async function openGoogleMaps() {
         return;
     }
     
-    // Encode the address for the URL
-    // Fix: Use the correct Google Maps URL format
     const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`;
     window.open(mapUrl, '_blank');
 }
 
 // =========================================================================================
-// ---- 3. SYSTEM SETTINGS & PIN CHECKS (MODIFIED) ----
+// ---- 3. SYSTEM SETTINGS & PIN CHECKS ----
 // =========================================================================================
 
 async function showSettingsModal() {
@@ -904,7 +904,6 @@ async function showSettingsModal() {
     document.getElementById('settingsControls').style.display = 'none'; 
     document.getElementById('settingsModalOverlay').style.display = 'flex';
     
-    // NEW: Load current match address into the settings field
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     document.getElementById('matchAddressInput').value = data ? data.match_address : '';
 }
@@ -948,7 +947,6 @@ async function saveSettings() {
         requireTeamPinForAdd: document.getElementById('requireTeamPinForAdd').checked,
     };
     
-    // NEW: Get match address from input field
     const newMatchAddress = document.getElementById('matchAddressInput').value.trim();
 
     const { error } = await supabase
@@ -956,7 +954,7 @@ async function saveSettings() {
         .update({ 
             system_config: JSON.stringify(newConfig),
             match_address: newMatchAddress 
-        }) // NEW: Include address update
+        }) 
         .eq('id', 1);
 
     if (error) {
@@ -966,8 +964,8 @@ async function saveSettings() {
     }
     
     systemConfig = newConfig;
-    matchAddress = newMatchAddress; // NEW: Update local state
-    loadMatchAddress(); // NEW: Refresh the address button display
+    matchAddress = newMatchAddress; 
+    loadMatchAddress(); 
     applyUIRestrictions();
     document.getElementById('settingsModalOverlay').style.display = 'none';
     alert('System settings and address saved successfully!');
@@ -1203,7 +1201,7 @@ function applyUIRestrictions() {
 }
 
 // =========================================================================================
-// ---- 4. TIME & WEEKLY CLEANUP (MODIFIED) ----
+// ---- 4. TIME & WEEKLY CLEANUP ----
 // =========================================================================================
 
 function isWithinAllowedTime(){
@@ -1243,57 +1241,12 @@ function formatPlayerTime(timestamp) {
 }
 
 async function checkAndClearData() {
-    const now = new Date();
-    let cleanupTimepoint = new Date(now);
-    const currentDay = now.getDay(); 
-    const currentHour = now.getHours();
-    
-    cleanupTimepoint.setDate(now.getDate() - currentDay);
-    cleanupTimepoint.setHours(18, 0, 0, 0); 
-    
-    if (currentDay === 0 && currentHour < 18) {
-        cleanupTimepoint.setDate(cleanupTimepoint.getDate() - 7);
-    } 
-    
-    const lastCleanupTimestamp = localStorage.getItem('last_cleanup_timestamp');
-    let lastCleanupDate = lastCleanupTimestamp ? new Date(parseInt(lastCleanupTimestamp)) : new Date(0);
-
-    if (cleanupTimepoint.getTime() > lastCleanupDate.getTime()) {
-        console.log("Weekly cleanup required. Clearing data..."); 
-        const tablesToClear = ["main_team", "waiting_list", "blue_team", "yellow_team", "chat_messages", "blue_chat", "yellow_chat", "system_history"];
-        
-        await Promise.all(tablesToClear.map(table => {
-            const deleteQuery = supabase.from(table).delete().gt('id', 0); 
-            return deleteQuery
-                .then(() => console.log(`Table ${table} cleared.`)) 
-                .catch(error => console.error(`Error clearing table ${table}:`, error)); 
-        }));
-        
-        // NEW: Updated default match address text
-        const defaultMatchAddress = "Click here to set match address"; 
-        const { error: configError } = await supabase
-            .from('app_config')
-            .update({ match_address: defaultMatchAddress })
-            .eq('id', 1);
-        if (configError) console.error("Error resetting match address:", configError.message);
-
-        localStorage.setItem('last_cleanup_timestamp', now.getTime().toString());
-        console.log("Cleanup complete. Timestamp updated."); 
-        
-        loadPlayers();
-        loadBlue();
-        loadYellow();
-        loadChatMessages();
-        loadTeamChatMessages('blue');
-        loadTeamChatMessages('yellow');
-        loadMatchAddress();
-        loadSystemHistory(false); 
-    } 
+    // Automated cleanup logic (Disabled by default to prevent accidental data loss)
+    // Can be re-enabled if needed.
 }
 
-
 // =========================================================================================
-// ---- 5. MAIN & WAITING LISTS MANAGEMENT (MODIFIED for Notifications) ----
+// ---- 5. MAIN & WAITING LISTS MANAGEMENT ----
 // =========================================================================================
 
 async function addPlayer(){
@@ -1519,23 +1472,28 @@ function reloadList(table){
 }
 
 // =========================================================================================
-// ---- 6. BLUE/YELLOW TEAM MANAGEMENT ----
+// ---- 6. BLUE/YELLOW TEAM MANAGEMENT (MODIFIED FOR CHAT ADD) ----
 // =========================================================================================
 
-async function addBlue(){
+async function addBlue(providedName = null){
   if(!systemConfig.allowTeamEdit){
     alert("Player addition to teams is currently disabled by the system administrator.");
     return;
   }
-  const name=document.getElementById("blueInput").value.trim();
-  if(!name) return;
+  
+  let name = providedName; 
+  if (!name) {
+      const inputElem = document.getElementById("blueInput");
+      name = inputElem ? inputElem.value.trim() : "";
+  }
+  if(!name) return providedName ? alert("Please enter a name.") : null;
 
   const { data: team } = await supabase.from("blue_team").select("id");
   if(team.length >= 12) return alert("Blue team is full (12 players).");
 
   let newPin = null;
   if (team.length === 0) { 
-      newPin = prompt("Create 4-digit PIN for Player #1 (Captain):");
+      newPin = prompt(`Blue Team Empty. Create 4-digit PIN for Player #1 (Captain - ${name}):`);
       if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
           alert("Invalid PIN. Must be 4 numbers. Aborting.");
           return;
@@ -1558,9 +1516,18 @@ async function addBlue(){
   };
   if (newPin) { playerData.player_pin = newPin; }
 
-  await supabase.from("blue_team").insert([playerData]);
-  document.getElementById("blueInput").value="";
-  loadBlue();
+  const { error } = await supabase.from("blue_team").insert([playerData]);
+  
+  if(error) {
+      alert("Error adding player: " + error.message);
+  } else {
+      if(!providedName) document.getElementById("blueInput").value="";
+      loadBlue();
+      if(providedName) {
+           alert(`${name} has been added to Blue Team successfully.`);
+           closeTeamAddModal(); 
+      }
+  }
 }
 
 async function loadBlue(){
@@ -1593,20 +1560,25 @@ async function loadBlue(){
   setupDraggable('blue');
 }
 
-async function addYellow(){
+async function addYellow(providedName = null){
   if(!systemConfig.allowTeamEdit){
     alert("Player addition to teams is currently disabled by the system administrator.");
     return;
   }
-  const name=document.getElementById("yellowInput").value.trim();
-  if(!name) return;
+  
+  let name = providedName;
+  if (!name) {
+      const inputElem = document.getElementById("yellowInput");
+      name = inputElem ? inputElem.value.trim() : "";
+  }
+  if(!name) return providedName ? alert("Please enter a name.") : null;
   
   const { data: team } = await supabase.from("yellow_team").select("id");
   if(team.length >= 12) return alert("Yellow team is full (12 players).");
 
   let newPin = null;
   if (team.length === 0) { 
-      newPin = prompt("Create 4-digit PIN for Player #1 (Captain):");
+      newPin = prompt(`Yellow Team Empty. Create 4-digit PIN for Player #1 (Captain - ${name}):`);
       if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
           alert("Invalid PIN. Must be 4 numbers. Aborting.");
           return;
@@ -1629,9 +1601,18 @@ async function addYellow(){
   };
   if (newPin) { playerData.player_pin = newPin; }
 
-  await supabase.from("yellow_team").insert([playerData]);
-  document.getElementById("yellowInput").value="";
-  loadYellow();
+  const { error } = await supabase.from("yellow_team").insert([playerData]);
+  
+  if(error) {
+      alert("Error adding player: " + error.message);
+  } else {
+      if(!providedName) document.getElementById("yellowInput").value="";
+      loadYellow();
+      if(providedName) {
+           alert(`${name} has been added to Yellow Team successfully.`);
+           closeTeamAddModal();
+      }
+  }
 }
 
 async function loadYellow(){
@@ -2002,7 +1983,7 @@ async function selectPosition(positionCode) {
 
 
 // =========================================================================================
-// ---- 10. ADDRESS, CHAT, HISTORY, REALTIME (UPDATED) ----
+// ---- 10. ADDRESS, CHAT, HISTORY, REALTIME ----
 // =========================================================================================
 
 function showToast(message) {
@@ -2014,7 +1995,6 @@ function showToast(message) {
     setTimeout(() => { toast.remove(); }, 3000);
 }
 
-// UPDATED FUNCTION: Only load the address and update the button text
 async function loadMatchAddress() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     const savedAddress = data ? data.match_address : "Address 📍";
@@ -2022,41 +2002,12 @@ async function loadMatchAddress() {
     
     const addressBtn = document.getElementById('addressBtn');
     if (savedAddress.length > 20 && !savedAddress.includes("set match address")) {
-        // Show a truncated version or just "Address" on the button
         addressBtn.textContent = "Match Address 📍"; 
     } else if (savedAddress.includes("set match address")) {
          addressBtn.textContent = "Set Address 📍"; 
     } else {
         addressBtn.textContent = `${savedAddress} 📍`;
     }
-}
-
-// Function no longer needed since address editing moved to Settings modal only
-function setupAddressEditor() {
-    // This function is obsolete and remains for compatibility but does nothing new.
-    console.log("setupAddressEditor is disabled/modified.");
-}
-
-// Function is now part of saveSettings() - kept for modularity/re-use if needed
-async function saveMatchAddress(address) {
-    if (!systemConfig.allowAddressEdit) {
-        alert("Match address editing is currently disabled by the system administrator.");
-        return;
-    }
-    const addressToSave = address.trim() || '';
-
-    const { error } = await supabase
-        .from('app_config')
-        .upsert({ id: 1, match_address: addressToSave })
-        .select();
-
-    if (error) {
-        console.error("Error saving address:", error);
-        alert("Failed to save address. Check connection.");
-        return;
-    }
-    
-    showToast("Address Saved Successfully!");
 }
 
 function playNotificationSound() {
@@ -2130,10 +2081,6 @@ async function handleImageUpload(inputElement, context) {
     }
     inputElement.value = '';
 }
-
-// =========================================================================================
-// ---- UPDATED: DELETE SINGLE MESSAGE LOGIC ----
-// =========================================================================================
 
 function renderMessage(message, containerId) {
   const messagesContainer = document.getElementById(containerId);
@@ -2265,15 +2212,14 @@ async function loadSystemHistory(toggle = true) {
     let icon = '';
     const contentLower = item.content.toLowerCase();
 
-    // Color Logic
     if (contentLower.includes('joined')) {
-        bgColor = '#2e7d32'; // Green
+        bgColor = '#2e7d32'; 
         icon = '✔';
     } else if (contentLower.includes('left')) {
-        bgColor = '#c62828'; // Red
+        bgColor = '#c62828'; 
         icon = '✖';
     } else if (contentLower.includes('moved') || contentLower.includes('waiting list')) {
-        bgColor = '#f57f17'; // Orange
+        bgColor = '#f57f17'; 
         textColor = '#000';
         icon = '⚠';
     }
@@ -2369,6 +2315,364 @@ function setupRealtime() {
     .subscribe();
 }
 
+// ==================== NEW CHAT TEAM ADD LOGIC ====================
+
+function openTeamAddModal() {
+    if(!systemConfig.allowTeamEdit){
+        alert("Adding players to teams is currently disabled.");
+        return;
+    }
+    
+    const currentChatName = document.getElementById('chatNameInput').value;
+    document.getElementById('chatTeamAddInput').value = currentChatName;
+    
+    document.getElementById('teamAddModalOverlay').style.display = 'flex';
+}
+
+function closeTeamAddModal() {
+    document.getElementById('teamAddModalOverlay').style.display = 'none';
+}
+
+function confirmAddToTeam(teamColor) {
+    const name = document.getElementById('chatTeamAddInput').value.trim();
+    if (!name) {
+        alert("Please enter a player name.");
+        return;
+    }
+    
+    if (teamColor === 'blue') {
+        addBlue(name);
+    } else {
+        addYellow(name);
+    }
+}
+
+// ==================== ARCADE GAME ENGINE ====================
+
+let gameInterval = null;
+let gameActive = false;
+let currentGameType = '';
+let currentScore = 0;
+let frameCount = 0;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+// Game State Variables
+let ball = { x: 160, y: 200, r: 15, dy: 0, dx: 0 };
+let obstacles = []; // For Flappy
+let goalTarget = { x: 0, width: 60, speed: 2, direction: 1 }; // For Penalty
+
+// --- Main Controls ---
+
+async function openGameCenter() {
+    document.getElementById('gameCenterOverlay').style.display = 'flex';
+    document.getElementById('gameMenu').style.display = 'block';
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('closeGameBtn').style.display = 'block';
+    document.getElementById('leaderboardSection').style.display = 'block';
+    loadLeaderboard('juggling'); // Default load
+}
+
+function closeGameCenter() {
+    exitGame();
+    document.getElementById('gameCenterOverlay').style.display = 'none';
+}
+
+function exitGame() {
+    gameActive = false;
+    cancelAnimationFrame(gameInterval);
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('gameMenu').style.display = 'block';
+    document.getElementById('leaderboardSection').style.display = 'block';
+    document.getElementById('closeGameBtn').style.display = 'block';
+    // Remove listeners
+    canvas.onmousedown = canvas.ontouchstart = null;
+}
+
+function startGame(type) {
+    currentGameType = type;
+    document.getElementById('gameMenu').style.display = 'none';
+    document.getElementById('leaderboardSection').style.display = 'none';
+    document.getElementById('closeGameBtn').style.display = 'none';
+    document.getElementById('gameArea').style.display = 'block';
+    document.getElementById('startPrompt').style.display = 'block';
+    document.getElementById('startPrompt').innerText = "Tap to Start!";
+    
+    currentScore = 0;
+    document.getElementById('scoreDisplay').innerText = "Score: 0";
+    gameActive = false;
+    frameCount = 0;
+
+    // Initialize specific game
+    if (type === 'juggling') initJuggling();
+    else if (type === 'flappy') initFlappy();
+    else if (type === 'penalty') initPenalty();
+
+    // Draw first frame
+    drawGame();
+
+    // Input Handler
+    canvas.onmousedown = canvas.ontouchstart = function(e) {
+        e.preventDefault();
+        handleInput();
+    };
+}
+
+function handleInput() {
+    if (!gameActive) {
+        gameActive = true;
+        document.getElementById('startPrompt').style.display = 'none';
+        gameLoop();
+        // First jump/action on start
+        if (currentGameType === 'juggling') { ball.dy = -10; ball.dx = (Math.random()-0.5)*4; }
+        if (currentGameType === 'flappy') { ball.dy = -7; }
+        return;
+    }
+
+    if (currentGameType === 'juggling') {
+        ball.dy = -10; // Jump
+        ball.dx = (Math.random() - 0.5) * 5; // Spin
+        currentScore++;
+    } 
+    else if (currentGameType === 'flappy') {
+        ball.dy = -7; // Jump
+    } 
+    else if (currentGameType === 'penalty') {
+        shootPenalty();
+    }
+    
+    if (currentGameType !== 'penalty') {
+        document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
+        playNotificationSound();
+    }
+}
+
+function gameLoop() {
+    if (!gameActive) return;
+    
+    // Clear Canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    frameCount++;
+
+    if (currentGameType === 'juggling') updateJuggling();
+    else if (currentGameType === 'flappy') updateFlappy();
+    else if (currentGameType === 'penalty') updatePenalty();
+
+    if (gameActive) {
+        gameInterval = requestAnimationFrame(gameLoop);
+    }
+}
+
+// --- GAME 1: KEEPY UPPY ---
+function initJuggling() {
+    ball = { x: canvas.width/2, y: canvas.height/2, r: 20, dy: 0, dx: 2 };
+}
+function updateJuggling() {
+    ball.dy += 0.5; // Gravity
+    ball.y += ball.dy;
+    ball.x += ball.dx;
+
+    // Walls
+    if (ball.x + ball.r > canvas.width || ball.x - ball.r < 0) ball.dx = -ball.dx;
+
+    // Floor (Die)
+    if (ball.y + ball.r > canvas.height) gameOver();
+
+    // Draw
+    drawBall(ball.x, ball.y, ball.r, "#fff");
+}
+
+// --- GAME 2: FLAPPY BALL ---
+function initFlappy() {
+    ball = { x: 50, y: canvas.height/2, r: 12, dy: 0, dx: 0 };
+    obstacles = [];
+}
+function updateFlappy() {
+    ball.dy += 0.4; // Gravity
+    ball.y += ball.dy;
+
+    // Spawn Obstacles (Pipes)
+    if (frameCount % 100 === 0) {
+        let gap = 120; // Gap size
+        let topH = Math.random() * (canvas.height - gap - 40) + 20;
+        obstacles.push({ x: canvas.width, topH: topH, gap: gap, passed: false });
+    }
+
+    // Move & Draw Obstacles
+    ctx.fillStyle = "#4CAF50";
+    obstacles.forEach((obs, index) => {
+        obs.x -= 2; // Speed
+        
+        // Top Pipe
+        ctx.fillRect(obs.x, 0, 40, obs.topH);
+        // Bottom Pipe
+        ctx.fillRect(obs.x, obs.topH + obs.gap, 40, canvas.height - (obs.topH + obs.gap));
+
+        // Score logic
+        if (obs.x + 40 < ball.x && !obs.passed) {
+            currentScore++;
+            obs.passed = true;
+            document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
+            playNotificationSound();
+        }
+
+        // Collision logic
+        if (
+            ball.x + ball.r > obs.x && ball.x - ball.r < obs.x + 40 &&
+            (ball.y - ball.r < obs.topH || ball.y + ball.r > obs.topH + obs.gap)
+        ) {
+            gameOver();
+        }
+    });
+
+    // Remove off-screen pipes
+    if (obstacles.length > 0 && obstacles[0].x < -40) obstacles.shift();
+
+    // Floor/Ceiling collision
+    if (ball.y + ball.r > canvas.height || ball.y - ball.r < 0) gameOver();
+
+    drawBall(ball.x, ball.y, ball.r, "#FFD700");
+}
+
+// --- GAME 3: PENALTY RUSH ---
+function initPenalty() {
+    ball = { x: canvas.width/2, y: canvas.height - 40, r: 15, dy: 0, dx: 0, state: 'ready' };
+    goalTarget = { x: 50, width: 80, speed: 3, direction: 1 };
+}
+function updatePenalty() {
+    // Move Goal Keeper/Target
+    goalTarget.x += goalTarget.speed * goalTarget.direction;
+    if (goalTarget.x + goalTarget.width > canvas.width || goalTarget.x < 0) goalTarget.direction *= -1;
+
+    // Draw Goal
+    ctx.fillStyle = "#333";
+    ctx.fillRect(0, 0, canvas.width, 100); // Goal net area
+    
+    // Draw Moving Goalkeeper (Red Block)
+    ctx.fillStyle = "#d32f2f";
+    ctx.fillRect(goalTarget.x, 60, goalTarget.width, 20); // The "Keeper"
+
+    // Draw Goal Lines
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 5;
+    ctx.strokeRect(20, 10, canvas.width - 40, 90);
+
+    // Ball Logic
+    if (ball.state === 'shooting') {
+        ball.y -= 15; // Shoot up
+        ball.r -= 0.2; // Perspective effect
+        if (ball.y < 80) { // Reached Goal Line
+             // Aim Practice: Hit the moving target to score
+             if (ball.x > goalTarget.x && ball.x < goalTarget.x + goalTarget.width) {
+                 // GOAL!
+                 currentScore++;
+                 document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
+                 ball.state = 'reset';
+                 ball.y = canvas.height - 40;
+                 ball.r = 15;
+                 goalTarget.speed += 0.5; // Make it harder
+                 playNotificationSound();
+             } else {
+                 gameOver(); // Missed
+             }
+        }
+    } else if (ball.state === 'reset') {
+        ball.state = 'ready';
+    }
+
+    // Draw Ball
+    drawBall(ball.x, ball.y, ball.r, "#fff");
+}
+
+function shootPenalty() {
+    if (ball.state === 'ready') {
+        ball.state = 'shooting';
+    }
+}
+
+// --- SHARED FUNCTIONS ---
+
+function drawBall(x, y, r, color) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
+}
+
+function drawGame() {
+    // Used for initial static frame
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (currentGameType === 'juggling') initJuggling(); // reset positions for preview
+    if (currentGameType === 'flappy') initFlappy();
+    if (currentGameType === 'penalty') initPenalty();
+    
+    if (currentGameType === 'juggling') drawBall(160, 200, 20, "#fff");
+    if (currentGameType === 'flappy') drawBall(50, 200, 12, "#FFD700");
+    if (currentGameType === 'penalty') {
+        ctx.fillStyle = "#d32f2f";
+        ctx.fillRect(120, 60, 80, 20);
+        drawBall(160, 360, 15, "#fff");
+    }
+}
+
+async function gameOver() {
+    gameActive = false;
+    cancelAnimationFrame(gameInterval);
+    const playerName = document.getElementById('chatNameInput').value.trim() || 'Anonymous';
+    
+    // Save Score
+    if (currentScore > 0) {
+        const { error } = await supabase
+            .from('game_scores')
+            .insert([{ game_name: currentGameType, username: playerName, score: currentScore }]);
+        if(error) console.error(error);
+    }
+
+    alert(`Game Over! \nGame: ${currentGameType.toUpperCase()} \nScore: ${currentScore}`);
+    
+    // Return to menu
+    exitGame();
+    // Refresh leaderboard for the game we just played
+    document.getElementById('lbGameSelector').value = currentGameType;
+    loadLeaderboard(currentGameType);
+}
+
+async function loadLeaderboard(gameName) {
+    const list = document.getElementById('leaderboardList');
+    list.innerHTML = '<li style="color:#aaa;">Loading scores...</li>';
+    
+    const { data, error } = await supabase
+        .from('game_scores')
+        .select('username, score')
+        .eq('game_name', gameName)
+        .order('score', { ascending: false })
+        .limit(10); // Show top 10
+
+    if (error || !data) {
+        list.innerHTML = '<li>Error loading scores</li>';
+    } else if (data.length === 0) {
+        list.innerHTML = '<li>No scores yet. Play now!</li>';
+    } else {
+        list.innerHTML = '';
+        data.forEach((entry, index) => {
+            let medal = '';
+            if(index===0) medal = '🥇';
+            if(index===1) medal = '🥈';
+            if(index===2) medal = '🥉';
+            else medal = `${index+1}.`;
+            
+            list.innerHTML += `<li style="display:flex; justify-content:space-between; color:#fff; padding:3px 0; border-bottom:1px solid #333;">
+                <span>${medal} ${entry.username}</span> 
+                <span style="color:#FFD700; font-weight:bold;">${entry.score}</span>
+            </li>`;
+        });
+    }
+}
+
 (async function init() {
     const storedUsername = localStorage.getItem('chat_username');
     if (storedUsername) {
@@ -2382,10 +2686,6 @@ function setupRealtime() {
     document.getElementById('yellowChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
 
     await loadSystemConfig(); 
-    
-    // 🔴🔴🔴 DISABLED AUTOMATIC DELETION TO PREVENT DATA LOSS 🔴🔴🔴
-    // await checkAndClearData(); // <--- This line is now disabled permanently.
-    
     loadMatchAddress(); 
 
     if (new Date().getDay() !== 0 || new Date().getHours() < 18) {
@@ -2394,7 +2694,6 @@ function setupRealtime() {
         loadYellow(); 
         loadChatMessages();
     }
-    setupAddressEditor(); // Still called, but function body is empty/modified
     setupRealtime();
 })();
 </script>
