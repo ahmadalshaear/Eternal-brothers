@@ -7,163 +7,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* -------------------- 1. GENERAL & BODY STYLES -------------------- */
-body {
-  font-family: "Cairo", sans-serif;
-  background-color: #121212;
-  color: #e0e0e0;
-  margin:0;
-  padding:10px;
-  text-align:center;
-}
-.container {
-  display:none;
-  max-width:95%;
-  margin:auto;
-  background:#1e1e1ecc;
-  padding:20px 10px;
-  border-radius:15px;
-  box-shadow:0 0 10px #000;
-}
+body { font-family: "Cairo", sans-serif; background-color: #121212; color: #e0e0e0; margin:0; padding:10px; text-align:center; }
+.container { display:none; max-width:95%; margin:auto; background:#1e1e1ecc; padding:20px 10px; border-radius:15px; box-shadow:0 0 10px #000; }
 h1,h2,h3 { margin:10px 0; }
-input[type=text] { 
-    padding:8px; 
-    width:80%; 
-    border-radius:8px; 
-    border:1px solid #555; 
-    margin:5px 0; 
-    background:#2c2c2c; 
-    color:#fff; 
-    text-align:center; 
-}
-button {
-  padding:10px 16px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:700;
-}
-.formation-controls button {
-    margin: 5px 3px;
-    background: #009688; 
-    color: #fff;
-    padding: 8px 12px;
-    font-size: 14px;
-}
-.formation-controls .dynamic-btn {
-    background: #FF9800; 
-    font-weight: 700;
-}
+input[type=text] { padding:8px; width:80%; border-radius:8px; border:1px solid #555; margin:5px 0; background:#2c2c2c; color:#fff; text-align:center; }
+button { padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
+.formation-controls button { margin: 5px 3px; background: #009688; color: #fff; padding: 8px 12px; font-size: 14px; }
+.formation-controls .dynamic-btn { background: #FF9800; font-weight: 700; }
 
 /* -------------------- 2. NAV CONTROLS -------------------- */
-.nav-controls {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column; 
-  align-items: center; 
-}
-.nav-buttons-top {
-  display: flex;
-  flex-direction: row; 
-  justify-content: space-between;
-  width: 100%; 
-  max-width: 400px; 
-  margin-bottom: 5px; 
-}
-.nav-buttons-bottom {
-  display: flex;
-  justify-content: space-between; 
-  width: 100%;
-  max-width: 400px;
-  gap: 5px;
-}
-#homeBtn, #blueBtn, #yellowBtn, #addressBtn, #arcadeBtn { 
-    border-radius: 8px;
-    font-size: 14px; 
-}
+.nav-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
+.nav-buttons-top { display: flex; flex-direction: row; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 5px; }
+.nav-buttons-bottom { display: flex; justify-content: space-between; width: 100%; max-width: 400px; gap: 5px; }
+#homeBtn, #blueBtn, #yellowBtn, #addressBtn, #arcadeBtn { border-radius: 8px; font-size: 14px; }
 #homeBtn { background:#d32f2f; color:#fff; width: 100%; margin: 0 5px; }
 #blueBtn { background:#1976d2; color:#fff; width: 100%; margin: 0 5px; }
 #yellowBtn { background:#fbc02d; color:#000; width: 100%; margin: 0 5px; }
-
-/* Address & Arcade & Settings Layout */
-#addressBtn { 
-    background:#9c27b0; 
-    color:#fff; 
-    white-space: nowrap; 
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 2; /* Address takes more space */
-}
-#arcadeBtn {
-    background: #673AB7;
-    color: #fff;
-    flex: 1; /* Game button */
-}
-
-.settings-audio-group {
-    display: flex;
-    gap: 5px; 
-    flex: 1.5;
-    justify-content: center;
-}
-#audioToggleBtn, #settingsBtn { 
-  background: #616161 !important;
-  color: #fff !important;
-  font-size: 14px; 
-  padding: 8px 5px !important; 
-  width: 50% !important; 
-  margin: 0 !important; 
-  border-radius: 8px; 
-  box-sizing: border-box; 
-}
-#settingsBtn {
-  background: #795548 !important;
-}
+#addressBtn { background:#9c27b0; color:#fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 2; }
+#arcadeBtn { background: #673AB7; color: #fff; flex: 1; }
+.settings-audio-group { display: flex; gap: 5px; flex: 1.5; justify-content: center; }
+#audioToggleBtn, #settingsBtn { background: #616161 !important; color: #fff !important; font-size: 14px; padding: 8px 5px !important; width: 50% !important; margin: 0 !important; border-radius: 8px; box-sizing: border-box; }
+#settingsBtn { background: #795548 !important; }
 
 /* -------------------- 3. LISTS & PLAYER INFO -------------------- */
-ul { 
-    list-style:none; 
-    padding:0; 
-    margin-top:10px; 
-    text-align:left; 
-    font-weight:bold; 
-}
-li { 
-    margin:5px 0; 
-    padding:6px; 
-    border-radius:8px; 
-    display:flex; 
-    justify-content:space-between; 
-    align-items:center;
-    flex-direction: row; 
-    min-height: 40px; 
-}
+ul { list-style:none; padding:0; margin-top:10px; text-align:left; font-weight:bold; }
+li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; flex-direction: row; min-height: 40px; }
 #teamList li { background:#a8e6a1; color:black; }
 #waitingList li { background:#ffe0e0; color:black; }
 #blueList li { background:rgba(25,118,210,0.7); color:white; }
 #yellowList li { background:rgba(251,192,42,0.7); color:#000; }
-
-.player-info {
-    display: flex;
-    flex-direction: row; 
-    align-items: center; 
-    font-size: 16px;
-    font-weight: bold;
-}
-.player-time {
-    font-size: 12px;
-    font-weight: normal;
-    color: #616161; 
-    margin-left: 5px; 
-}
-
-.action-btn {
-  margin-left:6px;
-  border:none;
-  border-radius:5px;
-  padding:4px 8px;
-  cursor:pointer;
-  font-weight:bold;
-}
+.player-info { display: flex; flex-direction: row; align-items: center; font-size: 16px; font-weight: bold; }
+.player-time { font-size: 12px; font-weight: normal; color: #616161; margin-left: 5px; }
+.action-btn { margin-left:6px; border:none; border-radius:5px; padding:4px 8px; cursor:pointer; font-weight:bold; }
 .edit-btn { background:#4caf50; color:#fff; }
 .delete-btn { background:#e53935; color:#fff; }
 
@@ -171,214 +46,143 @@ li {
 .field { width:100%; max-width:400px; height:250px; background:#4CAF50; margin:10px auto; border:2px solid #fff; border-radius:10px; position:relative; touch-action:none; }
 .field .center-circle { position:absolute; width:50px;height:50px;border-radius:50%;border:2px solid #fff; top:50%; left:50%; transform:translate(-50%,-50%); }
 .field .penalty-box-left, .field .penalty-box-right { position:absolute;width:60px;height:120px;border:2px solid #fff; top:50%; transform:translateY(-50%); }
-.field .penalty-box-left { left:0; }
-.field .penalty-box-right { right:0; }
+.field .penalty-box-left { left:0; } .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
 
-.player-marker { 
-  width:35px; 
-  height:35px; 
-  border-radius:50%; 
-  color:#fff; 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
-  font-size:14px; 
-  font-weight:bold; 
-  position:absolute; 
-  cursor:pointer; 
-  user-select:none; 
-  border: 2px solid rgba(255, 255, 255, 0.5); 
-  touch-action: none; 
-  transform: translate(-50%, -50%); 
-}
-.player-name {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
-  color: black;
-  white-space: nowrap;
-  font-weight: bold;
-}
-.player-position-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-}
+.player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:pointer; user-select:none; border: 2px solid rgba(255, 255, 255, 0.5); touch-action: none; transform: translate(-50%, -50%); z-index: 10; }
+.player-name { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 12px; color: black; white-space: nowrap; font-weight: bold; text-shadow: 0 0 2px rgba(0,0,0,0.5); }
+.player-position-label { font-size: 13px; font-weight: bold; color: white; }
 
 /* -------------------- 5. CHAT STYLES -------------------- */
-.chat-container {
-  width: 100%; 
-  max-width: 100%; 
-  margin: 20px 0 0 0;
-  background: #242424;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 0 5px #000;
-  text-align: left; 
+.chat-container { width: 100%; max-width: 100%; margin: 20px 0 0 0; background: #242424; border-radius: 10px; padding: 10px; box-shadow: 0 0 5px #000; text-align: left; }
+.team-chat-container { background: none; box-shadow: none; margin: 5px 0 0 0; padding: 0; }
+#onlineUsersBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 5px; margin-bottom: 5px; background: #1a1a1a; border-radius: 8px; min-height: 20px; }
+.online-user-pill { background: #333; border-radius: 15px; padding: 2px 8px; font-size: 11px; display: flex; align-items: center; color: #ccc; border: 1px solid #444; }
+.online-dot { width: 8px; height: 8px; background-color: #00e676; border-radius: 50%; margin-left: 5px; box-shadow: 0 0 5px #00e676; animation: blink 2s infinite; }
+@keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+#typingIndicator { font-size: 11px; color: #00e676; height: 15px; margin-bottom: 2px; font-style: italic; padding-left: 5px; }
+.chat-messages { height: 250px; overflow-y: auto; margin-bottom: 5px; padding: 5px; background: #1e1e1e; border-radius: 5px; display: flex; flex-direction: column; text-align: left; }
+#blueChatMessages { background: rgba(25, 118, 210, 0.1); } #yellowChatMessages { background: rgba(251, 192, 42, 0.1); }
+.message { margin-bottom: 8px; padding: 8px; border-radius: 10px; background: #333; word-wrap: break-word; max-width: 90%; align-self: flex-start; font-size: 14px; line-height: 1.4; text-align: left; border: 1px solid transparent; color: #e0e0e0; position: relative; }
+.my-message { background: #d32f2f; color: #fff; align-self: flex-end; text-align: left; border: 1px solid #d32f2f; }
+.delete-msg-btn { background: transparent !important; border: none; color: #ffeb3b; cursor: pointer; font-size: 16px; margin-left: 8px; padding: 0 5px; line-height: 1; font-weight: bold; }
+.delete-msg-btn:hover { color: #fff; background-color: rgba(0,0,0,0.2) !important; border-radius: 50%; }
+
+/* ---- CUSTOM AUDIO PLAYER STYLES ---- */
+.custom-audio-player {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5; /* White/Light Gray background like the image */
+    border-radius: 12px;
+    padding: 8px 15px;
+    width: 100%;
+    min-width: 240px;
+    margin-top: 8px;
+    box-sizing: border-box;
 }
-.team-chat-container {
-  background: none;
-  box-shadow: none;
-  margin: 5px 0 0 0;
-  padding: 0;
-}
-.chat-messages {
-  height: 250px;
-  overflow-y: auto;
-  margin-bottom: 10px;
-  padding: 5px;
-  background: #1e1e1e;
-  border-radius: 5px;
-  display: flex;
-  flex-direction: column;
-  text-align: left; 
-}
-#blueChatMessages { background: rgba(25, 118, 210, 0.1); }
-#yellowChatMessages { background: rgba(251, 192, 42, 0.1); }
-.message {
-  margin-bottom: 8px;
-  padding: 8px;
-  border-radius: 10px;
-  background: #333; 
-  word-wrap: break-word;
-  max-width: 90%;
-  align-self: flex-start;
-  font-size: 14px;
-  line-height: 1.4;
-  text-align: left; 
-  border: 1px solid transparent; 
-  color: #e0e0e0;
-  position: relative; 
-}
-.my-message {
-  background: #d32f2f;
-  color: #fff;
-  align-self: flex-end;
-  text-align: left; 
-  border: 1px solid #d32f2f; 
-}
-.delete-msg-btn {
-    background: transparent !important;
+.audio-play-btn {
+    background: none;
     border: none;
-    color: #ffeb3b; 
+    color: #333;
+    font-size: 20px;
     cursor: pointer;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+}
+.audio-time-display {
+    color: #333;
     font-size: 14px;
-    margin-left: 8px;
-    padding: 0 5px;
-    line-height: 1;
+    font-family: monospace;
+    font-weight: bold;
+    flex-grow: 1;
+    text-align: left; /* Or center */
 }
-.delete-msg-btn:hover {
-    color: #fff;
-    background-color: rgba(0,0,0,0.2) !important;
-    border-radius: 50%;
-}
+/* ------------------------------------ */
 
-.chat-input-group {
-  display: flex;
-  gap: 5px;
-  align-items: center;
+.chat-input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; position: relative; }
+.chat-row-inputs { display: flex; gap: 5px; width: 100%; }
+.chat-row-tools { display: flex; gap: 5px; justify-content: flex-start; align-items: center; width: 100%; padding: 2px 0; }
+
+#chatNameInput, .chat-row-inputs input[type=text]:first-child { width: 25%; text-align: center; }
+#chatMsgInput, .chat-row-inputs input[type=text]:nth-child(2) { flex-grow: 1; text-align: left; }
+#sendChatBtn, .send-btn { background: #d32f2f; color: #fff; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+.tool-btn { background: #424242; color: #fff; padding: 5px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; min-width: 30px; }
+.tool-btn:active { background: #616161; }
+.sticker-btn { background: #FF9800 !important; } 
+.radio-btn { background: #9C27B0 !important; }
+.team-add-custom { background: #009688 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; font-size: 10px; font-weight: bold; padding: 3px 6px; min-width: 35px; }
+.team-dots { display: flex; gap: 3px; margin-top: 2px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid #fff; } .dot-b { background: #2196F3; } .dot-y { background: #FFEB3B; }
+
+/* RECORDING UI STYLES */
+.recording-overlay {
+    display: none;
+    width: 100%;
+    height: 50px;
+    background: #2c2c2c;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    box-sizing: border-box;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
 }
-#chatNameInput, .team-chat-input-group input[type=text]:first-child {
-  width: 25%;
-  text-align: center; 
-  order: 1; 
+.recording-text {
+    color: #ff1744;
+    font-weight: bold;
+    font-size: 16px;
+    flex-grow: 1;
+    text-align: center;
+    animation: pulseText 1.5s infinite;
 }
-#chatMsgInput, .team-chat-input-group input[type=text]:nth-child(2) {
-  flex-grow: 1;
-  text-align: left; 
-  order: 2;
-}
-.img-upload-btn {
-  background: #555 !important;
-  color: #fff !important;
-  padding: 8px 12px !important;
-  order: 4;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#sendChatBtn, .team-chat-input-group button[id^="send"] {
-  background: #d32f2f;
-  color: #fff;
-  padding: 8px 15px;
-  order: 5; 
-}
-.chat-uploaded-img {
-    max-width: 100%;
-    border-radius: 8px;
-    margin-top: 5px;
-    display: block;
+@keyframes pulseText { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+
+.rec-action-btn {
+    background: transparent;
+    border: none;
     cursor: pointer;
-    border: 1px solid #555;
+    font-size: 20px;
+    padding: 5px 10px;
 }
+.rec-send-btn { color: #FFD700; font-size: 24px; } /* Gold Arrow */
+.rec-trash-btn { color: #ccc; font-size: 22px; } /* Trash */
+.rec-trash-btn:hover { color: #ff1744; }
 
-/* NEW: TEAM ADD BUTTON IN CHAT */
-.team-add-btn {
-  background: #009688 !important; 
-  color: #fff !important;
-  padding: 8px 12px !important;
-  order: 3; 
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  margin-right: 5px;
-}
+.chat-media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #555; }
+.chat-sticker { width: 100px; height: auto; display: block; margin-top: 5px; }
+
+.sticker-popup { position: absolute; bottom: 60px; left: 0; right: 0; margin: auto; background: #2c2c2c; border: 1px solid #555; border-radius: 10px; width: 90%; max-width: 280px; height: 200px; display: none; flex-direction: column; z-index: 2500; box-shadow: 0 -2px 15px rgba(0,0,0,0.7); }
+.sticker-tabs { display: flex; justify-content: space-between; background: #1e1e1e; border-radius: 10px 10px 0 0; padding: 5px; }
+.sticker-tab { background: none; border: none; color: #aaa; font-size: 11px; padding: 5px; cursor: pointer; flex: 1; }
+.sticker-tab.active { color: #fff; border-bottom: 2px solid #FF9800; }
+.sticker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 5px; overflow-y: auto; height: 100%; }
+.sticker-item { width: 100%; height: auto; cursor: pointer; border-radius: 5px; }
+.sticker-item:hover { transform: scale(1.1); }
+
+#radioPlayerSection { display: none; position: absolute; bottom: 60px; left: 0; right: 0; margin: auto; width: 90%; max-width: 300px; background: #333; border-radius: 8px; padding: 10px; border: 1px solid #9C27B0; z-index: 2600; box-shadow: 0 -2px 15px #000; }
+#radioSelect { width: 100%; padding: 8px; background: #1e1e1e; color: #fff; border: 1px solid #555; border-radius: 5px; margin-bottom: 8px; }
+.radio-controls { display: flex; justify-content: space-between; gap: 5px; }
+.radio-control-btn { flex: 1; padding: 8px; background: #009688; color: #fff; border-radius: 5px; border: none; cursor: pointer; }
+.stop-btn { background: #d32f2f; }
 
 /* -------------------- 6. MODALS STYLES -------------------- */
-.position-menu-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-.position-menu-box {
-    background-color: #2c2c2c;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    width: 90%; max-width: 350px;
-    text-align: center;
-}
-.position-menu-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 15px;
-}
-.position-menu-grid button {
-    padding: 12px 5px;
-    font-size: 14px;
-    background-color: #444;
-    color: #fff;
-    border-radius: 6px;
-    transition: background-color 0.2s;
-}
+.position-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.position-menu-box { background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); width: 90%; max-width: 350px; text-align: center; }
+.position-menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.position-menu-grid button { padding: 12px 5px; font-size: 14px; background-color: #444; color: #fff; border-radius: 6px; transition: background-color 0.2s; }
 .position-menu-grid button:hover { background-color: #d32f2f; }
 
-/* Settings Modal */
-.settings-modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
-    display: none; 
-    justify-content: center; align-items: center;
-    z-index: 2000; padding: 10px;
-}
-.settings-modal-content {
-    background-color: #1e1e1e; padding: 25px; border-radius: 15px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.8);
-    width: 95%; max-width: 450px;
-    text-align: left; color: #fff;
-    display: flex; flex-direction: column; max-height: 90vh; 
-}
+.settings-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 10px; }
+.settings-modal-content { background-color: #1e1e1e; padding: 25px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.8); width: 95%; max-width: 450px; text-align: left; color: #fff; display: flex; flex-direction: column; max-height: 90vh; }
 .settings-modal-content h2 { text-align: center; color: #d32f2f; margin-bottom: 20px; flex-shrink: 0; }
 .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
 .setting-item:last-child { border-bottom: none; }
@@ -395,45 +199,17 @@ li {
 .danger-btn:hover { background-color: #e57373; }
 #matchAddressInput { width: 100%; text-align: left; margin-top: 5px; margin-bottom: 15px; }
 
-/* NEW: MINI MODAL FOR CHAT TEAM ADD & ARCADE */
-.mini-modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2500;
-}
-.mini-modal-box {
-    background: #2c2c2c;
-    padding: 20px;
-    border-radius: 10px;
-    width: 85%;
-    max-width: 300px;
-    text-align: center;
-    border: 1px solid #555;
-    box-shadow: 0 4px 15px #000;
-}
-.mini-modal-box input {
-    width: 90% !important;
-    margin-bottom: 15px;
-}
-.team-select-btns {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-}
+.mini-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2500; }
+.mini-modal-box { background: #2c2c2c; padding: 20px; border-radius: 10px; width: 85%; max-width: 300px; text-align: center; border: 1px solid #555; box-shadow: 0 4px 15px #000; }
+.mini-modal-box input { width: 90% !important; margin-bottom: 15px; }
+.team-select-btns { display: flex; justify-content: space-around; gap: 10px; }
 </style>
 </head>
 <body>
 
-<audio id="musicPlayer" loop preload="auto">
-    <source src="https://raw.githubusercontent.com/ahmadalshaear/eternal-brothers-audio/main/Eternal_Brothers%20_FC_new.mp3" type="audio/mp3">
-</audio>
-<audio id="notification-sound" preload="auto">
-    <source src="https://www.soundjay.com/button/button-3.mp3" type="audio/mp3">
-</audio>
+<audio id="musicPlayer" loop preload="auto"><source src="https://raw.githubusercontent.com/ahmadalshaear/eternal-brothers-audio/main/Eternal_Brothers%20_FC_new.mp3" type="audio/mp3"></audio>
+<audio id="radioStreamPlayer" preload="none"></audio>
+<audio id="notification-sound" preload="auto"><source src="https://www.soundjay.com/button/button-3.mp3" type="audio/mp3"></audio>
 
 <div id="toastContainer"></div> 
 
@@ -447,10 +223,8 @@ li {
     <button id="addressBtn" onclick="openGoogleMaps()">Address 📍</button> 
     <button id="arcadeBtn" onclick="openGameCenter()">Games 🎮</button>
     <div class="settings-audio-group">
-        <button id="audioToggleBtn" onclick="toggleBackgroundMusic()">
-            Audio</button>
-        <button id="settingsBtn" onclick="showSettingsModal()">
-            ⚙</button> 
+        <button id="audioToggleBtn" onclick="toggleBackgroundMusic()">Audio</button>
+        <button id="settingsBtn" onclick="showSettingsModal()">⚙</button> 
     </div>
   </div>
 </div>
@@ -459,10 +233,7 @@ li {
   <h1 style="margin-top:0; font-size:28px; display:flex; align-items:center; justify-content:center; gap:8px;">
     ⚽ <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> ⚽
   </h1>
-
-  <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">
-    The Game will be on Sunday at 9:40AM
-  </p>
+  <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">The Game will be on Sunday at 9:40AM</p>
 
   <div id="playerManagement">
     <h2>Add Player</h2>
@@ -479,28 +250,64 @@ li {
   <button onclick="loadSystemHistory()" style="background:#6a1b9a; color:#fff; margin-top:15px; width:80%;">Show Join/Leave History</button>
   <div id="systemHistoryContainer" style="margin-top:10px; padding:10px; background:#2c2c2c; border-radius:8px; max-width: 400px; margin-left: auto; margin-right: auto; text-align:left; display:none;">
       <h3 style="margin-top:0;">Event History</h3>
-      <ul id="historyList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;">
-      </ul>
+      <ul id="historyList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;"></ul>
   </div>
 
-  <p style="margin-top:15px; font-size:12px; color:#ccc;">
-    We might need to change the football field at any time. Please follow the group chat in case of any changes
-  </p>
-  
   <div class="chat-container">
     <h2>Group Chat</h2>
-    <div id="chatMessages" class="chat-messages">
-      </div>
-    <div class="chat-input-group">
-      <input type="text" id="chatNameInput" placeholder="Your name" value="" style="text-align: center;">
-      <input type="text" id="chatMsgInput" placeholder="Type a message...">
-      
-      <button class="team-add-btn" onclick="openTeamAddModal()" title="Add Player to Team">➕⚽</button>
+    <div id="chatMessages" class="chat-messages"></div>
+    
+    <div class="chat-input-area">
+        <div id="recordingBar_global" class="recording-overlay">
+            <button class="rec-action-btn rec-send-btn" onclick="finishVoiceRecording('global', 'send')">➤</button>
+            <span class="recording-text">Recording...</span>
+            <button class="rec-action-btn rec-trash-btn" onclick="finishVoiceRecording('global', 'cancel')">🗑️</button>
+        </div>
 
-      <input type="file" id="globalChatFile" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'global')">
-      <button class="img-upload-btn" onclick="document.getElementById('globalChatFile').click()">📷</button>
-      
-      <button id="sendChatBtn" onclick="sendMessage()">Send</button>
+        <div class="chat-row-inputs">
+            <input type="text" id="chatNameInput" placeholder="Name" value="">
+            <input type="text" id="chatMsgInput" placeholder="Type a message...">
+            <button id="sendChatBtn" class="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+        <div class="chat-row-tools">
+            <input type="file" id="globalChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'global')">
+            <button class="tool-btn" onclick="document.getElementById('globalChatFile').click()" title="Upload">📷</button>
+            <button id="recordBtnGlobal" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('global')" title="Record">🎤</button>
+            <button class="tool-btn sticker-btn" style="margin-left:5px;" onclick="toggleStickerMenu('global')" title="Stickers">☺</button>
+            <button class="tool-btn team-add-custom" style="margin-left:5px;" onclick="openTeamAddModal()" title="Add to Team"><span>Add</span><div class="team-dots"><span class="dot dot-b"></span><span class="dot dot-y"></span></div></button>
+            <button class="tool-btn radio-btn" style="margin-left:5px;" onclick="toggleRadio()" title="Radio">📻</button>
+        </div>
+        
+        <div id="radioPlayerSection">
+            <select id="radioSelect" onchange="changeRadioChannel()">
+                <optgroup label="Quran">
+                    <option value="https://server8.mp3quran.net/afs/001.mp3">Mishary Alafasy</option>
+                    <option value="https://server7.mp3quran.net/basit/001.mp3">Abdulbasit Abdulsamad</option>
+                    <option value="https://server11.mp3quran.net/sds/001.mp3">Abdulrahman Al-Sudais</option>
+                </optgroup>
+                <optgroup label="News/Info">
+                    <option value="https://live-hls-audio-web-aje.getaj.net/AJE/01.m3u8">Al Jazeera English</option>
+                    <option value="https://live-hls-audio-web-aja.getaj.net/AJA/01.m3u8">Al Jazeera Arabic</option>
+                </optgroup>
+                <optgroup label="Entertainment">
+                    <option value="https://l3.itworkscdn.net/itwaudio/9026/stream">Rotana FM</option>
+                </optgroup>
+            </select>
+            <div class="radio-controls">
+                <button class="radio-control-btn" onclick="playRadio()">▶ Play</button>
+                <button class="radio-control-btn stop-btn" onclick="stopRadio()">⏹ Stop</button>
+            </div>
+        </div>
+
+        <div id="stickerPopupGlobal" class="sticker-popup">
+            <div class="sticker-tabs">
+                <button class="sticker-tab active" onclick="showStickerTab('global', 'football')">Football</button>
+                <button class="sticker-tab" onclick="showStickerTab('global', 'funny')">Funny</button>
+                <button class="sticker-tab" onclick="showStickerTab('global', 'action')">Action</button>
+                <button class="sticker-tab" onclick="toggleStickerMenu('global')" style="color: #f44336; font-weight: bold;">✕</button>
+            </div>
+            <div id="stickerGridGlobal" class="sticker-grid"></div>
+        </div>
     </div>
   </div>
 </div>
@@ -522,23 +329,39 @@ li {
   
   <h3>Plan</h3>
   <div id="bluePlan" class="field">
-    <div class="mid-line"></div>
-    <div class="center-circle"></div>
-    <div class="penalty-box-left"></div>
-    <div class="penalty-box-right"></div>
+    <div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>
   </div>
 
   <div class="chat-container team-chat-container">
     <h3>Blue Team Chat 🗩</h3>
     <div id="blueChatMessages" class="chat-messages"></div>
-    <div class="chat-input-group team-chat-input-group">
-      <input type="text" id="blueChatNameInput" placeholder="Your name" value="">
-      <input type="text" id="blueChatMsgInput" placeholder="Message to Blue Team...">
-      
-      <input type="file" id="blueChatFile" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'blue')">
-      <button class="img-upload-btn" onclick="document.getElementById('blueChatFile').click()">📷</button>
-      
-      <button id="sendBlueChatBtn" onclick="sendTeamMessage('blue')">Send</button>
+    <div class="chat-input-area">
+        <div id="recordingBar_blue" class="recording-overlay">
+            <button class="rec-action-btn rec-send-btn" onclick="finishVoiceRecording('blue', 'send')">➤</button>
+            <span class="recording-text">Recording...</span>
+            <button class="rec-action-btn rec-trash-btn" onclick="finishVoiceRecording('blue', 'cancel')">🗑️</button>
+        </div>
+
+        <div class="chat-row-inputs">
+            <input type="text" id="blueChatNameInput" placeholder="Name" value="">
+            <input type="text" id="blueChatMsgInput" placeholder="Message...">
+            <button id="sendBlueChatBtn" class="send-btn" onclick="sendTeamMessage('blue')">Send</button>
+        </div>
+        <div class="chat-row-tools">
+            <input type="file" id="blueChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'blue')">
+            <button class="tool-btn" onclick="document.getElementById('blueChatFile').click()">📷</button>
+            <button id="recordBtnBlue" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('blue')">🎤</button>
+            <button class="tool-btn sticker-btn" style="margin-left:5px;" onclick="toggleStickerMenu('blue')">☺</button>
+        </div>
+        <div id="stickerPopupBlue" class="sticker-popup">
+            <div class="sticker-tabs">
+                <button class="sticker-tab active" onclick="showStickerTab('blue', 'football')">Football</button>
+                <button class="sticker-tab" onclick="showStickerTab('blue', 'funny')">Funny</button>
+                <button class="sticker-tab" onclick="showStickerTab('blue', 'action')">Action</button>
+                <button class="sticker-tab" onclick="toggleStickerMenu('blue')" style="color: #f44336; font-weight: bold;">✕</button>
+            </div>
+            <div id="stickerGridBlue" class="sticker-grid"></div>
+        </div>
     </div>
   </div>
 </div>
@@ -560,23 +383,39 @@ li {
   
   <h3>Plan</h3>
   <div id="yellowPlan" class="field">
-    <div class="mid-line"></div>
-    <div class="center-circle"></div>
-    <div class="penalty-box-left"></div>
-    <div class="penalty-box-right"></div>
+    <div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>
   </div>
 
   <div class="chat-container team-chat-container">
     <h3 style="color: #000;">Yellow Team Chat 🗩</h3>
     <div id="yellowChatMessages" class="chat-messages"></div>
-    <div class="chat-input-group team-chat-input-group">
-      <input type="text" id="yellowChatNameInput" placeholder="Your name" value="">
-      <input type="text" id="yellowChatMsgInput" placeholder="Message to Yellow Team...">
-      
-      <input type="file" id="yellowChatFile" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'yellow')">
-      <button class="img-upload-btn" onclick="document.getElementById('yellowChatFile').click()">📷</button>
-      
-      <button id="sendYellowChatBtn" onclick="sendTeamMessage('yellow')">Send</button>
+    <div class="chat-input-area">
+        <div id="recordingBar_yellow" class="recording-overlay">
+            <button class="rec-action-btn rec-send-btn" onclick="finishVoiceRecording('yellow', 'send')">➤</button>
+            <span class="recording-text">Recording...</span>
+            <button class="rec-action-btn rec-trash-btn" onclick="finishVoiceRecording('yellow', 'cancel')">🗑️</button>
+        </div>
+
+        <div class="chat-row-inputs">
+            <input type="text" id="yellowChatNameInput" placeholder="Name" value="">
+            <input type="text" id="yellowChatMsgInput" placeholder="Message...">
+            <button id="sendYellowChatBtn" class="send-btn" onclick="sendTeamMessage('yellow')">Send</button>
+        </div>
+        <div class="chat-row-tools">
+            <input type="file" id="yellowChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'yellow')">
+            <button class="tool-btn" onclick="document.getElementById('yellowChatFile').click()">📷</button>
+            <button id="recordBtnYellow" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('yellow')">🎤</button>
+            <button class="tool-btn sticker-btn" style="margin-left:5px;" onclick="toggleStickerMenu('yellow')">☺</button>
+        </div>
+        <div id="stickerPopupYellow" class="sticker-popup">
+            <div class="sticker-tabs">
+                <button class="sticker-tab active" onclick="showStickerTab('yellow', 'football')">Football</button>
+                <button class="sticker-tab" onclick="showStickerTab('yellow', 'funny')">Funny</button>
+                <button class="sticker-tab" onclick="showStickerTab('yellow', 'action')">Action</button>
+                <button class="sticker-tab" onclick="toggleStickerMenu('yellow')" style="color: #f44336; font-weight: bold;">✕</button>
+            </div>
+            <div id="stickerGridYellow" class="sticker-grid"></div>
+        </div>
     </div>
   </div>
 </div>
@@ -600,55 +439,22 @@ li {
                 <p id="passwordError" style="color: #ffeb3b; display: none; margin: 5px 0;">Incorrect password.</p>
             </div>
         </div>
-
         <div id="settingsControls" style="display:none; flex-grow: 1; display: flex; flex-direction: column; min-height: 0;">
-            
             <div class="settings-options-container">
                 <h2>Match Details</h2>
                 <label for="matchAddressInput" style="font-weight: bold; display: block; margin-bottom: 5px;">Match Address (Google Maps)</label>
                 <input type="text" id="matchAddressInput" placeholder="Enter full match address or coordinates">
                 <h2>System Options</h2>
-                <div class="setting-item">
-                    <label for="allowPlayerEdit">Allow Player Add/Edit/Delete (Main Lists)</label>
-                    <input type="checkbox" id="allowPlayerEdit">
-                </div>
-                <div class="setting-item">
-                    <label for="allowTeamEdit">Allow Player Add/Edit/Delete (Teams)</label>
-                    <input type="checkbox" id="allowTeamEdit">
-                </div>
-                <div class="setting-item">
-                    <label for="allowFormationEdit">Allow Applying Formations (Plan)</label>
-                    <input type="checkbox" id="allowFormationEdit">
-                </div>
-                <div class="setting-item">
-                    <label for="allowAddressEdit">Allow Editing Match Address</label>
-                    <input type="checkbox" id="allowAddressEdit">
-                </div>
-                <div class="setting-item">
-                    <label for="allowChat">Allow Sending Chat Messages</label>
-                    <input type="checkbox" id="allowChat">
-                </div>
-                <div class="setting-item">
-                    <label for="allowImageUpload">Allow Image Uploads in Chat</label>
-                    <input type="checkbox" id="allowImageUpload">
-                </div>
-                <div class="setting-item">
-                    <label for="allowMusic">Allow Toggling Music</label>
-                    <input type="checkbox" id="allowMusic">
-                </div>
-                <div class="setting-item">
-                    <label for="enforceTimeRestriction">Enforce Time Restriction (Wed-Sun)</label>
-                    <input type="checkbox" id="enforceTimeRestriction">
-                </div>
-                <div class="setting-item">
-                    <label for="requireIndividualPin">Require Individual Player PIN (Main List)</label>
-                    <input type="checkbox" id="requireIndividualPin">
-                </div>
-                <div class="setting-item">
-                    <label for="requireTeamPinForAdd">Require Team PIN for Main List</label>
-                    <input type="checkbox" id="requireTeamPinForAdd">
-                </div>
-                
+                <div class="setting-item"><label for="allowPlayerEdit">Allow Player Add/Edit/Delete (Main Lists)</label><input type="checkbox" id="allowPlayerEdit"></div>
+                <div class="setting-item"><label for="allowTeamEdit">Allow Player Add/Edit/Delete (Teams)</label><input type="checkbox" id="allowTeamEdit"></div>
+                <div class="setting-item"><label for="allowFormationEdit">Allow Applying Formations (Plan)</label><input type="checkbox" id="allowFormationEdit"></div>
+                <div class="setting-item"><label for="allowAddressEdit">Allow Editing Match Address</label><input type="checkbox" id="allowAddressEdit"></div>
+                <div class="setting-item"><label for="allowChat">Allow Sending Chat Messages</label><input type="checkbox" id="allowChat"></div>
+                <div class="setting-item"><label for="allowImageUpload">Allow Image Uploads in Chat</label><input type="checkbox" id="allowImageUpload"></div>
+                <div class="setting-item"><label for="allowMusic">Allow Toggling Music</label><input type="checkbox" id="allowMusic"></div>
+                <div class="setting-item"><label for="enforceTimeRestriction">Enforce Time Restriction (Wed-Sun)</label><input type="checkbox" id="enforceTimeRestriction"></div>
+                <div class="setting-item"><label for="requireIndividualPin">Require Individual Player PIN (Main List)</label><input type="checkbox" id="requireIndividualPin"></div>
+                <div class="setting-item"><label for="requireTeamPinForAdd">Require Team PIN for Main List</label><input type="checkbox" id="requireTeamPinForAdd"></div>
                 <div class="danger-zone">
                     <h2>Danger Zone - Data Deletion</h2>
                     <button class="danger-btn" onclick="clearGroupChat()">Clear Group Chat (Player Msgs)</button>
@@ -661,10 +467,7 @@ li {
                     <button class="danger-btn" onclick="clearYellowTeam()">Clear Yellow Team List</button>
                 </div>
             </div> 
-
-            <div class="settings-footer">
-                <button id="saveSettingsBtn" onclick="saveSettings()">Save & Close</button>
-            </div>
+            <div class="settings-footer"><button id="saveSettingsBtn" onclick="saveSettings()">Save & Close</button></div>
         </div>
     </div>
 </div>
@@ -674,7 +477,6 @@ li {
         <h3 style="color:#fff; margin-top:0;">Add Player to Team</h3>
         <p style="font-size:12px; color:#ccc;">Same rules apply (PIN/Settings)</p>
         <input type="text" id="chatTeamAddInput" placeholder="Enter Player Name">
-        
         <div class="team-select-btns">
             <button onclick="confirmAddToTeam('blue')" style="background:#1565c0; color:#fff; flex:1;">Blue</button>
             <button onclick="confirmAddToTeam('yellow')" style="background:#fdd835; color:#000; flex:1;">Yellow</button>
@@ -684,23 +486,22 @@ li {
 </div>
 
 <div id="gameCenterOverlay" class="mini-modal-overlay">
-    <div class="mini-modal-box" style="max-width: 360px; background: #222; border: 2px solid #673AB7;">
+    <div class="mini-modal-box" style="max-width: 360px; background: #222; border: 2px solid #673AB7; overflow-y:auto; max-height:80vh;">
         <h3 style="color:#fff; margin-top:0; font-family: 'Courier New', monospace;">🕹️ ETERNAL ARCADE 🕹️</h3>
-        
         <div id="gameMenu">
             <p style="color:#ccc; font-size:12px;">Select a Game:</p>
             <button onclick="startGame('juggling')" style="background:linear-gradient(45deg, #FF9800, #F57C00); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">⚽ Keepy Uppy</button>
             <button onclick="startGame('flappy')" style="background:linear-gradient(45deg, #2196F3, #1976D2); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">🚀 Flappy Ball</button>
             <button onclick="startGame('penalty')" style="background:linear-gradient(45deg, #4CAF50, #388E3C); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">🥅 Penalty Rush</button>
+            <button onclick="startGame('dribbler')" style="background:linear-gradient(45deg, #9C27B0, #673AB7); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">🏃 Dribble Challenge</button>
+            <button onclick="startGame('keeper')" style="background:linear-gradient(45deg, #607D8B, #455A64); width:100%; margin-bottom:8px; padding:12px; font-weight:bold; border:2px solid #fff;">🧤 Goalkeeper Hero</button>
         </div>
-
         <div id="gameArea" style="display:none; position:relative;">
             <canvas id="gameCanvas" width="320" height="400" style="background:#333; border-radius:8px; cursor:pointer; box-shadow: 0 0 15px rgba(103, 58, 183, 0.5);"></canvas>
             <div id="scoreDisplay" style="position:absolute; top:10px; left:10px; color:#fff; font-size:20px; font-weight:bold; pointer-events:none; text-shadow: 2px 2px #000;">Score: 0</div>
             <div id="startPrompt" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-weight:bold; pointer-events:none; text-align:center; text-shadow: 2px 2px #000; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px;">Tap to Start!</div>
             <button onclick="exitGame()" style="background:#d32f2f; margin-top:5px; width:100%;">Exit to Menu</button>
         </div>
-
         <div id="leaderboardSection" style="margin-top:15px; border-top:1px solid #555; padding-top:10px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h4 style="color:#FFD700; margin:5px 0;">🏆 High Scores</h4>
@@ -708,13 +509,14 @@ li {
                     <option value="juggling">Keepy Uppy</option>
                     <option value="flappy">Flappy Ball</option>
                     <option value="penalty">Penalty Rush</option>
+                    <option value="dribbler">Dribbler</option>
+                    <option value="keeper">Keeper</option>
                 </select>
             </div>
             <ul id="leaderboardList" style="font-size:12px; max-height:100px; overflow-y:auto; text-align:left; padding:5px; background:#111; border-radius:5px;">
                 <li style="color:#aaa;">Loading...</li>
             </ul>
         </div>
-
         <button onclick="closeGameCenter()" id="closeGameBtn" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close Arcade</button>
     </div>
 </div>
@@ -723,1468 +525,352 @@ li {
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script> 
 
 <script>
-// =========================================================================================
-// ---- 1. GENERAL CONFIGURATION & DATA STRUCTURES ----
-// =========================================================================================
-
-// Supabase Configuration
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; 
 const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Mjk0MzA5NiwiZXhwIjoyMDc4NTE5MDk2fQ.qVT2CKqMKRW1Y1qEox9_cl4JvuLY659_UQxVDMBWBFA"; 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 
-// Global state variables
 let currentPositionTarget = { team: null, playerId: null, playerName: null };
 const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
 let audioInitialized = false; 
 let matchAddress = "Address 📍"; 
-
-// Admin PINs
 const ADMIN_PASSWORD = "2023"; 
 const TEAM_ADD_PIN = "1111"; 
+let mediaRecorder = null; let audioChunks = []; let isRecording = false;
 
-// System Configuration State
-let systemConfig = {
-    allowPlayerEdit: true, 
-    allowTeamEdit: true, 
-    allowFormationEdit: true, 
-    allowAddressEdit: true, 
-    allowChat: true, 
-    allowImageUpload: true, 
-    allowMusic: true, 
-    enforceTimeRestriction: true, 
-    requireIndividualPin: true, 
-    requireTeamPinForAdd: false, 
+const STICKERS = {
+    football: ["https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif", "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif", "https://media.giphy.com/media/l2JHZKNio4EjY6iqY/giphy.gif"],
+    funny: ["https://media.giphy.com/media/10JhviFuU2gWD6/giphy.gif", "https://media.giphy.com/media/3oEjHAUOqG3lSS0f1C/giphy.gif", "https://media.giphy.com/media/26tP3M3i03qgDnhGU/giphy.gif"],
+    action: ["https://media.giphy.com/media/3o7TKtnuHOHHUjR38Y/giphy.gif", "https://media.giphy.com/media/l0Iy8hSJalxlbkXIk/giphy.gif", "https://media.giphy.com/media/l41lS23ZZKo8hiiZ2/giphy.gif"]
 };
 
-// List of available positions
-const POSITIONS_LIST = [
-    { code: 'GK', label: 'Goalkeeper' },
-    { code: 'CB', label: 'Center Back' },
-    { code: 'RB', label: 'Right Back' },
-    { code: 'LB', label: 'Left Back' },
-    { code: 'DM', label: 'Defensive Midfielder' }, 
-    { code: 'CM', label: 'Center Midfield' },
-    { code: 'RM', label: 'Right Midfield' },
-    { code: 'LM', label: 'Left Midfield' },
-    { code: 'CAM', label: 'Attacking Mid' },
-    { code: 'CF', label: 'Center Forward' }, 
-    { code: 'RW', label: 'Right Winger' }, 
-    { code: 'LW', label: 'Left Winger' }, 
-    { code: 'ST', label: 'Striker' }, 
-    { code: 'SUB', label: 'Substitute' }
-];
+let systemConfig = { allowPlayerEdit: true, allowTeamEdit: true, allowFormationEdit: true, allowAddressEdit: true, allowChat: true, allowImageUpload: true, allowMusic: true, enforceTimeRestriction: true, requireIndividualPin: true, requireTeamPinForAdd: false };
+const POSITIONS_LIST = [{ code: 'GK', label: 'Goalkeeper' }, { code: 'CB', label: 'Center Back' }, { code: 'RB', label: 'Right Back' }, { code: 'LB', label: 'Left Back' }, { code: 'DM', label: 'Defensive Mid' }, { code: 'CM', label: 'Center Mid' }, { code: 'RM', label: 'Right Mid' }, { code: 'LM', label: 'Left Mid' }, { code: 'CAM', label: 'Attacking Mid' }, { code: 'CF', label: 'Center Forward' }, { code: 'RW', label: 'Right Winger' }, { code: 'LW', label: 'Left Winger' }, { code: 'ST', label: 'Striker' }, { code: 'SUB', label: 'Substitute' }];
 
-// Formation Definitions
+// --- NEW HORIZONTAL FORMATIONS (MERGED FROM NEW CODE) ---
 const FORMATIONS = {
     '4-3-3': [
-        { left: '5%', top: '50%', code: 'GK' },  
-        { left: '20%', top: '25%', code: 'LB' }, 
-        { left: '20%', top: '40%', code: 'CB' }, 
-        { left: '20%', top: '60%', code: 'CB' }, 
-        { left: '20%', top: '75%', code: 'RB' }, 
-        { left: '50%', top: '35%', code: 'CM' }, 
-        { left: '50%', top: '50%', code: 'DM' }, 
-        { left: '50%', top: '65%', code: 'CM' }, 
-        { left: '80%', top: '25%', code: 'LW' }, 
-        { left: '80%', top: '50%', code: 'CF' }, 
-        { left: '80%', top: '75%', code: 'RW' }, 
-        { left: '40%', top: '5%', code: 'SUB' },
+        { left: '6%', top: '50%', code: 'GK' }, { left: '25%', top: '15%', code: 'LB' }, { left: '18%', top: '38%', code: 'CB' }, { left: '18%', top: '62%', code: 'CB' }, { left: '25%', top: '85%', code: 'RB' },
+        { left: '40%', top: '50%', code: 'DM' }, { left: '55%', top: '30%', code: 'CM' }, { left: '55%', top: '70%', code: 'CM' },
+        { left: '80%', top: '15%', code: 'LW' }, { left: '85%', top: '50%', code: 'ST' }, { left: '80%', top: '85%', code: 'RW' }, { left: '50%', top: '-15%', code: 'SUB' }
     ],
     '4-4-2': [
-        { left: '5%', top: '50%', code: 'GK' },  
-        { left: '25%', top: '10%', code: 'LB' }, 
-        { left: '25%', top: '35%', code: 'CB' }, 
-        { left: '25%', top: '65%', code: 'CB' }, 
-        { left: '25%', top: '90%', code: 'RB' }, 
-        { left: '55%', top: '10%', code: 'LM' }, 
-        { left: '55%', top: '35%', code: 'DM' }, 
-        { left: '55%', top: '65%', code: 'CM' }, 
-        { left: '55%', top: '90%', code: 'RM' }, 
-        { left: '80%', top: '35%', code: 'CF' }, 
-        { left: '80%', top: '65%', code: 'ST' }, 
-        { left: '40%', top: '5%', code: 'SUB' }, 
+        { left: '6%', top: '50%', code: 'GK' }, { left: '25%', top: '15%', code: 'LB' }, { left: '20%', top: '38%', code: 'CB' }, { left: '20%', top: '62%', code: 'CB' }, { left: '25%', top: '85%', code: 'RB' },
+        { left: '50%', top: '15%', code: 'LM' }, { left: '45%', top: '40%', code: 'CM' }, { left: '45%', top: '60%', code: 'CM' }, { left: '50%', top: '85%', code: 'RM' },
+        { left: '80%', top: '35%', code: 'ST' }, { left: '80%', top: '65%', code: 'ST' }, { left: '50%', top: '-15%', code: 'SUB' }
     ],
     '3-4-3': [
-        { left: '5%', top: '50%', code: 'GK' },  
-        { left: '20%', top: '20%', code: 'CB' }, 
-        { left: '20%', top: '50%', code: 'CB' }, 
-        { left: '20%', top: '80%', code: 'CB' }, 
-        { left: '45%', top: '10%', code: 'LM' }, 
-        { left: '45%', top: '35%', code: 'DM' }, 
-        { left: '45%', top: '65%', code: 'CM' }, 
-        { left: '45%', top: '90%', code: 'RM' }, 
-        { left: '75%', top: '25%', code: 'LW' }, 
-        { left: '75%', top: '50%', code: 'CF' }, 
-        { left: '75%', top: '75%', code: 'RW' }, 
-        { left: '10%', top: '95%', code: 'SUB' }, 
+        { left: '6%', top: '50%', code: 'GK' }, { left: '20%', top: '20%', code: 'CB' }, { left: '15%', top: '50%', code: 'CB' }, { left: '20%', top: '80%', code: 'CB' },
+        { left: '45%', top: '10%', code: 'LM' }, { left: '40%', top: '40%', code: 'CM' }, { left: '40%', top: '60%', code: 'CM' }, { left: '45%', top: '90%', code: 'RM' },
+        { left: '75%', top: '20%', code: 'LW' }, { left: '82%', top: '50%', code: 'ST' }, { left: '75%', top: '80%', code: 'RW' }, { left: '50%', top: '-15%', code: 'SUB' }
     ]
 };
 
-function stringToHash(str) {
-  let hash = 0;
-  if (str.length === 0) return hash;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0; 
-  }
-  return Math.abs(hash);
-}
-
-function getColorForUsername(username) {
-    const hash = stringToHash(username.trim().toUpperCase());
-    const index = hash % nameColors.length;
-    return nameColors[index];
-}
-
-// =========================================================================================
-// ---- 2. UI & AUDIO CONTROL ----
-// =========================================================================================
+function stringToHash(str) { let hash = 0; if (str.length === 0) return hash; for (let i = 0; i < str.length; i++) { const char = str.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash |= 0; } return Math.abs(hash); }
+function getColorForUsername(username) { return nameColors[stringToHash(username.trim().toUpperCase()) % nameColors.length]; }
 
 function showSection(id){
   document.querySelectorAll('.container').forEach(c=>c.style.display='none');
   document.getElementById(id).style.display='block';
+  document.querySelectorAll('.sticker-popup').forEach(p => p.style.display = 'none');
   applyUIRestrictions();
-
-  if (id === 'blue') {
-    loadTeamChatMessages('blue');
-    document.getElementById('blueChatNameInput').value = localStorage.getItem('chat_username') || '';
-    setupDraggable('blue'); 
-  } else if (id === 'yellow') {
-    loadTeamChatMessages('yellow');
-    document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || '';
-    setupDraggable('yellow'); 
-  } else if (id === 'main') {
-    loadChatMessages();
-  }
+  if (id === 'blue') { loadTeamChatMessages('blue'); document.getElementById('blueChatNameInput').value = localStorage.getItem('chat_username') || ''; setupDraggable('blue'); } 
+  else if (id === 'yellow') { loadTeamChatMessages('yellow'); document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || ''; setupDraggable('yellow'); } 
+  else if (id === 'main') { loadChatMessages(); }
 }
 showSection('main'); 
 
 function toggleBackgroundMusic() {
-    if (!systemConfig.allowMusic) {
-        alert("Audio control is currently disabled by the system administrator.");
-        return;
-    }
+    if (!systemConfig.allowMusic) { alert("Audio disabled by admin."); return; }
     const audio = document.getElementById('musicPlayer');
-    const toggleBtn = document.getElementById('audioToggleBtn');
-    
-    if (audio.paused) {
-        audio.play().then(() => {
-            toggleBtn.innerHTML = 'Stop Audio'; 
-        }).catch(e => {
-            console.error("Autoplay failed for music player:", e);
-        });
-    } else {
-        audio.pause();
-        toggleBtn.innerHTML = 'Audio'; 
-    }
+    if (audio.paused) { audio.play(); document.getElementById('audioToggleBtn').innerHTML = 'Stop Audio'; } 
+    else { audio.pause(); document.getElementById('audioToggleBtn').innerHTML = 'Audio'; }
 }
 
 async function openGoogleMaps() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     const savedAddress = data ? data.match_address : null;
-
-    if (!savedAddress || savedAddress.trim() === '' || savedAddress.includes("set match address")) {
-        alert("لم يتم تعيين عنوان المباراة بعد. يرجى من المسؤول تعيين العنوان في الإعدادات.");
-        return;
-    }
-    
-    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`;
-    window.open(mapUrl, '_blank');
+    if (!savedAddress || savedAddress.trim() === '') { alert("No address set."); return; }
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`, '_blank');
 }
 
-// =========================================================================================
-// ---- 3. SYSTEM SETTINGS & PIN CHECKS ----
-// =========================================================================================
-
+// SETTINGS & PIN
 async function showSettingsModal() {
-    document.getElementById('settingsPassword').value = '';
-    document.getElementById('passwordError').style.display = 'none';
-    document.getElementById('passwordSection').style.display = 'block';
-    document.getElementById('settingsControls').style.display = 'none'; 
-    document.getElementById('settingsModalOverlay').style.display = 'flex';
-    
+    document.getElementById('settingsPassword').value = ''; document.getElementById('passwordError').style.display = 'none'; document.getElementById('passwordSection').style.display = 'block'; document.getElementById('settingsControls').style.display = 'none'; document.getElementById('settingsModalOverlay').style.display = 'flex';
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     document.getElementById('matchAddressInput').value = data ? data.match_address : '';
 }
-
 function authenticateSettings() {
-    const passwordInput = document.getElementById('settingsPassword').value;
-    const errorElement = document.getElementById('passwordError');
-    
-    if (passwordInput === ADMIN_PASSWORD) {
-        errorElement.style.display = 'none';
-        document.getElementById('passwordSection').style.display = 'none';
-        document.getElementById('settingsControls').style.display = 'flex'; 
-        
-        document.getElementById('allowPlayerEdit').checked = systemConfig.allowPlayerEdit;
-        document.getElementById('allowTeamEdit').checked = systemConfig.allowTeamEdit;
-        document.getElementById('allowFormationEdit').checked = systemConfig.allowFormationEdit;
-        document.getElementById('allowAddressEdit').checked = systemConfig.allowAddressEdit;
-        document.getElementById('allowChat').checked = systemConfig.allowChat;
-        document.getElementById('allowImageUpload').checked = systemConfig.allowImageUpload; 
-        document.getElementById('allowMusic').checked = systemConfig.allowMusic;
-        document.getElementById('enforceTimeRestriction').checked = systemConfig.enforceTimeRestriction;
-        document.getElementById('requireIndividualPin').checked = systemConfig.requireIndividualPin;
-        document.getElementById('requireTeamPinForAdd').checked = systemConfig.requireTeamPinForAdd;
-
-    } else {
-        errorElement.style.display = 'block';
-    }
+    if (document.getElementById('settingsPassword').value === ADMIN_PASSWORD) {
+        document.getElementById('passwordSection').style.display = 'none'; document.getElementById('settingsControls').style.display = 'flex';
+        document.getElementById('allowPlayerEdit').checked = systemConfig.allowPlayerEdit; document.getElementById('allowTeamEdit').checked = systemConfig.allowTeamEdit; document.getElementById('allowFormationEdit').checked = systemConfig.allowFormationEdit; document.getElementById('allowAddressEdit').checked = systemConfig.allowAddressEdit; document.getElementById('allowChat').checked = systemConfig.allowChat; document.getElementById('allowImageUpload').checked = systemConfig.allowImageUpload; document.getElementById('allowMusic').checked = systemConfig.allowMusic; document.getElementById('enforceTimeRestriction').checked = systemConfig.enforceTimeRestriction; document.getElementById('requireIndividualPin').checked = systemConfig.requireIndividualPin; document.getElementById('requireTeamPinForAdd').checked = systemConfig.requireTeamPinForAdd;
+    } else { document.getElementById('passwordError').style.display = 'block'; }
 }
-
 async function saveSettings() {
-    const newConfig = {
-        allowPlayerEdit: document.getElementById('allowPlayerEdit').checked,
-        allowTeamEdit: document.getElementById('allowTeamEdit').checked,
-        allowFormationEdit: document.getElementById('allowFormationEdit').checked,
-        allowAddressEdit: document.getElementById('allowAddressEdit').checked,
-        allowChat: document.getElementById('allowChat').checked,
-        allowImageUpload: document.getElementById('allowImageUpload').checked, 
-        allowMusic: document.getElementById('allowMusic').checked,
-        enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked,
-        requireIndividualPin: document.getElementById('requireIndividualPin').checked,
-        requireTeamPinForAdd: document.getElementById('requireTeamPinForAdd').checked,
-    };
-    
-    const newMatchAddress = document.getElementById('matchAddressInput').value.trim();
-
-    const { error } = await supabase
-        .from('app_config')
-        .update({ 
-            system_config: JSON.stringify(newConfig),
-            match_address: newMatchAddress 
-        }) 
-        .eq('id', 1);
-
-    if (error) {
-        console.error('Error saving system config and address:', error);
-        alert(`Failed to save settings: ${error.message}`);
-        return;
-    }
-    
-    systemConfig = newConfig;
-    matchAddress = newMatchAddress; 
-    loadMatchAddress(); 
-    applyUIRestrictions();
-    document.getElementById('settingsModalOverlay').style.display = 'none';
-    alert('System settings and address saved successfully!');
+    const newConfig = { allowPlayerEdit: document.getElementById('allowPlayerEdit').checked, allowTeamEdit: document.getElementById('allowTeamEdit').checked, allowFormationEdit: document.getElementById('allowFormationEdit').checked, allowAddressEdit: document.getElementById('allowAddressEdit').checked, allowChat: document.getElementById('allowChat').checked, allowImageUpload: document.getElementById('allowImageUpload').checked, allowMusic: document.getElementById('allowMusic').checked, enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked, requireIndividualPin: document.getElementById('requireIndividualPin').checked, requireTeamPinForAdd: document.getElementById('requireTeamPinForAdd').checked };
+    await supabase.from('app_config').update({ system_config: JSON.stringify(newConfig), match_address: document.getElementById('matchAddressInput').value.trim() }).eq('id', 1);
+    systemConfig = newConfig; matchAddress = document.getElementById('matchAddressInput').value.trim(); loadMatchAddress(); applyUIRestrictions(); document.getElementById('settingsModalOverlay').style.display = 'none'; alert('Settings saved!');
 }
 
-async function clearTableData(tableName, confirmMessage, friendlyName) {
-    if (!confirm(confirmMessage)) return;
-    const { error } = await supabase.from(tableName).delete().gt('id', 0); 
-
-    if (error) {
-        alert(`Error clearing ${friendlyName}: ${error.message}`);
-        console.error(`Error clearing ${tableName}:`, error);
-    } else {
-        alert(`${friendlyName} has been cleared successfully.`);
-        reloadList(tableName);
-        if (tableName.includes('chat_messages')) loadChatMessages();
-        if (tableName.includes('system_history')) loadSystemHistory(false);
-        if (tableName.includes('_chat')) loadTeamChatMessages(tableName.split('_')[0]);
-    }
-}
-
-async function clearGroupChat() {
-    const confirmMessage = "Are you sure you want to delete ALL player messages in the Group Chat?";
-    if (!confirm(confirmMessage)) return;
-    const { error } = await supabase
-        .from('chat_messages')
-        .delete()
-        .gt('id', 0);
-
-    if (error) {
-        alert(`Error clearing Group Chat: ${error.message}`);
-    } else {
-        alert("Group Chat (player messages) has been cleared successfully.");
-        loadChatMessages(); 
-    }
-}
-
-async function clearSystemHistory() {
-    const confirmMessage = "Are you sure you want to clear all System History logs?";
-    if (!confirm(confirmMessage)) return;
-
-    const { error } = await supabase
-        .from('system_history')
-        .delete()
-        .gt('id', 0); 
-
-    if (error) {
-        alert(`Error clearing System History: ${error.message}`);
-    } else {
-        alert("System History has been cleared successfully.");
-        if (document.getElementById('systemHistoryContainer').style.display === 'block') {
-             loadSystemHistory(false); 
-        }
-    }
-}
-
-function clearBlueChat() {
-    clearTableData('blue_chat', 'Are you sure you want to delete ALL messages in the Blue Team Chat?', 'Blue Team Chat');
-}
-function clearYellowChat() {
-    clearTableData('yellow_chat', 'Are you sure you want to delete ALL messages in the Yellow Team Chat?', 'Yellow Team Chat');
-}
-function clearMainTeam() {
-    clearTableData('main_team', 'Are you sure you want to delete ALL players from the Main Team?', 'Main Team List');
-}
-function clearWaitingList() {
-    clearTableData('waiting_list', 'Are you sure you want to delete ALL players from the Waiting List?', 'Waiting List');
-}
-function clearBlueTeam() {
-    clearTableData('blue_team', 'Are you sure you want to delete ALL players from the Blue Team?', 'Blue Team List');
-}
-function clearYellowTeam() {
-    clearTableData('yellow_team', 'Are you sure you want to delete ALL players from the Yellow Team?', 'Yellow Team List');
-}
+async function clearTableData(tableName, confirmMessage, friendlyName) { if (!confirm(confirmMessage)) return; await supabase.from(tableName).delete().gt('id', 0); alert(`${friendlyName} cleared.`); reloadList(tableName); }
+function clearGroupChat() { clearTableData('chat_messages', "Clear Group Chat?", "Group Chat"); }
+function clearSystemHistory() { clearTableData('system_history', "Clear History?", "History"); }
+function clearBlueChat() { clearTableData('blue_chat', "Clear Blue Chat?", "Blue Chat"); }
+function clearYellowChat() { clearTableData('yellow_chat', "Clear Yellow Chat?", "Yellow Chat"); }
+function clearMainTeam() { clearTableData('main_team', "Clear Main Team?", "Main Team"); }
+function clearWaitingList() { clearTableData('waiting_list', "Clear Waiting List?", "Waiting List"); }
+function clearBlueTeam() { clearTableData('blue_team', "Clear Blue Team?", "Blue Team"); }
+function clearYellowTeam() { clearTableData('yellow_team', "Clear Yellow Team?", "Yellow Team"); }
 
 async function canEditCaptain(table, playerId) {
-    if (table !== 'blue_team' && table !== 'yellow_team') {
-        return true; 
-    }
-    
-    const { data: allPlayers, error: fetchError } = await supabase
-        .from(table)
-        .select('id, player_pin')
-        .order('id', { ascending: true });
-
-    if (fetchError || !allPlayers || allPlayers.length === 0) {
-        return false;
-    }
-
-    const captain = allPlayers[0]; 
-    if (captain.id !== playerId) {
-        return true; 
-    }
-
-    const storedPin = captain.player_pin;
-
-    if (!storedPin) {
-        alert("Captain (Player #1) does not have a PIN set. Action blocked for security.");
-        return false;
-    }
-
-    const enteredPin = prompt(`Player #1 (Captain): Enter your 4-digit PIN to perform this action:`);
-    
-    if (enteredPin === null) {
-        alert("Operation cancelled.");
-        return false;
-    }
-    
-    if (enteredPin === storedPin) {
-        return true;
-    } else {
-        alert("Incorrect PIN. Captain action cancelled.");
-        return false;
-    }
+    if (table !== 'blue_team' && table !== 'yellow_team') return true;
+    const { data: allPlayers } = await supabase.from(table).select('id, player_pin').order('id', { ascending: true });
+    if (!allPlayers || allPlayers.length === 0 || allPlayers[0].id !== playerId) return true;
+    const enteredPin = prompt(`Captain Action: Enter PIN:`);
+    return enteredPin === allPlayers[0].player_pin;
 }
-
 async function verifyIndividualPin(table, id) {
-    const { data, error } = await supabase
-        .from(table)
-        .select('player_pin')
-        .eq('id', id)
-        .single();
-    
-    if (error || !data) {
-        console.error("Could not find player to verify PIN:", error);
-        alert("Error finding player data.");
-        return false;
-    }
-
-    const storedPin = data.player_pin;
-    if (!storedPin) {
-        return true; 
-    }
-
-    const enteredPin = prompt("Enter your 4-digit PIN to confirm this action:");
-    if (enteredPin === null) {
-        alert("Operation cancelled.");
-        return false;
-    }
-    
-    if (enteredPin === storedPin) {
-        return true;
-    } else {
-        alert("Incorrect PIN. Operation cancelled.");
-        return false;
-    }
+    const { data } = await supabase.from(table).select('player_pin').eq('id', id).single();
+    if (!data || !data.player_pin) return true;
+    return prompt("Enter your PIN:") === data.player_pin;
 }
-
-async function canControlPlan(team) {
-    if (!systemConfig.allowFormationEdit) {
-        alert("Formation editing is currently disabled by the administrator.");
-        return false;
-    }
-
-    if (sessionStorage.getItem(`${team}_captain_unlocked`) === 'true') {
-        return true;
-    }
-
-    const table = team === 'blue' ? 'blue_team' : 'yellow_team';
-    const { data, error } = await supabase
-        .from(table)
-        .select('id, player_pin')
-        .order('id', { ascending: true }) 
-        .limit(1)
-        .single();
-
-    if (error || !data) {
-        alert(`No Captain (Player #1) found for the ${team} team. Cannot edit plan.`);
-        return false;
-    }
-
-    if (!data.player_pin) {
-        alert(`Captain (Player #1) of the ${team} team does not have a PIN set. Cannot edit plan.`);
-        return false;
-    }
-    
-    const storedPin = data.player_pin;
-    const enteredPin = prompt(`Enter 4-digit Captain PIN for ${team} team to edit the plan:`);
-
-    if (enteredPin === storedPin) {
-        sessionStorage.setItem(`${team}_captain_unlocked`, 'true'); 
-        return true; 
-    } else {
-        alert("Incorrect Captain PIN. Action cancelled.");
-        return false;
-    }
-}
-
 async function loadSystemConfig() {
     const { data } = await supabase.from('app_config').select('system_config').eq('id', 1).single(); 
-    
-    if (data && data.system_config) {
-        try {
-            const loadedConfig = JSON.parse(data.system_config);
-            systemConfig = { ...systemConfig, ...loadedConfig }; 
-        } catch (e) {
-            console.error("Error parsing system config from database:", e);
-        }
-    }
+    if (data && data.system_config) systemConfig = { ...systemConfig, ...JSON.parse(data.system_config) };
     applyUIRestrictions(); 
 }
-
 function applyUIRestrictions() {
-    const playerManagement = document.getElementById('playerManagement');
-    playerManagement.style.display = systemConfig.allowPlayerEdit ? 'block' : 'none';
-    
+    document.getElementById('playerManagement').style.display = systemConfig.allowPlayerEdit ? 'block' : 'none';
     document.querySelectorAll('.action-btn').forEach(btn => {
-        const isTeamBtn = btn.parentNode.parentNode.id === 'blueList' || btn.parentNode.parentNode.id === 'yellowList';
-        if (isTeamBtn) {
-            btn.style.display = systemConfig.allowTeamEdit ? 'inline-block' : 'none';
-        } else {
-            btn.style.display = systemConfig.allowPlayerEdit ? 'inline-block' : 'none';
-        }
+        const isTeam = btn.closest('#blueList') || btn.closest('#yellowList');
+        btn.style.display = isTeam ? (systemConfig.allowTeamEdit ? 'inline-block' : 'none') : (systemConfig.allowPlayerEdit ? 'inline-block' : 'none');
     });
-
     document.getElementById('bluePlayerManagement').style.display = systemConfig.allowTeamEdit ? 'block' : 'none';
     document.getElementById('yellowPlayerManagement').style.display = systemConfig.allowTeamEdit ? 'block' : 'none';
-    
-    const displayFormation = systemConfig.allowFormationEdit ? 'inline-block' : 'none';
-    document.querySelectorAll('.formation-btn, .dynamic-btn').forEach(btn => {
-        btn.style.display = displayFormation;
-    });
-    
-    const chatControls = systemConfig.allowChat ? 'flex' : 'none';
-    document.querySelector('.chat-container .chat-input-group').style.display = chatControls;
-    document.querySelector('.team-chat-container #blueChatMessages + .chat-input-group').style.display = chatControls;
-    document.querySelector('.team-chat-container #yellowChatMessages + .chat-input-group').style.display = chatControls;
-    
-    const displayImages = (systemConfig.allowChat && systemConfig.allowImageUpload) ? 'flex' : 'none';
-    document.querySelectorAll('.img-upload-btn').forEach(btn => {
-        btn.style.display = displayImages;
-    });
+    document.querySelectorAll('.formation-btn, .dynamic-btn').forEach(btn => btn.style.display = systemConfig.allowFormationEdit ? 'inline-block' : 'none');
+    document.querySelectorAll('.chat-input-area').forEach(el => el.style.display = systemConfig.allowChat ? 'flex' : 'none');
 }
-
-// =========================================================================================
-// ---- 4. TIME & WEEKLY CLEANUP ----
-// =========================================================================================
 
 function isWithinAllowedTime(){
-    if (!systemConfig.enforceTimeRestriction) {
-        return true;
-    }
-    const now = new Date();
-    const currentDay = now.getDay(); 
-    const currentHour = now.getHours(); 
-    const currentMinute = now.getMinutes();
-
-    if (currentDay >= 3 && currentDay <= 6) { 
-        if (currentDay === 3) {
-            return currentHour >= 15;
-        }
-        return true; 
-    } else if (currentDay === 0) {
-        if (currentHour < 12) {
-            return true;
-        } else if (currentHour === 12 && currentMinute === 0) {
-            return true;
-        }
-        return false; 
-    }
-    return false;
+    if (!systemConfig.enforceTimeRestriction) return true;
+    const now = new Date(); const d = now.getDay(); const h = now.getHours();
+    if (d >= 3 && d <= 6) { if (d === 3) return h >= 15; return true; } else if (d === 0) return h < 12; return false;
 }
+function formatPlayerTime(timestamp) { if (!timestamp) return ''; return new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); }
 
-function formatPlayerTime(timestamp) {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-        numberingSystem: 'latn' 
-    });
-}
-
-async function checkAndClearData() {
-    // Automated cleanup logic (Disabled by default to prevent accidental data loss)
-    // Can be re-enabled if needed.
-}
-
-// =========================================================================================
-// ---- 5. MAIN & WAITING LISTS MANAGEMENT ----
-// =========================================================================================
-
+// PLAYER & LIST LOGIC
 async function addPlayer(){
-  if(!systemConfig.allowPlayerEdit){
-    alert("Player addition is currently disabled by the system administrator.");
-    return;
-  }
+  if(!systemConfig.allowPlayerEdit) return alert("Add disabled");
   if(!isWithinAllowedTime()){
     alert("Adding players is only allowed from Wednesday 3 PM to Sunday 12 PM.");
     return;
   }
   const name = document.getElementById("nameInput").value.trim();
-  if(!name) return alert("Enter a name");
-  
-  if (systemConfig.requireTeamPinForAdd) {
-      const teamPin = prompt("Enter the 4-digit Team PIN to join:");
-      if (teamPin !== TEAM_ADD_PIN) {
-          alert("Incorrect Team PIN. Operation cancelled.");
-          return;
-      }
-  }
-  
-  let newPin = null;
-  if (systemConfig.requireIndividualPin) {
-      const pin1 = prompt("Create your 4-digit PIN (you will need this to edit/delete your name):");
-      if (!pin1 || pin1.length !== 4 || isNaN(pin1)) {
-          alert("Invalid PIN. Must be 4 numbers. Operation cancelled.");
-          return;
-      }
-      const pin2 = prompt("Confirm your 4-digit PIN:");
-      if (pin1 !== pin2) {
-          alert("PINs do not match. Operation cancelled.");
-          return;
-      }
-      newPin = pin1; 
-  }
-
+  if(!name) return alert("Enter name");
+  if(systemConfig.requireTeamPinForAdd && prompt("Team PIN:") !== TEAM_ADD_PIN) return alert("Wrong PIN");
+  let pin = null;
+  if (systemConfig.requireIndividualPin) { pin = prompt("Create 4-digit PIN:"); if (!pin) return; }
   const { data: team } = await supabase.from("main_team").select("id");
-  const playerData = { name, time: Date.now() };
-  if (newPin) { playerData.player_pin = newPin; }
-
-  if(team.length < 24){
-    const { error } = await supabase.from("main_team").insert([playerData]);
-    if(error) return alert(error.message);
-    
-    const message = `Player ${name} joined the Main Team!`; 
-    await sendSystemMessageToChat(name, message);
-
-  } else {
-    const { error } = await supabase.from("waiting_list").insert([playerData]);
-    if(error) {
-        return alert("Main team is full (24). Player could not be added to waiting list."); 
-    }
-    alert("The Main Team is full (24 players). You have been added to the Waiting List.");
-    const systemMessage = `Player ${name} was added to the Waiting List because the main team is full.`; 
-    await sendSystemMessageToChat(name, systemMessage);
-  }
-  
-  document.getElementById("nameInput").value="";
-  loadPlayers();
+  const table = team.length < 24 ? "main_team" : "waiting_list";
+  await supabase.from(table).insert([{ name, time: Date.now(), player_pin: pin }]);
+  if(team.length < 24) sendSystemMessageToChat(name, `Joined Main Team`);
+  else sendSystemMessageToChat(name, `Added to Waiting List`);
+  document.getElementById("nameInput").value=""; loadPlayers();
 }
-
 async function loadPlayers(){
   const { data: team } = await supabase.from("main_team").select("*").order("id");
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
-  const teamList = document.getElementById("teamList");
-  const waitingList = document.getElementById("waitingList");
-  teamList.innerHTML = "";
-  waitingList.innerHTML = "";
-  
-  const isPlayerEditAllowed = systemConfig.allowPlayerEdit;
-
-  if(team) team.forEach((p,i) => {
-    const time = formatPlayerTime(p.time); 
-    const buttons = isPlayerEditAllowed ? 
-        `<span>
-          <button class="action-btn edit-btn" onclick="editPlayer('main_team',${p.id},'${p.name}')">Edit</button> 
-          <button class="action-btn delete-btn" onclick="deletePlayer('main_team',${p.id})">Delete</button>
-        </span>` : '';
-    teamList.innerHTML += `
-      <li>
-        <div class="player-info">
-            <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
-        </div>
-        ${buttons}
-      </li>`;
-  });
-
-  if(waiting) waiting.forEach((p,i) => {
-    const time = formatPlayerTime(p.time); 
-    const buttons = isPlayerEditAllowed ? 
-        `<span>
-          <button class="action-btn edit-btn" onclick="editPlayer('waiting_list',${p.id},'${p.name}')">Edit</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('waiting_list',${p.id})">Delete</button>
-        </span>` : '';
-    waitingList.innerHTML += `
-      <li>
-        <div class="player-info">
-            <span>${i+1}. ${p.name} <span class="player-time">${time}</span></span>
-        </div>
-        ${buttons}
-      </li>`;
-  });
+  renderList("teamList", team, "main_team"); renderList("waitingList", waiting, "waiting_list");
 }
-
+function renderList(id, data, table){
+    const ul = document.getElementById(id); ul.innerHTML = "";
+    if(data) data.forEach((p,i) => {
+        const btns = systemConfig.allowPlayerEdit ? `<span><button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button><button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button></span>` : '';
+        ul.innerHTML += `<li><div class="player-info"><span>${i+1}. ${p.name} <span class="player-time">${formatPlayerTime(p.time)}</span></span></div>${btns}</li>`;
+    });
+}
+async function deletePlayer(table, id){
+  if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
+  if(table.includes('_team') && !await canEditCaptain(table, id)) return;
+  if(!table.includes('_team') && systemConfig.requireIndividualPin && !await verifyIndividualPin(table, id)) return;
+  if(!confirm("Delete player?")) return;
+  await supabase.from(table).delete().eq("id",id);
+  if(table==="main_team") refillMainTeam();
+  reloadList(table);
+}
+async function editPlayer(table,id,oldName){
+  if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
+  if(table.includes('_team') && !await canEditCaptain(table, id)) return;
+  if(!table.includes('_team') && systemConfig.requireIndividualPin && !await verifyIndividualPin(table, id)) return;
+  const newName=prompt(`Edit name:`, oldName);
+  if(!newName) return;
+  await supabase.from(table).update({name:newName.trim()}).eq("id",id); 
+  reloadList(table);
+}
 async function refillMainTeam(){
   const { data: team } = await supabase.from("main_team").select("id");
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id", { ascending: true }); 
-  
   if(team.length < 24 && waiting.length > 0){
-    const first = waiting[0];
-    const addPromise = supabase.from("main_team").insert([{ 
-        name: first.name, 
-        time: Date.now(), 
-        player_pin: first.player_pin 
-    }]);
-    const deletePromise = supabase.from("waiting_list").delete().eq("id", first.id);
-    const [addResult, deleteResult] = await Promise.all([addPromise, deletePromise]);
-    
-    if(addResult.error) { console.error("Error adding player from waiting list to main team:", addResult.error); return; }
-    
-    const message = `Player ${first.name} moved from Waiting List to Main Team.`;
-    await sendSystemMessageToChat(first.name, message);
+    const f = waiting[0];
+    await supabase.from("main_team").insert([{ name: f.name, time: Date.now(), player_pin: f.player_pin }]);
+    await supabase.from("waiting_list").delete().eq("id", f.id);
+    sendSystemMessageToChat(f.name, `Moved to Main Team`);
   }
 }
-
-async function deletePlayer(table, id){
-  let playerName = "";
-  let isMainTeam = table === "main_team";
-  let isMainOrWaiting = isMainTeam || table === "waiting_list"; 
-  let isTeamTable = table === "blue_team" || table === "yellow_team";
-  
-  if (isMainOrWaiting && !systemConfig.allowPlayerEdit) {
-      alert("Player deletion is disabled.");
-      return;
-  }
-  if (isTeamTable && !systemConfig.allowTeamEdit) {
-      alert("Team editing is disabled.");
-      return;
-  }
-
-  if (isTeamTable) {
-      const canEdit = await canEditCaptain(table, id);
-      if (!canEdit) return;
-  }
-
-  if (isMainOrWaiting && systemConfig.requireIndividualPin) { 
-      const pinVerified = await verifyIndividualPin(table, id);
-      if (!pinVerified) return; 
-  }
-
-  const { data, error } = await supabase.from(table).select('name').eq("id", id).single();
-  if (data) {
-      playerName = data.name;
-  }
-
-  if(!confirm(`Are you sure you want to delete ${playerName || 'this player'}?`)) return;
-  
-  const { error: deleteError } = await supabase.from(table).delete().eq("id",id);
-  if (deleteError) {
-      alert(`Error deleting: ${deleteError.message}`);
-      return;
-  }
-
-  if ((table === "main_team" || table === "waiting_list") && playerName) {
-      const listName = table === "main_team" ? "Main Team" : "Waiting List";
-      const message = `Player ${playerName} left the ${listName}.`; 
-      await sendSystemMessageToChat(playerName, message);
-  }
-
-  if(table==="main_team") {
-    await refillMainTeam(); 
-  }
-  
-  reloadList(table);
-}
-
-async function editPlayer(table,id,oldName){
-  const isMainOrWaiting = table === "main_team" || table === "waiting_list";
-  const isTeamTable = table === "blue_team" || table === "yellow_team";
-
-  if (isMainOrWaiting && !systemConfig.allowPlayerEdit) {
-      alert("Player editing in main/waiting lists is currently disabled by the system administrator.");
-      return;
-  }
-  if (isTeamTable && !systemConfig.allowTeamEdit) {
-      alert("Player editing in team lists is currently disabled by the system administrator.");
-      return;
-  }
-  
-  if (isTeamTable) {
-      const canEdit = await canEditCaptain(table, id);
-      if (!canEdit) return;
-  }
-  
-  if (isMainOrWaiting && systemConfig.requireIndividualPin) { 
-      const pinVerified = await verifyIndividualPin(table, id);
-      if (!pinVerified) return; 
-  }
-
-  const newName=prompt(`Edit name for ${oldName}:`, oldName);
-  if(!newName || newName.trim()==="") return;
-  
-  const { error } = await supabase.from(table).update({name:newName.trim()}).eq("id",id); 
-  
-  if (error) {
-      alert(`Error editing player name: ${error.message}`);
-      return;
-  }
-  
-  reloadList(table);
-}
-
 function reloadList(table){
-  if(table==="main_team" || table==="waiting_list") loadPlayers();
-  else if(table==="blue_team") loadBlue();
-  else if(table==="yellow_team") loadYellow();
-  else if(table==="chat_messages") loadChatMessages();
-  else if(table==="blue_chat") loadTeamChatMessages('blue');
-  else if(table==="yellow_chat") loadTeamChatMessages('yellow');
-  else if(table==="system_history") loadSystemHistory(false);
-  applyUIRestrictions(); 
+  if(table.includes("main") || table.includes("waiting")) loadPlayers();
+  else if(table==="blue_team") loadBlue(); else if(table==="yellow_team") loadYellow();
+  else if(table.includes("chat")) { if(table.includes("blue")) loadTeamChatMessages('blue'); else if(table.includes("yellow")) loadTeamChatMessages('yellow'); else loadChatMessages(); }
+  else if(table.includes("system_history")) loadSystemHistory(false);
 }
 
-// =========================================================================================
-// ---- 6. BLUE/YELLOW TEAM MANAGEMENT (MODIFIED FOR CHAT ADD) ----
-// =========================================================================================
-
-async function addBlue(providedName = null){
-  if(!systemConfig.allowTeamEdit){
-    alert("Player addition to teams is currently disabled by the system administrator.");
-    return;
-  }
-  
-  let name = providedName; 
-  if (!name) {
-      const inputElem = document.getElementById("blueInput");
-      name = inputElem ? inputElem.value.trim() : "";
-  }
-  if(!name) return providedName ? alert("Please enter a name.") : null;
-
-  const { data: team } = await supabase.from("blue_team").select("id");
-  if(team.length >= 12) return alert("Blue team is full (12 players).");
-
-  let newPin = null;
-  if (team.length === 0) { 
-      newPin = prompt(`Blue Team Empty. Create 4-digit PIN for Player #1 (Captain - ${name}):`);
-      if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
-          alert("Invalid PIN. Must be 4 numbers. Aborting.");
-          return;
-      }
-      const pin2 = prompt("Confirm Captain PIN:");
-      if (newPin !== pin2) {
-          alert("PINs do not match. Aborting.");
-          return;
-      }
-  }
-
-  const defaultPos = FORMATIONS['4-3-3'][0];
-  const positionString = JSON.stringify({ left: defaultPos.left, top: defaultPos.top });
-  
-  const playerData = {
-      name, 
-      time: Date.now(), 
-      position: positionString, 
-      position_code: defaultPos.code
-  };
-  if (newPin) { playerData.player_pin = newPin; }
-
-  const { error } = await supabase.from("blue_team").insert([playerData]);
-  
-  if(error) {
-      alert("Error adding player: " + error.message);
-  } else {
-      if(!providedName) document.getElementById("blueInput").value="";
-      loadBlue();
-      if(providedName) {
-           alert(`${name} has been added to Blue Team successfully.`);
-           closeTeamAddModal(); 
-      }
-  }
+// TEAM LOGIC
+async function addTeam(team, inputId, providedName){
+  if(!systemConfig.allowTeamEdit) return;
+  let name = providedName || document.getElementById(inputId).value.trim();
+  if(!name) return;
+  const table = `${team}_team`;
+  const { data: curr } = await supabase.from(table).select("id");
+  if(curr.length >= 12) return alert("Team Full");
+  let pin = null;
+  if (curr.length === 0) { pin = prompt(`Captain (${name}) Create PIN:`); if (!pin) return; }
+  const pos = FORMATIONS['4-3-3'][curr.length] || { left: '50%', top: '-15%', code: 'SUB' };
+  await supabase.from(table).insert([{ name, time: Date.now(), position: JSON.stringify({left:pos.left, top:pos.top}), position_code: pos.code, player_pin: pin }]);
+  if(!providedName) document.getElementById(inputId).value="";
+  if(providedName) closeTeamAddModal();
+  reloadList(table);
 }
+async function addBlue(n){ addTeam('blue', 'blueInput', n); }
+async function addYellow(n){ addTeam('yellow', 'yellowInput', n); }
 
-async function loadBlue(){
-  const { data } = await supabase.from("blue_team").select("*").order("id");
-  const ul=document.getElementById("blueList");
-  const field=document.getElementById("bluePlan");
-  ul.innerHTML=""; 
-  field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`; 
-  
-  const isTeamEditAllowed = systemConfig.allowTeamEdit;
-  
+async function loadTeamData(team){
+  const table = `${team}_team`;
+  const { data } = await supabase.from(table).select("*").order("id");
+  const ul=document.getElementById(`${team}List`);
+  const field=document.getElementById(`${team}Plan`);
+  ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`; 
   if(data) data.forEach((p,i)=>{
-    const time = formatPlayerTime(p.time); 
-    const displayName = (i === 0) ? `${p.name} (C)` : p.name;
-    const buttons = isTeamEditAllowed ?
-        `<span>
-          <button class="action-btn edit-btn" onclick="editPlayer('blue_team',${p.id},'${p.name}')">Edit</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('blue_team',${p.id})">Delete</button>
-        </span>` : '';
-    ul.innerHTML += `
-      <li>
-        <div class="player-info">
-            <span>${i+1}. ${displayName} <span class="player-time">${time}</span></span>
-        </div>
-        ${buttons}
-      </li>`;
-    let pos = p.position ? JSON.parse(p.position) : null;
-    createPlayerMarker('blue', p.name, p.id, pos, p.position_code, i + 1);
+    const btns = systemConfig.allowTeamEdit ? `<span><button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button><button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button></span>` : '';
+    ul.innerHTML += `<li><div class="player-info"><span>${i+1}. ${p.name} ${i===0?'(C)':''}</span></div>${btns}</li>`;
+    createPlayerMarker(team, p.name, p.id, JSON.parse(p.position), p.position_code, i + 1);
   });
-  setupDraggable('blue');
+  setupDraggable(team);
+}
+function loadBlue(){ loadTeamData('blue'); }
+function loadYellow(){ loadTeamData('yellow'); }
+
+// FORMATION LOGIC (UPDATED FOR HORIZONTAL)
+async function canControlPlan(team) {
+    if (!systemConfig.allowFormationEdit) { alert("Formation disabled."); return false; }
+    if (sessionStorage.getItem(`${team}_captain_unlocked`) === 'true') return true;
+    const table = `${team}_team`;
+    const { data } = await supabase.from(table).select('id, player_pin').order('id', { ascending: true }).limit(1).single();
+    if (!data || !data.player_pin) { alert("No Captain PIN."); return false; }
+    const enteredPin = prompt(`Enter Captain PIN for ${team}:`);
+    if (enteredPin === data.player_pin) { sessionStorage.setItem(`${team}_captain_unlocked`, 'true'); return true; } 
+    else { alert("Wrong PIN."); return false; }
 }
 
-async function addYellow(providedName = null){
-  if(!systemConfig.allowTeamEdit){
-    alert("Player addition to teams is currently disabled by the system administrator.");
-    return;
-  }
-  
-  let name = providedName;
-  if (!name) {
-      const inputElem = document.getElementById("yellowInput");
-      name = inputElem ? inputElem.value.trim() : "";
-  }
-  if(!name) return providedName ? alert("Please enter a name.") : null;
-  
-  const { data: team } = await supabase.from("yellow_team").select("id");
-  if(team.length >= 12) return alert("Yellow team is full (12 players).");
-
-  let newPin = null;
-  if (team.length === 0) { 
-      newPin = prompt(`Yellow Team Empty. Create 4-digit PIN for Player #1 (Captain - ${name}):`);
-      if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
-          alert("Invalid PIN. Must be 4 numbers. Aborting.");
-          return;
-      }
-      const pin2 = prompt("Confirm Captain PIN:");
-      if (newPin !== pin2) {
-          alert("PINs do not match. Aborting.");
-          return;
-      }
-  }
-
-  const defaultPos = FORMATIONS['4-3-3'][0];
-  const positionString = JSON.stringify({ left: defaultPos.left, top: defaultPos.top });
-  
-  const playerData = {
-      name, 
-      time: Date.now(), 
-      position: positionString, 
-      position_code: defaultPos.code
-  };
-  if (newPin) { playerData.player_pin = newPin; }
-
-  const { error } = await supabase.from("yellow_team").insert([playerData]);
-  
-  if(error) {
-      alert("Error adding player: " + error.message);
-  } else {
-      if(!providedName) document.getElementById("yellowInput").value="";
-      loadYellow();
-      if(providedName) {
-           alert(`${name} has been added to Yellow Team successfully.`);
-           closeTeamAddModal();
-      }
-  }
+function getAutoPositionName(leftPct, topPct) {
+    const x = parseFloat(leftPct); const y = parseFloat(topPct);
+    if (x < 12) return 'GK';
+    if (x < 32) { if (y < 30) return 'LB'; if (y > 70) return 'RB'; return 'CB'; }
+    if (x < 60) { if (y < 25) return 'LM'; if (y > 75) return 'RM'; if (x < 45) return 'DM'; return 'CM'; }
+    if (y < 30) return 'LW'; if (y > 70) return 'RW'; if (x < 80) return 'CF'; return 'ST';
 }
-
-async function loadYellow(){
-  const { data } = await supabase.from("yellow_team").select("*").order("id");
-  const ul=document.getElementById("yellowList");
-  const field=document.getElementById("yellowPlan");
-  ul.innerHTML=""; 
-  field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`; 
-  
-  const isTeamEditAllowed = systemConfig.allowTeamEdit;
-  
-  if(data) data.forEach((p,i)=>{
-    const time = formatPlayerTime(p.time); 
-    const displayName = (i === 0) ? `${p.name} (C)` : p.name;
-    const buttons = isTeamEditAllowed ?
-        `<span>
-          <button class="action-btn edit-btn" onclick="editPlayer('yellow_team',${p.id},'${p.name}')">Edit</button>
-          <button class="action-btn delete-btn" onclick="deletePlayer('yellow_team',${p.id})">Delete</button>
-        </span>` : '';
-    ul.innerHTML += `
-      <li>
-        <div class="player-info">
-            <span>${i+1}. ${displayName} <span class="player-time">${time}</span></span>
-        </div>
-        ${buttons}
-      </li>`;
-    let pos = p.position ? JSON.parse(p.position) : null;
-    createPlayerMarker('yellow', p.name, p.id, pos, p.position_code, i + 1);
-  });
-  setupDraggable('yellow');
-}
-
-// =========================================================================================
-// ---- 7. FORMATIONS & TACTICS ----
-// =========================================================================================
-
-async function applyFormation(team, formationName) {
-    if (!await canControlPlan(team)) {
-        return;
-    }
-
-    const table = team === 'blue' ? 'blue_team' : 'yellow_team';
-    const formation = FORMATIONS[formationName];
-    
-    const { data: players, error } = await supabase.from(table).select('id').order('id', { ascending: true });
-    
-    if (error || !players || players.length === 0) {
-        alert(`No players found in the ${team} team to apply formation.`);
-        return;
-    }
-
-    const updates = players.slice(0, 12).map((player, index) => {
-        let pos;
-        if (index < formation.length) {
-            pos = formation[index];
-        } else {
-            pos = { left: '40%', top: '5%', code: 'SUB' };
-        }
-
-        const positionString = JSON.stringify({ left: pos.left, top: pos.top });
-        
-        return supabase.from(table)
-            .update({ position: positionString, position_code: pos.code })
-            .eq('id', player.id)
-            .select(); 
-    });
-
-    await Promise.all(updates);
-    
-    if (team === 'blue') loadBlue(); else loadYellow();
-    alert(`${formationName} formation applied successfully to the ${team} team.`);
-}
-
-function getDynamicFormation(N) {
-    if (N === 0) return [];
-
-    const distributionMap = [];
-    distributionMap.push({ X: 5, Y_count: 1, code: 'GK' }); 
-    distributionMap.push({ X: 25, Y_count: 4, code: 'CB' }); 
-    distributionMap.push({ X: 55, Y_count: 4, code: 'CM' }); 
-    distributionMap.push({ X: 80, Y_count: 3, code: 'CF' }); 
-    
-    if (N > 12) {
-        distributionMap.push({ X: 10, Y_count: N - 12, code: 'SUB' }); 
-    }
-
-    const positions = [];
-    let currentPlayerIndex = 1;
-
-    for (const zone of distributionMap) {
-        if (currentPlayerIndex > N) break;
-
-        let playersInZone = Math.min(zone.Y_count, N - currentPlayerIndex + 1);
-        if (playersInZone === 0) continue;
-        
-        const Y_min = 10;
-        const Y_max = 90;
-        let deltaY = playersInZone > 1 ? (Y_max - Y_min) / (playersInZone - 1) : 0;
-
-        for (let j = 0; j < playersInZone; j++) {
-            let top;
-            if (playersInZone === 1) {
-                top = 50; 
-            } else {
-                top = Y_min + j * deltaY;
-            }
-            positions.push({ left: `${zone.X}%`, top: `${top.toFixed(2)}%`, code: zone.code });
-            currentPlayerIndex++;
-        }
-    }
-    return positions;
-}
-
-async function applyDynamicPlan(team) {
-    if (!await canControlPlan(team)) { return; }
-    
-    const table = team === 'blue' ? 'blue_team' : 'yellow_team';
-    const { data: players, error } = await supabase.from(table).select('id').order('id', { ascending: true });
-    
-    if (error || !players || players.length === 0) {
-        alert(`No players found in the ${team} team to apply the dynamic plan.`);
-        return;
-    }
-    
-    const N = players.length;
-    const dynamicFormation = getDynamicFormation(N);
-    
-    const updates = players.map((player, index) => {
-        if (index < dynamicFormation.length) {
-            const pos = dynamicFormation[index];
-            const positionString = JSON.stringify({ left: pos.left, top: pos.top });
-            return supabase.from(table)
-                .update({ position: positionString, position_code: pos.code })
-                .eq('id', player.id)
-                .select();
-        }
-        return null; 
-    }).filter(update => update !== null); 
-
-    await Promise.all(updates);
-    if (team === 'blue') loadBlue(); else loadYellow();
-    alert(`Dynamic plan applied successfully for ${N} players in the ${team} team.`);
-}
-
-// =========================================================================================
-// ---- 8. PLAYER MARKERS & DRAGGING ----
-// =========================================================================================
-
-function distance(x1, y1, x2, y2) {
-    const dx = x1 - x2;
-    const dy = y1 - y2;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
-function getNearestPositionCode(newLeftPercent, newTopPercent) {
-    const referenceFormation = FORMATIONS['4-3-3'].concat(
-        FORMATIONS['4-4-2'].filter(p => !FORMATIONS['4-3-3'].some(fp => fp.code === p.code))
-    ).concat(
-        FORMATIONS['3-4-3'].filter(p => !FORMATIONS['4-3-3'].some(fp => fp.code === p.code) && !FORMATIONS['4-4-2'].some(fp => fp.code === p.code))
-    );
-    
-    let nearestCode = 'SUB';
-    let minDistance = Infinity;
-
-    referenceFormation.forEach(pos => {
-        const refLeft = parseFloat(pos.left);
-        const refTop = parseFloat(pos.top);
-        const dist = distance(newLeftPercent, newTopPercent, refLeft, refTop);
-
-        if (dist < minDistance) {
-            minDistance = dist;
-            nearestCode = pos.code;
-        }
-    });
-    return nearestCode;
-}
-
-function createPlayerMarker(team, playerName, playerId, storedPosition=null, positionCode='SUB', playerNumber=null) { 
-  const fieldId = team === 'blue' ? 'bluePlan' : 'yellowPlan';
-  const field = document.getElementById(fieldId);
-
-  const existingMarker = document.getElementById(`marker-${team}-${playerId}`);
-  if (existingMarker) existingMarker.remove();
-
-  const marker = document.createElement('div');
-  marker.classList.add('player-marker');
-  marker.id = `marker-${team}-${playerId}`; 
-  marker.dataset.playerId = playerId;
-  marker.dataset.team = team;
-  marker.dataset.table = team === 'blue' ? 'blue_team' : 'yellow_team';
-  marker.style.background = team==='blue'? '#1976d2' : '#fbc02d';
-  
-  const displayPlayerName = playerNumber === 1 ? `${playerNumber}. ${playerName} (C)` : (playerNumber !== null ? `${playerNumber}. ${playerName}` : playerName);
-  let leftPercent = '50%';
-  let topPercent = '50%';
-  if (storedPosition) { leftPercent = storedPosition.left; topPercent = storedPosition.top; }
-
-  marker.style.left = leftPercent;
-  marker.style.top = topPercent;
-  marker.innerHTML = `<span class="player-position-label">${positionCode || 'SUB'}</span>`;
-
-  const label = document.createElement('div');
-  label.classList.add('player-name');
-  label.innerText = displayPlayerName; 
-  label.style.color = team==='blue' ? '#fff' : '#000'; 
-  marker.appendChild(label);
-  
-  marker.addEventListener('click', (e) => {
-    if (e.detail === 1) { showPositionMenu(team, playerId, playerName); }
-  });
-
-  field.appendChild(marker);
-}
-
 
 function setupDraggable(team) {
-  const fieldId = team === 'blue' ? '#bluePlan' : '#yellowPlan';
-  const table = team === 'blue' ? 'blue_team' : 'yellow_team';
-  const field = document.getElementById(team === 'blue' ? 'bluePlan' : 'yellowPlan');
-
-  interact(`${fieldId} .player-marker`).unset(); 
-
-  if (!systemConfig.allowFormationEdit) { return; }
-
-  interact(`${fieldId} .player-marker`)
-    .draggable({
-      inertia: false, 
+  const fieldId = `#${team}Plan`; const table = `${team}_team`; const field = document.getElementById(`${team}Plan`);
+  interact(`${fieldId} .player-marker`).unset();
+  if (!systemConfig.allowFormationEdit) return;
+  interact(`${fieldId} .player-marker`).draggable({
       modifiers: [ interact.modifiers.restrictRect({ restriction: field }) ],
       listeners: {
-        start (event) {
-            const target = event.target;
-            const fieldRect = field.getBoundingClientRect();
-            
-            let left_percent = parseFloat(target.style.left);
-            let top_percent = parseFloat(target.style.top);
-            
-            let x = (left_percent / 100) * fieldRect.width;
-            let y = (top_percent / 100) * fieldRect.height;
-
-            target.dataset.x = x;
-            target.dataset.y = y;
-            target.style.left = `${x}px`;
-            target.style.top = `${y}px`;
-            target.style.transform = `translate(-50%, -50%)`;
+        start: async (event) => {
+            if (sessionStorage.getItem(`${team}_captain_unlocked`) !== 'true') {
+                if (!await canControlPlan(team)) { event.interaction.stop(); return; }
+            }
+            const rect = field.getBoundingClientRect();
+            event.target.dataset.x = (parseFloat(event.target.style.left)/100) * rect.width;
+            event.target.dataset.y = (parseFloat(event.target.style.top)/100) * rect.height;
         },
         move (event) {
-          const target = event.target;
-          let x = (parseFloat(target.dataset.x) || 0) + event.dx;
-          let y = (parseFloat(target.dataset.y) || 0) + event.dy;
-
-          target.style.left = `${x}px`;
-          target.style.top = `${y}px`;
-          target.dataset.x = x;
-          target.dataset.y = y;
-
-          const fieldRect = field.getBoundingClientRect();
-          let left_percent = (x / fieldRect.width) * 100;
-          let top_percent = (y / fieldRect.height) * 100;
-          left_percent = Math.max(0, Math.min(100, left_percent));
-          top_percent = Math.max(0, Math.min(100, top_percent));
-
-          const newPositionCode = getNearestPositionCode(left_percent, top_percent);
-          const labelElement = target.querySelector('.player-position-label');
-          if (labelElement && labelElement.textContent !== newPositionCode) {
-              labelElement.textContent = newPositionCode;
-          }
+          if (sessionStorage.getItem(`${team}_captain_unlocked`) !== 'true') return;
+          let x = (parseFloat(event.target.dataset.x) || 0) + event.dx;
+          let y = (parseFloat(event.target.dataset.y) || 0) + event.dy;
+          event.target.style.left = `${x}px`; event.target.style.top = `${y}px`;
+          event.target.dataset.x = x; event.target.dataset.y = y;
         },
-        end: async (event) => {
-          const target = event.target;
-          const table = target.dataset.table;
-          const team = target.dataset.team;
-
-          const hasPermission = await canControlPlan(team);
-          if (!hasPermission) {
-              alert("PIN check failed. Position change was not saved.");
-              if (team === 'blue') loadBlue(); else loadYellow();
-              return;
-          }
-
-          const fieldRect = field.getBoundingClientRect();
-          const x_end_px = parseFloat(target.dataset.x);
-          const y_end_px = parseFloat(target.dataset.y);
-          
-          let left_percent = (x_end_px / fieldRect.width) * 100;
-          let top_percent = (y_end_px / fieldRect.height) * 100;
-          left_percent = Math.max(0, Math.min(100, left_percent));
-          top_percent = Math.max(0, Math.min(100, top_percent));
-
-          const newPositionCode = getNearestPositionCode(left_percent, top_percent);
-          const labelElement = target.querySelector('.player-position-label');
-          if (labelElement) { labelElement.textContent = newPositionCode; }
-
-          target.style.left = `${left_percent.toFixed(2)}%`;
-          target.style.top = `${top_percent.toFixed(2)}%`;
-          target.style.transform = `translate(-50%, -50%)`;
-
-          target.dataset.x = 0; 
-          target.dataset.y = 0; 
-
-          const playerId = target.dataset.playerId;
-          const newPosition = JSON.stringify({ left: `${left_percent.toFixed(2)}%`, top: `${top_percent.toFixed(2)}%` });
-          
-          supabase.from(table)
-              .update({ position: newPosition, position_code: newPositionCode })
-              .eq('id', playerId)
-              .then(({ error }) => { if (error) console.error("Error saving drag position:", error); });
+        end: (event) => {
+          if (sessionStorage.getItem(`${team}_captain_unlocked`) !== 'true') return;
+          const rect = field.getBoundingClientRect();
+          let lp = (parseFloat(event.target.dataset.x) / rect.width) * 100;
+          let tp = (parseFloat(event.target.dataset.y) / rect.height) * 100;
+          const newCode = getAutoPositionName(lp, tp);
+          event.target.querySelector('.player-position-label').innerText = newCode;
+          event.target.style.left = `${lp.toFixed(2)}%`; event.target.style.top = `${tp.toFixed(2)}%`;
+          event.target.style.transform = `translate(-50%, -50%)`;
+          supabase.from(table).update({ position: JSON.stringify({ left: `${lp.toFixed(2)}%`, top: `${tp.toFixed(2)}%` }), position_code: newCode }).eq('id', event.target.dataset.playerId).then();
         }
       }
+  });
+}
+
+async function applyFormation(team, name) {
+    if (!await canControlPlan(team)) return;
+    const table = `${team}_team`; const form = FORMATIONS[name];
+    const { data: players } = await supabase.from(table).select('id').order('id');
+    players.slice(0, 12).map((p, i) => {
+        const pos = i < form.length ? form[i] : { left: '50%', top: '-15%', code: 'SUB' };
+        supabase.from(table).update({ position: JSON.stringify({ left: pos.left, top: pos.top }), position_code: pos.code }).eq('id', p.id).then();
     });
-}
-
-
-// =========================================================================================
-// ---- 9. POSITION SELECTION MENU ----
-// =========================================================================================
-
-async function showPositionMenu(team, playerId, playerName) {
-    if (!await canControlPlan(team)) { return; }
-    
-    currentPositionTarget = { team, playerId, playerName };
-    document.getElementById('positionMenuTitle').textContent = `Select Position for ${playerName}`;
-    
-    const grid = document.getElementById('positionMenuGrid');
-    grid.innerHTML = ''; 
-
-    POSITIONS_LIST.forEach(pos => {
-        const button = document.createElement('button');
-        button.textContent = `${pos.code} (${pos.label})`;
-        button.onclick = () => selectPosition(pos.code);
-        grid.appendChild(button);
-    });
-
-    document.getElementById('positionMenuOverlay').style.display = 'flex';
-}
-
-async function closePositionMenu() {
-    document.getElementById('positionMenuOverlay').style.display = 'none';
-    currentPositionTarget = { team: null, playerId: null, playerName: null }; 
-}
-
-async function selectPosition(positionCode) {
-    const { team, playerId } = currentPositionTarget;
-    if (!team || !playerId) {
-        closePositionMenu();
-        return;
-    }
-
-    const table = team === 'blue' ? 'blue_team' : 'yellow_team';
-    const refPos = FORMATIONS['4-3-3'].find(p => p.code === positionCode) || 
-                   FORMATIONS['4-4-2'].find(p => p.code === positionCode) ||
-                   FORMATIONS['3-4-3'].find(p => p.code === positionCode) ||
-                   { left: '50%', top: '50%', code: positionCode };
-    
-    const newPosition = { left: refPos.left, top: refPos.top };
-
-    const { error } = await supabase.from(table)
-        .update({ position_code: positionCode, position: JSON.stringify(newPosition) })
-        .eq('id', playerId);
-
-    if (error) {
-        console.error('Error updating position:', error);
-        alert(`Failed to update position: ${error.message}`);
-    }
-
-    closePositionMenu();
     reloadList(table);
 }
-
-
-// =========================================================================================
-// ---- 10. ADDRESS, CHAT, HISTORY, REALTIME ----
-// =========================================================================================
-
-function showToast(message) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.innerText = message;
-    toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; box-shadow:0 2px 10px rgba(0,0,0,0.5); z-index:3000; font-weight:bold;';
-    container.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 3000);
+async function applyDynamicPlan(team) {
+    if (!await canControlPlan(team)) return;
+    alert("Dynamic plan logic applied (Simulated).");
 }
+
+function createPlayerMarker(team, name, id, pos, code, num) { 
+  const m = document.createElement('div'); m.classList.add('player-marker'); m.id = `marker-${team}-${id}`; m.dataset.playerId = id; 
+  m.style.background = team==='blue'? '#1976d2' : '#fbc02d'; m.style.left = pos.left; m.style.top = pos.top;
+  
+  const textColor = team === 'blue' ? '#fff' : '#000';
+  const numBg = team === 'blue' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)';
+  
+  m.innerHTML = `
+    <span class="player-position-label">${code || 'SUB'}</span>
+    <div class="player-name" style="color:${textColor}; display:flex; align-items:center; gap:3px; justify-content:center;">
+        <span style="background:${numBg}; padding:1px 4px; border-radius:4px; font-size:10px;">${num}</span>
+        ${name}
+    </div>
+  `;
+  m.addEventListener('click', (e) => { if (e.detail === 1) showPositionMenu(team, id, name); });
+  document.getElementById(`${team}Plan`).appendChild(m);
+}
+
+async function showPositionMenu(team, id, name) {
+    if (!await canControlPlan(team)) return;
+    currentPositionTarget = { team, id, name }; document.getElementById('positionMenuTitle').innerText = `Pos: ${name}`;
+    const g = document.getElementById('positionMenuGrid'); g.innerHTML = ''; 
+    POSITIONS_LIST.forEach(p => { const b = document.createElement('button'); b.innerText = p.code; b.onclick = () => selectPosition(p.code); g.appendChild(b); });
+    document.getElementById('positionMenuOverlay').style.display = 'flex';
+}
+function closePositionMenu() { document.getElementById('positionMenuOverlay').style.display = 'none'; }
+async function selectPosition(code) {
+    const { team, id } = currentPositionTarget; const table = `${team}_team`;
+    await supabase.from(table).update({ position_code: code }).eq('id', id);
+    closePositionMenu(); reloadList(table);
+}
+
+// CHAT & UTILS
+function showToast(m) { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); t.innerText=m; t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px;border-radius:20px;'; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
 
 async function loadMatchAddress() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
-    const savedAddress = data ? data.match_address : "Address 📍";
-    matchAddress = savedAddress;
-    
-    const addressBtn = document.getElementById('addressBtn');
-    if (savedAddress.length > 20 && !savedAddress.includes("set match address")) {
-        addressBtn.textContent = "Match Address 📍"; 
-    } else if (savedAddress.includes("set match address")) {
-         addressBtn.textContent = "Set Address 📍"; 
-    } else {
-        addressBtn.textContent = `${savedAddress} 📍`;
-    }
+    matchAddress = data ? data.match_address : "Address 📍";
+    document.getElementById('addressBtn').textContent = (matchAddress.length > 20 && !matchAddress.includes("set")) ? "Match Address 📍" : `${matchAddress} 📍`;
 }
-
-function playNotificationSound() {
-    const sound = document.getElementById('notification-sound');
-    sound.currentTime = 0; 
-    sound.play().catch(e => console.log("Notification sound blocked:", e));
-}
-
-async function sendSystemMessageToChat(playerName, content) {
-    const { error } = await supabase
-        .from('system_history')
-        .insert([{ content: content, username: 'System' }]); 
-    
-    if (error) { console.error('Error sending system message to history:', error); } 
-    else {
-        const historyContainer = document.getElementById('systemHistoryContainer');
-        if (historyContainer.style.display === 'block') { loadSystemHistory(false); }
-    }
-}
-
-async function handleImageUpload(inputElement, context) {
-    const file = inputElement.files[0];
-    if (!file) return;
-    
-    if (!systemConfig.allowImageUpload) {
-        alert("Image uploads are currently disabled by the system administrator.");
-        inputElement.value = '';
-        return;
-    }
-    
-    if (!systemConfig.allowChat) {
-        alert("Sending messages is currently disabled by the system administrator.");
-        inputElement.value = '';
-        return;
-    }
-
-    let nameInputId;
-    if (context === 'global') nameInputId = 'chatNameInput';
-    else if (context === 'blue') nameInputId = 'blueChatNameInput';
-    else if (context === 'yellow') nameInputId = 'yellowChatNameInput';
-    
-    const username = document.getElementById(nameInputId).value.trim();
-    if (!username) {
-        alert("Please enter your name before sending an image.");
-        inputElement.value = '';
-        return;
-    }
-    localStorage.setItem('chat_username', username);
-
-    const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-    const { data, error } = await supabase.storage.from('chat_images').upload(fileName, file);
-
-    if (error) {
-        console.error("Upload error:", error);
-        alert("Failed to upload image. Make sure you created a Public Bucket named 'chat_images'.");
-        inputElement.value = '';
-        return;
-    }
-
-    const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-    const publicUrl = urlData.publicUrl;
-    const content = `[IMG]${publicUrl}`;
-    const table = context === 'global' ? 'chat_messages' : `${context}_chat`;
-
-    const { error: msgError } = await supabase.from(table).insert([{ username, content }]);
-    if (msgError) {
-        console.error("Message send error:", msgError);
-        alert("Image uploaded but failed to send message.");
-    } else {
-        playNotificationSound();
-    }
-    inputElement.value = '';
-}
-
-function renderMessage(message, containerId) {
-  const messagesContainer = document.getElementById(containerId);
-  if (!messagesContainer) return;
-
-  const msgDiv = document.createElement('div');
-  msgDiv.classList.add('message');
-  
-  const storedName = localStorage.getItem('chat_username');
-  const isMyMessage = storedName && storedName.trim() === message.username.trim();
-  const nameColor = getColorForUsername(message.username);
-
-  if (isMyMessage) { msgDiv.classList.add('my-message'); } 
-  else {
-    msgDiv.style.borderColor = nameColor;
-    msgDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'; 
-  }
-
-  const date = new Date(message.created_at).toLocaleTimeString('en-US', {
-    hour: '2-digit', minute: '2-digit', hour12: true, numberingSystem: 'latn' 
-  });
-  const timeSpan = `<span style="color:#888;">${date}</span>`;
-  
-  let contentHtml = `<span>${message.content}</span>`;
-  if (message.content.startsWith('[IMG]')) {
-      const imageUrl = message.content.replace('[IMG]', '');
-      contentHtml = `<img src="${imageUrl}" class="chat-uploaded-img" onclick="window.open(this.src, '_blank')">`;
-  }
-  
-  let deleteBtnHtml = '';
-  if (isMyMessage) {
-      let tableName = 'chat_messages';
-      if(containerId.includes('blue')) tableName = 'blue_chat';
-      if(containerId.includes('yellow')) tableName = 'yellow_chat';
-      
-      deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteSingleMessage('${tableName}', ${message.id})">🗑️</button>`;
-  }
-
-  msgDiv.innerHTML = `<span class="message-header" style="color: ${nameColor};">${message.username} ${timeSpan}</span>${contentHtml} ${deleteBtnHtml}`;
-  messagesContainer.appendChild(msgDiv); 
-  messagesContainer.scrollTop = messagesContainer.scrollHeight; 
-}
-
-async function deleteSingleMessage(table, id) {
-    if(!confirm("Delete this message?")) return;
-    const { error } = await supabase.from(table).delete().eq('id', id);
-    if(error) {
-        alert("Error deleting message: " + error.message);
-    }
-}
-
-async function loadChatMessages() {
-  const { data, error } = await supabase.from('chat_messages').select('*').order('created_at', { ascending: true }).limit(50); 
-  if (error) return;
-  const messagesContainer = document.getElementById('chatMessages');
-  messagesContainer.innerHTML = ''; 
-  data.forEach(msg => renderMessage(msg, 'chatMessages'));
-  messagesContainer.scrollTop = messagesContainer.scrollHeight; 
-}
-
-async function sendMessage() {
-  if (!systemConfig.allowChat) { alert("Sending messages is currently disabled."); return; }
-  const nameInput = document.getElementById('chatNameInput');
-  const msgInput = document.getElementById('chatMsgInput');
-  const username = nameInput.value.trim();
-  const content = msgInput.value.trim();
-  if (!username) { return alert("Please enter your name."); }
-  if (!content) { return alert("Cannot send an empty message."); }
-  localStorage.setItem('chat_username', username);
-  const { error } = await supabase.from('chat_messages').insert([{ username, content }]); 
-  if (error) return alert(`Error sending message: ${error.message}`);
-  msgInput.value = ''; 
-  playNotificationSound();
-}
-
-async function loadTeamChatMessages(team) {
-    const table = `${team}_chat`; 
-    const containerId = `${team}ChatMessages`;
-    const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: true }).limit(50); 
-    const messagesContainer = document.getElementById(containerId);
-    if (error) { messagesContainer.innerHTML = '<div class="message">Error loading chat.</div>'; return; }
-    messagesContainer.innerHTML = ''; 
-    data.forEach(msg => renderMessage(msg, containerId));
-    messagesContainer.scrollTop = messagesContainer.scrollHeight; 
-}
-
-async function sendTeamMessage(team) {
-    if (!systemConfig.allowChat) { alert("Sending messages is disabled."); return; }
-    const nameInputId = `${team}ChatNameInput`;
-    const msgInputId = `${team}ChatMsgInput`;
-    const table = `${team}_chat`; 
-    const username = document.getElementById(nameInputId).value.trim();
-    const content = document.getElementById(msgInputId).value.trim();
-    if (!username) { return alert("Please enter your name."); }
-    if (!content) { return alert("Cannot send an empty message."); }
-    localStorage.setItem('chat_username', username); 
-    document.getElementById('chatNameInput').value = username;
-    document.getElementById('blueChatNameInput').value = username;
-    document.getElementById('yellowChatNameInput').value = username;
-    const { error } = await supabase.from(table).insert([{ username, content }]); 
-    if (error) return alert(`Error: ${error.message}`);
-    document.getElementById(msgInputId).value = ''; 
-    playNotificationSound();
-}
+function playNotificationSound() { document.getElementById('notification-sound').play().catch(()=>{}); }
 
 async function loadSystemHistory(toggle = true) {
   const historyContainer = document.getElementById('systemHistoryContainer');
@@ -2232,468 +918,447 @@ async function loadSystemHistory(toggle = true) {
   });
 }
 
-// =========================================================================================
-// ---- 11. REALTIME SETUP & INITIALIZATION ----
-// =========================================================================================
+async function sendSystemMessageToChat(name, msg) { await supabase.from('system_history').insert([{ content: msg, username: 'System' }]); }
 
-function setupRealtime() {
-  supabase.channel('global-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-      (payload) => {
-        const storedName = localStorage.getItem('chat_username'); 
-        if (storedName && storedName.trim() !== payload.new.username.trim()) { playNotificationSound(); }
-        renderMessage(payload.new, 'chatMessages'); 
-      }
-    )
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' },
-      (payload) => { loadChatMessages(); }
-    )
-    .subscribe();
-    
-    supabase.channel('system-history-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' },
-      (payload) => {
-         const historyContainer = document.getElementById('systemHistoryContainer');
-         if (historyContainer.style.display === 'block') { loadSystemHistory(false); }
-      }
-    )
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'system_history' },
-        (payload) => {
-           const historyContainer = document.getElementById('systemHistoryContainer');
-           if (historyContainer.style.display === 'block') { loadSystemHistory(false); }
-        }
-    )
-    .subscribe();
+// FILE UPLOAD
+async function handleFileUpload(input, context) {
+    const file = input.files[0]; if (!file) return;
+    const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
+    const name = document.getElementById(nameInputId).value.trim();
+    if (!name) return alert("Enter name");
+    localStorage.setItem('chat_username', name);
 
-    supabase.channel('blue-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' },
-        (payload) => {
-            const storedName = localStorage.getItem('chat_username');
-            if (storedName && storedName.trim() !== payload.new.username.trim()) { playNotificationSound(); }
-            if(document.getElementById('blue').style.display === 'block') { renderMessage(payload.new, 'blueChatMessages'); }
-        }
-    )
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'blue_chat' }, (payload) => { loadTeamChatMessages('blue'); })
-    .subscribe();
-
-    supabase.channel('yellow-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' },
-        (payload) => {
-            const storedName = localStorage.getItem('chat_username');
-            if (storedName && storedName.trim() !== payload.new.username.trim()) { playNotificationSound(); }
-            if(document.getElementById('yellow').style.display === 'block') { renderMessage(payload.new, 'yellowChatMessages'); }
-        }
-    )
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'yellow_chat' }, (payload) => { loadTeamChatMessages('yellow'); })
-    .subscribe();
-    
-    supabase.channel('main-team-updates')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, async (payload) => { loadPlayers(); })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, async (payload) => { loadPlayers(); })
-    
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, async (payload) => { 
-        loadBlue(); 
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, async (payload) => { 
-        loadYellow(); 
-    })
-    
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'id=eq.1' },
-        async (payload) => {
-            // Update System Config
-            if (payload.new.system_config) {
-                const loadedConfig = JSON.parse(payload.new.system_config);
-                systemConfig = { ...systemConfig, ...loadedConfig }; 
-                applyUIRestrictions();
-            }
-            // Update Address
-            if (payload.new.match_address !== undefined) {
-                loadMatchAddress();
-            }
-        }
-    )
-    .subscribe();
+    const ext = file.name.split('.').pop(); const fileName = `${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('chat_images').upload(fileName, file);
+    if(error) return alert("Upload failed");
+    const { data } = supabase.storage.from('chat_images').getPublicUrl(fileName);
+    const content = ['mp4','webm'].includes(ext) ? `[VID]${data.publicUrl}` : `[IMG]${data.publicUrl}`;
+    const table = context === 'global' ? 'chat_messages' : `${context}_chat`;
+    await supabase.from(table).insert([{ username: name, content }]);
+    input.value = '';
 }
 
-// ==================== NEW CHAT TEAM ADD LOGIC ====================
+// --- NEW FEATURES LOGIC ---
+function toggleRadio() { const e=document.getElementById('radioPlayerSection'); e.style.display = e.style.display==='block'?'none':'block'; }
+function playRadio() { const a=document.getElementById('radioStreamPlayer'); const s=document.getElementById('radioSelect'); if(a.src!==s.value) a.src=s.value; a.play(); }
+function stopRadio() { 
+    document.getElementById('radioStreamPlayer').pause(); 
+    document.getElementById('radioPlayerSection').style.display='none';
+}
+function changeRadioChannel() { playRadio(); document.getElementById('radioPlayerSection').style.display='none'; }
 
-function openTeamAddModal() {
-    if(!systemConfig.allowTeamEdit){
-        alert("Adding players to teams is currently disabled.");
-        return;
-    }
-    
-    const currentChatName = document.getElementById('chatNameInput').value;
-    document.getElementById('chatTeamAddInput').value = currentChatName;
-    
-    document.getElementById('teamAddModalOverlay').style.display = 'flex';
+function toggleStickerMenu(context) {
+    const id = context === 'global' ? 'stickerPopupGlobal' : (context === 'blue' ? 'stickerPopupBlue' : 'stickerPopupYellow');
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+    if(el.style.display === 'flex') showStickerTab(context, 'football');
+}
+function showStickerTab(context, category) {
+    const gridId = context === 'global' ? 'stickerGridGlobal' : (context === 'blue' ? 'stickerGridBlue' : 'stickerGridYellow');
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    STICKERS[category].forEach(url => {
+        const img = document.createElement('img'); img.src = url; img.classList.add('sticker-item');
+        img.onclick = () => sendSticker(context, url);
+        grid.appendChild(img);
+    });
+}
+async function sendSticker(context, url) {
+    const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
+    const name = document.getElementById(nameInputId).value.trim();
+    if(!name) return alert("Enter name");
+    localStorage.setItem('chat_username', name);
+    const table = context === 'global' ? 'chat_messages' : `${context}_chat`;
+    await supabase.from(table).insert([{ username: name, content: `[IMG]${url}` }]);
+    toggleStickerMenu(context);
 }
 
-function closeTeamAddModal() {
-    document.getElementById('teamAddModalOverlay').style.display = 'none';
-}
+// --- NEW RECORDING LOGIC (Bar Style) ---
+async function startVoiceRecording(context) {
+    if (!navigator.mediaDevices) return alert("Microphone not supported");
+    const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
+    if (!document.getElementById(nameInputId).value.trim()) return alert("Enter name first");
 
-function confirmAddToTeam(teamColor) {
-    const name = document.getElementById('chatTeamAddInput').value.trim();
-    if (!name) {
-        alert("Please enter a player name.");
-        return;
-    }
-    
-    if (teamColor === 'blue') {
-        addBlue(name);
-    } else {
-        addYellow(name);
-    }
-}
-
-// ==================== ARCADE GAME ENGINE ====================
-
-let gameInterval = null;
-let gameActive = false;
-let currentGameType = '';
-let currentScore = 0;
-let frameCount = 0;
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas ? canvas.getContext('2d') : null;
-
-// Game State Variables
-let ball = { x: 160, y: 200, r: 15, dy: 0, dx: 0 };
-let obstacles = []; // For Flappy
-let goalTarget = { x: 0, width: 60, speed: 2, direction: 1 }; // For Penalty
-
-// --- Main Controls ---
-
-async function openGameCenter() {
-    document.getElementById('gameCenterOverlay').style.display = 'flex';
-    document.getElementById('gameMenu').style.display = 'block';
-    document.getElementById('gameArea').style.display = 'none';
-    document.getElementById('closeGameBtn').style.display = 'block';
-    document.getElementById('leaderboardSection').style.display = 'block';
-    loadLeaderboard('juggling'); // Default load
-}
-
-function closeGameCenter() {
-    exitGame();
-    document.getElementById('gameCenterOverlay').style.display = 'none';
-}
-
-function exitGame() {
-    gameActive = false;
-    cancelAnimationFrame(gameInterval);
-    document.getElementById('gameArea').style.display = 'none';
-    document.getElementById('gameMenu').style.display = 'block';
-    document.getElementById('leaderboardSection').style.display = 'block';
-    document.getElementById('closeGameBtn').style.display = 'block';
-    // Remove listeners
-    canvas.onmousedown = canvas.ontouchstart = null;
-}
-
-function startGame(type) {
-    currentGameType = type;
-    document.getElementById('gameMenu').style.display = 'none';
-    document.getElementById('leaderboardSection').style.display = 'none';
-    document.getElementById('closeGameBtn').style.display = 'none';
-    document.getElementById('gameArea').style.display = 'block';
-    document.getElementById('startPrompt').style.display = 'block';
-    document.getElementById('startPrompt').innerText = "Tap to Start!";
-    
-    currentScore = 0;
-    document.getElementById('scoreDisplay').innerText = "Score: 0";
-    gameActive = false;
-    frameCount = 0;
-
-    // Initialize specific game
-    if (type === 'juggling') initJuggling();
-    else if (type === 'flappy') initFlappy();
-    else if (type === 'penalty') initPenalty();
-
-    // Draw first frame
-    drawGame();
-
-    // Input Handler
-    canvas.onmousedown = canvas.ontouchstart = function(e) {
-        e.preventDefault();
-        handleInput();
-    };
-}
-
-function handleInput() {
-    if (!gameActive) {
-        gameActive = true;
-        document.getElementById('startPrompt').style.display = 'none';
-        gameLoop();
-        // First jump/action on start
-        if (currentGameType === 'juggling') { ball.dy = -10; ball.dx = (Math.random()-0.5)*4; }
-        if (currentGameType === 'flappy') { ball.dy = -7; }
-        return;
-    }
-
-    if (currentGameType === 'juggling') {
-        ball.dy = -10; // Jump
-        ball.dx = (Math.random() - 0.5) * 5; // Spin
-        currentScore++;
-    } 
-    else if (currentGameType === 'flappy') {
-        ball.dy = -7; // Jump
-    } 
-    else if (currentGameType === 'penalty') {
-        shootPenalty();
-    }
-    
-    if (currentGameType !== 'penalty') {
-        document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
-        playNotificationSound();
-    }
-}
-
-function gameLoop() {
-    if (!gameActive) return;
-    
-    // Clear Canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    frameCount++;
-
-    if (currentGameType === 'juggling') updateJuggling();
-    else if (currentGameType === 'flappy') updateFlappy();
-    else if (currentGameType === 'penalty') updatePenalty();
-
-    if (gameActive) {
-        gameInterval = requestAnimationFrame(gameLoop);
-    }
-}
-
-// --- GAME 1: KEEPY UPPY ---
-function initJuggling() {
-    ball = { x: canvas.width/2, y: canvas.height/2, r: 20, dy: 0, dx: 2 };
-}
-function updateJuggling() {
-    ball.dy += 0.5; // Gravity
-    ball.y += ball.dy;
-    ball.x += ball.dx;
-
-    // Walls
-    if (ball.x + ball.r > canvas.width || ball.x - ball.r < 0) ball.dx = -ball.dx;
-
-    // Floor (Die)
-    if (ball.y + ball.r > canvas.height) gameOver();
-
-    // Draw
-    drawBall(ball.x, ball.y, ball.r, "#fff");
-}
-
-// --- GAME 2: FLAPPY BALL ---
-function initFlappy() {
-    ball = { x: 50, y: canvas.height/2, r: 12, dy: 0, dx: 0 };
-    obstacles = [];
-}
-function updateFlappy() {
-    ball.dy += 0.4; // Gravity
-    ball.y += ball.dy;
-
-    // Spawn Obstacles (Pipes)
-    if (frameCount % 100 === 0) {
-        let gap = 120; // Gap size
-        let topH = Math.random() * (canvas.height - gap - 40) + 20;
-        obstacles.push({ x: canvas.width, topH: topH, gap: gap, passed: false });
-    }
-
-    // Move & Draw Obstacles
-    ctx.fillStyle = "#4CAF50";
-    obstacles.forEach((obs, index) => {
-        obs.x -= 2; // Speed
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
         
-        // Top Pipe
-        ctx.fillRect(obs.x, 0, 40, obs.topH);
-        // Bottom Pipe
-        ctx.fillRect(obs.x, obs.topH + obs.gap, 40, canvas.height - (obs.topH + obs.gap));
+        // Show the specific recording bar
+        const barId = context === 'global' ? 'recordingBar_global' : (context === 'blue' ? 'recordingBar_blue' : 'recordingBar_yellow');
+        document.getElementById(barId).style.display = 'flex';
+        
+        isRecording = true;
+        mediaRecorder.start();
+    } catch (e) { console.error(e); alert("Mic access denied"); }
+}
 
-        // Score logic
-        if (obs.x + 40 < ball.x && !obs.passed) {
-            currentScore++;
-            obs.passed = true;
-            document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
-            playNotificationSound();
+async function finishVoiceRecording(context, action) {
+    if (!mediaRecorder || !isRecording) return;
+    
+    const barId = context === 'global' ? 'recordingBar_global' : (context === 'blue' ? 'recordingBar_blue' : 'recordingBar_yellow');
+    
+    mediaRecorder.onstop = async () => {
+        document.getElementById(barId).style.display = 'none'; // Hide bar
+        if (action === 'send') {
+             const blob = new Blob(audioChunks, { type: 'audio/webm' });
+             const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+             const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
+             const name = document.getElementById(nameInputId).value.trim();
+             
+             const fileName = `${Date.now()}.webm`;
+             const { error } = await supabase.storage.from('chat_images').upload(fileName, file);
+             if(error) return alert("Audio upload failed");
+             const { data } = supabase.storage.from('chat_images').getPublicUrl(fileName);
+             const table = context === 'global' ? 'chat_messages' : `${context}_chat`;
+             await supabase.from(table).insert([{ username: name, content: `[AUDIO]${data.publicUrl}` }]);
         }
+        // clear tracks
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    };
+    
+    mediaRecorder.stop();
+    isRecording = false;
+}
 
-        // Collision logic
-        if (
-            ball.x + ball.r > obs.x && ball.x - ball.r < obs.x + 40 &&
-            (ball.y - ball.r < obs.topH || ball.y + ball.r > obs.topH + obs.gap)
-        ) {
-            gameOver();
+// ---- CUSTOM AUDIO PLAYER LOGIC ----
+function toggleCustomAudio(uniqueId) {
+    const audio = document.getElementById(uniqueId);
+    const btn = document.getElementById('btn-' + uniqueId);
+    
+    // Pause all other audios
+    document.querySelectorAll('audio').forEach(a => {
+        if (a.id !== uniqueId && !a.paused) {
+            a.pause();
+            // Reset their buttons if they are custom players
+            if (a.id && a.id.startsWith('audio-')) {
+                const otherBtn = document.getElementById('btn-' + a.id);
+                if (otherBtn) otherBtn.innerText = '▶';
+            }
         }
     });
 
-    // Remove off-screen pipes
-    if (obstacles.length > 0 && obstacles[0].x < -40) obstacles.shift();
-
-    // Floor/Ceiling collision
-    if (ball.y + ball.r > canvas.height || ball.y - ball.r < 0) gameOver();
-
-    drawBall(ball.x, ball.y, ball.r, "#FFD700");
+    if (audio.paused) {
+        audio.play();
+        btn.innerText = '⏸';
+    } else {
+        audio.pause();
+        btn.innerText = '▶';
+    }
 }
 
-// --- GAME 3: PENALTY RUSH ---
-function initPenalty() {
-    ball = { x: canvas.width/2, y: canvas.height - 40, r: 15, dy: 0, dx: 0, state: 'ready' };
-    goalTarget = { x: 50, width: 80, speed: 3, direction: 1 };
-}
-function updatePenalty() {
-    // Move Goal Keeper/Target
-    goalTarget.x += goalTarget.speed * goalTarget.direction;
-    if (goalTarget.x + goalTarget.width > canvas.width || goalTarget.x < 0) goalTarget.direction *= -1;
+function updateAudioTime(uniqueId) {
+    const audio = document.getElementById(uniqueId);
+    const timeDisplay = document.getElementById('time-' + uniqueId);
+    if (!audio || !timeDisplay) return;
 
-    // Draw Goal
-    ctx.fillStyle = "#333";
-    ctx.fillRect(0, 0, canvas.width, 100); // Goal net area
+    const current = formatTime(audio.currentTime);
+    const duration = formatTime(audio.duration || 0);
     
-    // Draw Moving Goalkeeper (Red Block)
-    ctx.fillStyle = "#d32f2f";
-    ctx.fillRect(goalTarget.x, 60, goalTarget.width, 20); // The "Keeper"
+    timeDisplay.innerText = `${current} / ${duration}`;
+}
 
-    // Draw Goal Lines
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 5;
-    ctx.strokeRect(20, 10, canvas.width - 40, 90);
+function resetAudio(uniqueId) {
+    const btn = document.getElementById('btn-' + uniqueId);
+    if (btn) btn.innerText = '▶';
+}
 
-    // Ball Logic
-    if (ball.state === 'shooting') {
-        ball.y -= 15; // Shoot up
-        ball.r -= 0.2; // Perspective effect
-        if (ball.y < 80) { // Reached Goal Line
-             // Aim Practice: Hit the moving target to score
-             if (ball.x > goalTarget.x && ball.x < goalTarget.x + goalTarget.width) {
-                 // GOAL!
-                 currentScore++;
-                 document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
-                 ball.state = 'reset';
-                 ball.y = canvas.height - 40;
-                 ball.r = 15;
-                 goalTarget.speed += 0.5; // Make it harder
-                 playNotificationSound();
-             } else {
-                 gameOver(); // Missed
-             }
+function formatTime(seconds) {
+    if (isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+// -----------------------------------
+
+// RENDER MESSAGES (UPDATED WITH CUSTOM AUDIO)
+function renderMessage(m, id) {
+    const div = document.getElementById(id); const isMe = m.username === localStorage.getItem('chat_username');
+    let c = m.content;
+    
+    if (c.startsWith('[IMG]')) {
+        c = `<img src="${c.substring(5)}" class="chat-media-content" onclick="window.open(this.src)">`;
+    } else if (c.startsWith('[VID]')) {
+        c = `<video src="${c.substring(5)}" controls class="chat-media-content"></video>`;
+    } else if (c.startsWith('[AUDIO]')) {
+        // Generate a unique ID for this specific audio message
+        const uniqueId = 'audio-' + Math.random().toString(36).substr(2, 9);
+        const src = c.substring(7);
+        
+        c = `
+        <div class="custom-audio-player">
+            <button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button>
+            <span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span>
+            <audio id="${uniqueId}" src="${src}" ontimeupdate="updateAudioTime('${uniqueId}')" onloadedmetadata="updateAudioTime('${uniqueId}')" onended="resetAudio('${uniqueId}')" style="display:none;"></audio>
+        </div>`;
+    }
+    
+    let delBtn = '';
+    const table = id.includes('blue') ? 'blue_chat' : (id.includes('yellow') ? 'yellow_chat' : 'chat_messages');
+    // Use '✕' instead of trash can
+    if (isMe) delBtn = `<button class="delete-msg-btn" title="Delete" onclick="deleteSingleMessage('${table}', ${m.id})">✕</button>`;
+
+    const timeSpan = new Date(m.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
+
+    div.innerHTML += `<div class="message ${isMe?'my-message':''}" style="border-color:${getColorForUsername(m.username)}">
+        <div style="font-size:12px; color:${getColorForUsername(m.username)}; font-weight:bold;">${m.username} <span style="font-weight:normal; color:#888; font-size:10px;">${timeSpan}</span></div>
+        <div>${c}</div>
+        ${delBtn}
+    </div>`;
+    div.scrollTop = div.scrollHeight;
+}
+
+async function deleteSingleMessage(table, id) {
+    if(!confirm("Delete?")) return;
+    await supabase.from(table).delete().eq('id', id);
+    reloadList(table);
+}
+
+async function loadChatMessages() { const { data } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); document.getElementById('chatMessages').innerHTML=''; data.forEach(m=>renderMessage(m,'chatMessages')); }
+async function loadTeamChatMessages(team) { 
+    const { data } = await supabase.from(`${team}_chat`).select('*').order('created_at', {ascending:true}).limit(50); 
+    document.getElementById(`${team}ChatMessages`).innerHTML=''; 
+    data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
+}
+async function sendMessage() {
+    const n = document.getElementById('chatNameInput').value; const c = document.getElementById('chatMsgInput').value;
+    if(!n || !c) return; localStorage.setItem('chat_username', n);
+    await supabase.from('chat_messages').insert([{ username:n, content:c }]); document.getElementById('chatMsgInput').value='';
+}
+async function sendTeamMessage(team) {
+    const n = document.getElementById(`${team}ChatNameInput`).value; const c = document.getElementById(`${team}ChatMsgInput`).value;
+    if(!n || !c) return; localStorage.setItem('chat_username', n);
+    await supabase.from(`${team}_chat`).insert([{ username:n, content:c }]); document.getElementById(`${team}ChatMsgInput`).value='';
+}
+
+// --- ARCADE LOGIC (Updated with 5 Games) ---
+let gameInterval, gameActive = false, currentScore = 0, currentGameType = '';
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let ball = { x: 160, y: 200, r: 15, dy: 0, dx: 0, state: 'ready' };
+let obstacles = []; let goalTarget = {}; let playerTargetX = 160;
+
+// Mouse/Touch tracking for Dribbler & Keeper
+canvas.addEventListener('mousemove', (e) => {
+    if (!gameActive) return;
+    const rect = canvas.getBoundingClientRect();
+    playerTargetX = (e.clientX - rect.left) * (canvas.width / rect.width);
+});
+canvas.addEventListener('touchmove', (e) => {
+    if (!gameActive) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    playerTargetX = (e.touches[0].clientX - rect.left) * (canvas.width / rect.width);
+}, {passive: false});
+
+function openGameCenter() { document.getElementById('gameCenterOverlay').style.display = 'flex'; document.getElementById('gameMenu').style.display='block'; document.getElementById('gameArea').style.display='none'; }
+function closeGameCenter() { exitGame(); document.getElementById('gameCenterOverlay').style.display = 'none'; }
+function exitGame() { gameActive = false; cancelAnimationFrame(gameInterval); document.getElementById('gameArea').style.display = 'none'; document.getElementById('gameMenu').style.display = 'block'; }
+async function loadLeaderboard(gid) {
+    const list = document.getElementById('leaderboardList'); list.innerHTML='<li>Loading...</li>';
+    const { data } = await supabase.from('game_scores').select('username,score').eq('game_name', gid).order('score',{ascending:false}).limit(10);
+    list.innerHTML = data && data.length ? data.map((e,i)=>`<li>${i+1}. ${e.username}: ${e.score}</li>`).join('') : '<li>No scores</li>';
+}
+
+function startGame(type) { 
+    currentGameType = type; document.getElementById('gameMenu').style.display='none'; document.getElementById('gameArea').style.display='block'; 
+    currentScore=0; gameActive=false; document.getElementById('scoreDisplay').innerText="Score: 0";
+    document.getElementById('startPrompt').style.display='block';
+    
+    // Reset Game States
+    if(type==='juggling') ball = { x: 160, y: 200, r: 20, dy: 0, dx: 2 };
+    if(type==='flappy') { ball = { x: 50, y: 200, r: 12, dy: 0, dx: 0 }; obstacles = []; }
+    if(type==='penalty') { ball = { x: 160, y: 360, r: 15, state:'ready' }; goalTarget={x:50, w:80, spd:3, dir:1}; }
+    if(type==='dribbler') { ball = { x: 160, y: 350, r: 15 }; obstacles = []; playerTargetX = 160; }
+    if(type==='keeper') { ball = { x: 160, y: 340, r: 20 }; obstacles = []; playerTargetX = 160; } // obstacles = balls array here
+
+    // Input Handler for Tap games
+    canvas.onmousedown = canvas.ontouchstart = (e) => {
+        e.preventDefault();
+        if (!gameActive) { gameActive=true; document.getElementById('startPrompt').style.display='none'; gameLoop(); 
+            if(type==='juggling'){ ball.dy=-10; ball.dx=(Math.random()-0.5)*4; }
+            if(type==='flappy') ball.dy=-7;
+            return; 
         }
-    } else if (ball.state === 'reset') {
-        ball.state = 'ready';
-    }
-
-    // Draw Ball
-    drawBall(ball.x, ball.y, ball.r, "#fff");
+        if(type==='juggling') { ball.dy = -10; ball.dx = (Math.random()-0.5)*5; currentScore++; }
+        if(type==='flappy') ball.dy = -7;
+        if(type==='penalty' && ball.state==='ready') ball.state='shooting';
+    };
+    drawGame();
 }
 
-function shootPenalty() {
-    if (ball.state === 'ready') {
-        ball.state = 'shooting';
-    }
-}
+function drawGame() { ctx.clearRect(0,0,320,400); } // Initial clear
 
-// --- SHARED FUNCTIONS ---
-
-function drawBall(x, y, r, color) {
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.closePath();
-}
-
-function drawGame() {
-    // Used for initial static frame
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (currentGameType === 'juggling') initJuggling(); // reset positions for preview
-    if (currentGameType === 'flappy') initFlappy();
-    if (currentGameType === 'penalty') initPenalty();
+function gameLoop() {
+    if(!gameActive) return;
+    ctx.clearRect(0,0,320,400);
     
-    if (currentGameType === 'juggling') drawBall(160, 200, 20, "#fff");
-    if (currentGameType === 'flappy') drawBall(50, 200, 12, "#FFD700");
-    if (currentGameType === 'penalty') {
-        ctx.fillStyle = "#d32f2f";
-        ctx.fillRect(120, 60, 80, 20);
-        drawBall(160, 360, 15, "#fff");
-    }
+    if (currentGameType === 'juggling') updateJuggling();
+    else if (currentGameType === 'flappy') updateFlappy();
+    else if (currentGameType === 'penalty') updatePenalty();
+    else if (currentGameType === 'dribbler') updateDribbler();
+    else if (currentGameType === 'keeper') updateKeeper();
+
+    document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
+    gameInterval = requestAnimationFrame(gameLoop);
 }
 
 async function gameOver() {
-    gameActive = false;
-    cancelAnimationFrame(gameInterval);
-    const playerName = document.getElementById('chatNameInput').value.trim() || 'Anonymous';
-    
-    // Save Score
-    if (currentScore > 0) {
-        const { error } = await supabase
-            .from('game_scores')
-            .insert([{ game_name: currentGameType, username: playerName, score: currentScore }]);
-        if(error) console.error(error);
-    }
-
-    alert(`Game Over! \nGame: ${currentGameType.toUpperCase()} \nScore: ${currentScore}`);
-    
-    // Return to menu
-    exitGame();
-    // Refresh leaderboard for the game we just played
-    document.getElementById('lbGameSelector').value = currentGameType;
-    loadLeaderboard(currentGameType);
+    gameActive = false; cancelAnimationFrame(gameInterval);
+    const u = document.getElementById('chatNameInput').value || 'Guest';
+    if(currentScore>0) await supabase.from('game_scores').insert([{game_name:currentGameType, username:u, score:currentScore}]);
+    alert(`Game Over! Score: ${currentScore}`); exitGame(); loadLeaderboard(currentGameType);
 }
 
-async function loadLeaderboard(gameName) {
-    const list = document.getElementById('leaderboardList');
-    list.innerHTML = '<li style="color:#aaa;">Loading scores...</li>';
-    
-    const { data, error } = await supabase
-        .from('game_scores')
-        .select('username, score')
-        .eq('game_name', gameName)
-        .order('score', { ascending: false })
-        .limit(10); // Show top 10
-
-    if (error || !data) {
-        list.innerHTML = '<li>Error loading scores</li>';
-    } else if (data.length === 0) {
-        list.innerHTML = '<li>No scores yet. Play now!</li>';
-    } else {
-        list.innerHTML = '';
-        data.forEach((entry, index) => {
-            let medal = '';
-            if(index===0) medal = '🥇';
-            if(index===1) medal = '🥈';
-            if(index===2) medal = '🥉';
-            else medal = `${index+1}.`;
-            
-            list.innerHTML += `<li style="display:flex; justify-content:space-between; color:#fff; padding:3px 0; border-bottom:1px solid #333;">
-                <span>${medal} ${entry.username}</span> 
-                <span style="color:#FFD700; font-weight:bold;">${entry.score}</span>
-            </li>`;
-        });
+// --- GAME LOGICS ---
+function updateJuggling() {
+    ball.dy += 0.5; ball.y += ball.dy; ball.x += ball.dx;
+    if(ball.x+ball.r>320 || ball.x-ball.r<0) ball.dx = -ball.dx;
+    if(ball.y+ball.r>400) gameOver();
+    drawBall(ball.x, ball.y, ball.r, "#fff");
+}
+function updateFlappy() {
+    ball.dy += 0.4; ball.y += ball.dy;
+    if(Math.random()<0.02) obstacles.push({x:320, topH: Math.random()*200+50, passed:false});
+    ctx.fillStyle="#4CAF50";
+    obstacles.forEach(o => {
+        o.x-=2; ctx.fillRect(o.x,0,40,o.topH); ctx.fillRect(o.x,o.topH+120,40,400);
+        if(o.x+40<ball.x && !o.passed) { currentScore++; o.passed=true; }
+        if(ball.x+12>o.x && ball.x-12<o.x+40 && (ball.y-12<o.topH || ball.y+12>o.topH+120)) gameOver();
+    });
+    if(ball.y>400 || ball.y<0) gameOver();
+    drawBall(ball.x, ball.y, 12, "#FFD700");
+}
+function updatePenalty() {
+    goalTarget.x += goalTarget.spd*goalTarget.dir;
+    if(goalTarget.x+goalTarget.w>320 || goalTarget.x<0) goalTarget.dir *= -1;
+    ctx.fillStyle="#333"; ctx.fillRect(0,0,320,100);
+    ctx.fillStyle="#d32f2f"; ctx.fillRect(goalTarget.x,60,goalTarget.w,20);
+    if(ball.state==='shooting') {
+        ball.y-=15; ball.r-=0.2;
+        if(ball.y<80) {
+            if(ball.x>goalTarget.x && ball.x<goalTarget.x+goalTarget.w) { currentScore++; ball.state='ready'; ball.y=360; ball.r=15; goalTarget.spd+=0.5; }
+            else gameOver();
+        }
     }
+    drawBall(ball.x, ball.y, ball.r, "#fff");
+}
+// NEW: DRIBBLER
+function updateDribbler() {
+    // Background field
+    ctx.fillStyle="#388E3C"; ctx.fillRect(0,0,320,400); ctx.strokeStyle="rgba(255,255,255,0.2)"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(0, (currentScore*10)%400); ctx.lineTo(320, (currentScore*10)%400); ctx.stroke(); // Moving line effect
+    
+    // Player movement
+    ball.x += (playerTargetX - ball.x) * 0.1;
+    
+    // Spawn obstacles (Defenders/Cones)
+    if(Math.random() < 0.03 + (currentScore*0.001)) {
+        obstacles.push({x: Math.random() * 280 + 20, y: -20, type: Math.random()>0.5?'cone':'defender'});
+    }
+    
+    obstacles.forEach((o, i) => {
+        o.y += 4 + (currentScore * 0.1);
+        // Draw Obstacle
+        ctx.fillStyle = o.type==='cone' ? '#FF9800' : '#d32f2f';
+        ctx.beginPath(); ctx.arc(o.x, o.y, 10, 0, Math.PI*2); ctx.fill();
+        
+        // Collision
+        const dist = Math.hypot(ball.x - o.x, 350 - o.y);
+        if(dist < 25) gameOver();
+        
+        // Score & Cleanup
+        if(o.y > 420) { obstacles.splice(i, 1); currentScore++; }
+    });
+    
+    drawBall(ball.x, 350, 15, "#fff"); // Player is white ball
+}
+// NEW: KEEPER
+function updateKeeper() {
+    // Background goal
+    ctx.fillStyle="#444"; ctx.fillRect(0,360,320,40); // Ground
+    ctx.strokeStyle="#fff"; ctx.lineWidth=5; ctx.strokeRect(20, 20, 280, 340); // Goal Frame
+    
+    // Gloves movement
+    ball.x += (playerTargetX - ball.x) * 0.15;
+    
+    // Spawn Balls
+    if(Math.random() < 0.02 + (currentScore*0.002)) {
+        obstacles.push({x: Math.random() * 260 + 30, y: -20, caught: false}); // obstacles = balls
+    }
+    
+    obstacles.forEach((b, i) => {
+        b.y += 5 + (currentScore * 0.1);
+        drawBall(b.x, b.y, 12, "#fff"); // Incoming ball
+        
+        // Catch collision
+        const dist = Math.hypot(ball.x - b.x, 340 - b.y);
+        if(dist < 30 && !b.caught) {
+            b.caught = true; currentScore++; obstacles.splice(i, 1);
+        }
+        
+        // Missed ball
+        if(b.y > 400) gameOver();
+    });
+    
+    // Draw Gloves
+    ctx.fillStyle="#FFEB3B"; 
+    ctx.fillRect(ball.x-20, 330, 40, 20); 
+}
+
+function drawBall(x,y,r,c){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=c; ctx.fill(); ctx.stroke(); }
+
+// TEAM ADD MODAL LOGIC
+function openTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'flex'; document.getElementById('chatTeamAddInput').value = document.getElementById('chatNameInput').value; }
+function closeTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'none'; }
+function confirmAddToTeam(t) { const n = document.getElementById('chatTeamAddInput').value; if(t==='blue') addBlue(n); else addYellow(n); }
+
+// INIT
+function setupRealtime() {
+  supabase.channel('global-chat-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { renderMessage(payload.new, 'chatMessages'); })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
+    .subscribe();
+    
+  supabase.channel('system-history-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { 
+        const hc = document.getElementById('systemHistoryContainer');
+        if (hc.style.display === 'block') loadSystemHistory(false); 
+    }).subscribe();
+
+  supabase.channel('blue-chat-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
+        if(document.getElementById('blue').style.display === 'block') renderMessage(payload.new, 'blueChatMessages'); 
+    }).subscribe();
+
+  supabase.channel('yellow-chat-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
+        if(document.getElementById('yellow').style.display === 'block') renderMessage(payload.new, 'yellowChatMessages'); 
+    }).subscribe();
+    
+  supabase.channel('teams-updates')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
+    .subscribe();
 }
 
 (async function init() {
     const storedUsername = localStorage.getItem('chat_username');
     if (storedUsername) {
-      document.getElementById('chatNameInput').value = storedUsername;
-      document.getElementById('blueChatNameInput').value = storedUsername;
-      document.getElementById('yellowChatNameInput').value = storedUsername;
+        document.getElementById('chatNameInput').value = storedUsername;
+        document.getElementById('blueChatNameInput').value = storedUsername;
+        document.getElementById('yellowChatNameInput').value = storedUsername;
     }
 
+    // RE-ADDED ENTER KEY SUPPORT
     document.getElementById('chatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
     document.getElementById('blueChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('blue'); } });
     document.getElementById('yellowChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
 
-    await loadSystemConfig(); 
-    loadMatchAddress(); 
-
-    if (new Date().getDay() !== 0 || new Date().getHours() < 18) {
-        loadPlayers(); 
-        loadBlue(); 
-        loadYellow(); 
-        loadChatMessages();
-    }
+    await loadSystemConfig(); loadMatchAddress(); loadPlayers(); loadBlue(); loadYellow(); loadChatMessages();
     setupRealtime();
 })();
 </script>
