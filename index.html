@@ -688,8 +688,14 @@ async function addPlayer(){
   const { data: team } = await supabase.from("main_team").select("id");
   const table = team.length < 24 ? "main_team" : "waiting_list";
   await supabase.from(table).insert([{ name, time: Date.now(), player_pin: pin }]);
-  if(team.length < 24) sendSystemMessageToChat(name, `Joined Main Team`);
-  else sendSystemMessageToChat(name, `Added to Waiting List`);
+  
+  if(team.length < 24) {
+      sendSystemMessageToChat(name, `Joined Main Team`);
+  } else {
+      sendSystemMessageToChat(name, `Added to Waiting List`);
+      alert(`Main team is full (24). ${name} has been added to the Waiting List.`);
+  }
+  
   document.getElementById("nameInput").value=""; loadPlayers();
 }
 async function loadPlayers(){
@@ -709,7 +715,19 @@ async function deletePlayer(table, id){
   if(table.includes('_team') && !await canEditCaptain(table, id)) return;
   if(!table.includes('_team') && systemConfig.requireIndividualPin && !await verifyIndividualPin(table, id)) return;
   if(!confirm("Delete player?")) return;
+  
+  // GET NAME BEFORE DELETING FOR LOG
+  let playerName = "Unknown";
+  const { data: pData } = await supabase.from(table).select("name").eq("id", id).single();
+  if(pData) playerName = pData.name;
+
   await supabase.from(table).delete().eq("id",id);
+
+  if (table === "main_team" || table === "waiting_list") {
+      const listName = table === "main_team" ? "Main Team" : "Waiting List";
+      sendSystemMessageToChat(playerName, `left the ${listName}`);
+  }
+
   if(table==="main_team") refillMainTeam();
   reloadList(table);
 }
