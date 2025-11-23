@@ -65,14 +65,14 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 #blueChatMessages { background: rgba(25, 118, 210, 0.1); } #yellowChatMessages { background: rgba(251, 192, 42, 0.1); }
 .message { margin-bottom: 8px; padding: 8px; border-radius: 10px; background: #333; word-wrap: break-word; max-width: 90%; align-self: flex-start; font-size: 14px; line-height: 1.4; text-align: left; border: 1px solid transparent; color: #e0e0e0; position: relative; }
 .my-message { background: #d32f2f; color: #fff; align-self: flex-end; text-align: left; border: 1px solid #d32f2f; }
-.delete-msg-btn { background: transparent !important; border: none; color: #ffeb3b; cursor: pointer; font-size: 16px; margin-left: 8px; padding: 0 5px; line-height: 1; font-weight: bold; }
+.delete-msg-btn { position: absolute; top: 5px; right: 5px; background: transparent !important; border: none; color: #ffeb3b; cursor: pointer; font-size: 16px; line-height: 1; font-weight: bold; padding: 2px 5px; }
 .delete-msg-btn:hover { color: #fff; background-color: rgba(0,0,0,0.2) !important; border-radius: 50%; }
 
 /* ---- CUSTOM AUDIO PLAYER STYLES ---- */
 .custom-audio-player {
     display: flex;
     align-items: center;
-    background-color: #f5f5f5; /* White/Light Gray background like the image */
+    background-color: #f5f5f5;
     border-radius: 12px;
     padding: 8px 15px;
     width: 100%;
@@ -99,9 +99,21 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
     font-family: monospace;
     font-weight: bold;
     flex-grow: 1;
-    text-align: left; /* Or center */
+    text-align: left; 
 }
-/* ------------------------------------ */
+
+/* ---- RESIZED MEDIA (STICKERS & VIDEO) ---- */
+.chat-media-content { 
+    max-width: 220px; /* Reduced size for stickers/images/videos */
+    max-height: 250px; 
+    width: auto;
+    height: auto;
+    border-radius: 8px; 
+    margin-top: 5px; 
+    display: block; 
+    border: 1px solid #555; 
+    object-fit: contain;
+}
 
 .chat-input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; position: relative; }
 .chat-row-inputs { display: flex; gap: 5px; width: 100%; }
@@ -157,7 +169,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .rec-trash-btn { color: #ccc; font-size: 22px; } /* Trash */
 .rec-trash-btn:hover { color: #ff1744; }
 
-.chat-media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #555; }
 .chat-sticker { width: 100px; height: auto; display: block; margin-top: 5px; }
 
 .sticker-popup { position: absolute; bottom: 60px; left: 0; right: 0; margin: auto; background: #2c2c2c; border: 1px solid #555; border-radius: 10px; width: 90%; max-width: 280px; height: 200px; display: none; flex-direction: column; z-index: 2500; box-shadow: 0 -2px 15px rgba(0,0,0,0.7); }
@@ -255,7 +266,9 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
   <div class="chat-container">
     <h2>Group Chat</h2>
+    <div id="onlineUsersBar"></div>
     <div id="chatMessages" class="chat-messages"></div>
+    <div id="typingIndicator"></div>
     
     <div class="chat-input-area">
         <div id="recordingBar_global" class="recording-overlay">
@@ -266,7 +279,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
         <div class="chat-row-inputs">
             <input type="text" id="chatNameInput" placeholder="Name" value="">
-            <input type="text" id="chatMsgInput" placeholder="Type a message...">
+            <input type="text" id="chatMsgInput" placeholder="Type a message..." oninput="handleTyping('global')">
             <button id="sendChatBtn" class="send-btn" onclick="sendMessage()">Send</button>
         </div>
         <div class="chat-row-tools">
@@ -344,7 +357,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
         <div class="chat-row-inputs">
             <input type="text" id="blueChatNameInput" placeholder="Name" value="">
-            <input type="text" id="blueChatMsgInput" placeholder="Message...">
+            <input type="text" id="blueChatMsgInput" placeholder="Message..." oninput="handleTyping('blue')">
             <button id="sendBlueChatBtn" class="send-btn" onclick="sendTeamMessage('blue')">Send</button>
         </div>
         <div class="chat-row-tools">
@@ -398,7 +411,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
         <div class="chat-row-inputs">
             <input type="text" id="yellowChatNameInput" placeholder="Name" value="">
-            <input type="text" id="yellowChatMsgInput" placeholder="Message...">
+            <input type="text" id="yellowChatMsgInput" placeholder="Message..." oninput="handleTyping('yellow')">
             <button id="sendYellowChatBtn" class="send-btn" onclick="sendTeamMessage('yellow')">Send</button>
         </div>
         <div class="chat-row-tools">
@@ -536,6 +549,9 @@ let matchAddress = "Address 📍";
 const ADMIN_PASSWORD = "2023"; 
 const TEAM_ADD_PIN = "1111"; 
 let mediaRecorder = null; let audioChunks = []; let isRecording = false;
+let typingTimeout;
+let roomChannel;
+const myId = Math.random().toString(36).substr(2, 9);
 
 const STICKERS = {
     football: ["https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif", "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif", "https://media.giphy.com/media/l2JHZKNio4EjY6iqY/giphy.gif"],
@@ -546,7 +562,7 @@ const STICKERS = {
 let systemConfig = { allowPlayerEdit: true, allowTeamEdit: true, allowFormationEdit: true, allowAddressEdit: true, allowChat: true, allowImageUpload: true, allowMusic: true, enforceTimeRestriction: true, requireIndividualPin: true, requireTeamPinForAdd: false };
 const POSITIONS_LIST = [{ code: 'GK', label: 'Goalkeeper' }, { code: 'CB', label: 'Center Back' }, { code: 'RB', label: 'Right Back' }, { code: 'LB', label: 'Left Back' }, { code: 'DM', label: 'Defensive Mid' }, { code: 'CM', label: 'Center Mid' }, { code: 'RM', label: 'Right Mid' }, { code: 'LM', label: 'Left Mid' }, { code: 'CAM', label: 'Attacking Mid' }, { code: 'CF', label: 'Center Forward' }, { code: 'RW', label: 'Right Winger' }, { code: 'LW', label: 'Left Winger' }, { code: 'ST', label: 'Striker' }, { code: 'SUB', label: 'Substitute' }];
 
-// --- NEW HORIZONTAL FORMATIONS (MERGED FROM NEW CODE) ---
+// --- NEW HORIZONTAL FORMATIONS ---
 const FORMATIONS = {
     '4-3-3': [
         { left: '6%', top: '50%', code: 'GK' }, { left: '25%', top: '15%', code: 'LB' }, { left: '18%', top: '38%', code: 'CB' }, { left: '18%', top: '62%', code: 'CB' }, { left: '25%', top: '85%', code: 'RB' },
@@ -1072,7 +1088,7 @@ function formatTime(seconds) {
 }
 // -----------------------------------
 
-// RENDER MESSAGES (UPDATED WITH CUSTOM AUDIO)
+// RENDER MESSAGES (UPDATED WITH PRESENCE/BROADCAST)
 function renderMessage(m, id) {
     const div = document.getElementById(id); const isMe = m.username === localStorage.getItem('chat_username');
     let c = m.content;
@@ -1082,7 +1098,6 @@ function renderMessage(m, id) {
     } else if (c.startsWith('[VID]')) {
         c = `<video src="${c.substring(5)}" controls class="chat-media-content"></video>`;
     } else if (c.startsWith('[AUDIO]')) {
-        // Generate a unique ID for this specific audio message
         const uniqueId = 'audio-' + Math.random().toString(36).substr(2, 9);
         const src = c.substring(7);
         
@@ -1096,7 +1111,6 @@ function renderMessage(m, id) {
     
     let delBtn = '';
     const table = id.includes('blue') ? 'blue_chat' : (id.includes('yellow') ? 'yellow_chat' : 'chat_messages');
-    // Use '✕' instead of trash can
     if (isMe) delBtn = `<button class="delete-msg-btn" title="Delete" onclick="deleteSingleMessage('${table}', ${m.id})">✕</button>`;
 
     const timeSpan = new Date(m.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
@@ -1314,8 +1328,35 @@ function openTeamAddModal() { document.getElementById('teamAddModalOverlay').sty
 function closeTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'none'; }
 function confirmAddToTeam(t) { const n = document.getElementById('chatTeamAddInput').value; if(t==='blue') addBlue(n); else addYellow(n); }
 
+// -------------------- PRESENCE & BROADCAST (ONLINE/TYPING) --------------------
+function handleTyping(context) {
+    const name = document.getElementById(context==='global'?'chatNameInput':`${context}ChatNameInput`).value;
+    if(!roomChannel || !name) return;
+    
+    roomChannel.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { name: name }
+    });
+}
+
+function updateOnlineUsersUI(users) {
+    const bar = document.getElementById('onlineUsersBar');
+    if(!bar) return;
+    // Filter duplicates
+    const uniqueUsers = [...new Set(users)];
+    bar.innerHTML = uniqueUsers.map(u => `
+        <div class="online-user-pill">
+            ${u} <div class="online-dot"></div>
+        </div>
+    `).join('');
+}
+
 // INIT
 function setupRealtime() {
+  const myName = localStorage.getItem('chat_username') || 'Guest';
+  
+  // 1. DATABASE CHANGES
   supabase.channel('global-chat-updates')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { renderMessage(payload.new, 'chatMessages'); })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
@@ -1343,6 +1384,40 @@ function setupRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
     .subscribe();
+
+  // 2. PRESENCE & BROADCAST (Room Channel)
+  roomChannel = supabase.channel('online-room', {
+    config: {
+      presence: {
+        key: myId,
+      },
+    },
+  });
+
+  roomChannel
+    .on('presence', { event: 'sync' }, () => {
+      const newState = roomChannel.presenceState();
+      const users = [];
+      for (const id in newState) {
+        const userObj = newState[id][0];
+        if (userObj && userObj.name) users.push(userObj.name);
+      }
+      updateOnlineUsersUI(users);
+    })
+    .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        const indicator = document.getElementById('typingIndicator');
+        if(indicator) {
+            indicator.innerText = `${payload.name} is typing...`;
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
+        }
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        const name = document.getElementById('chatNameInput').value || 'Guest';
+        await roomChannel.track({ name: name, online_at: new Date().toISOString() });
+      }
+    });
 }
 
 (async function init() {
