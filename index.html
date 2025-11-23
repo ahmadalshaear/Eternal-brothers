@@ -56,73 +56,33 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 /* -------------------- 5. CHAT STYLES -------------------- */
 .chat-container { width: 100%; max-width: 100%; margin: 20px 0 0 0; background: #242424; border-radius: 10px; padding: 10px; box-shadow: 0 0 5px #000; text-align: left; }
 .team-chat-container { background: none; box-shadow: none; margin: 5px 0 0 0; padding: 0; }
-#onlineUsersBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 5px; margin-bottom: 5px; background: #1a1a1a; border-radius: 8px; min-height: 20px; }
-.online-user-pill { background: #333; border-radius: 15px; padding: 2px 8px; font-size: 11px; display: flex; align-items: center; color: #ccc; border: 1px solid #444; }
-.online-dot { width: 8px; height: 8px; background-color: #00e676; border-radius: 50%; margin-left: 5px; box-shadow: 0 0 5px #00e676; animation: blink 2s infinite; }
+#onlineUsersBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; margin-bottom: 10px; background: #1a1a1a; border-radius: 8px; min-height: 25px; border-bottom: 1px solid #333; }
+.online-user-pill { background: #333; border-radius: 15px; padding: 4px 10px; font-size: 12px; display: flex; align-items: center; color: #fff; border: 1px solid #555; font-weight: bold; }
+.online-dot { width: 8px; height: 8px; background-color: #00e676; border-radius: 50%; margin-left: 6px; box-shadow: 0 0 6px #00e676; animation: blink 2s infinite; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
-#typingIndicator { font-size: 11px; color: #00e676; height: 15px; margin-bottom: 2px; font-style: italic; padding-left: 5px; }
+#typingIndicator { font-size: 12px; color: #00e676; height: 18px; margin-top: 5px; margin-bottom: 5px; font-style: italic; padding-left: 5px; font-weight: bold; text-align: right; }
 .chat-messages { height: 250px; overflow-y: auto; margin-bottom: 5px; padding: 5px; background: #1e1e1e; border-radius: 5px; display: flex; flex-direction: column; text-align: left; }
 #blueChatMessages { background: rgba(25, 118, 210, 0.1); } #yellowChatMessages { background: rgba(251, 192, 42, 0.1); }
-.message { margin-bottom: 8px; padding: 8px; border-radius: 10px; background: #333; word-wrap: break-word; max-width: 90%; align-self: flex-start; font-size: 14px; line-height: 1.4; text-align: left; border: 1px solid transparent; color: #e0e0e0; position: relative; }
+.message { margin-bottom: 8px; padding: 8px; padding-right: 25px; border-radius: 10px; background: #333; word-wrap: break-word; max-width: 90%; align-self: flex-start; font-size: 14px; line-height: 1.4; text-align: left; border: 1px solid transparent; color: #e0e0e0; position: relative; }
 .my-message { background: #d32f2f; color: #fff; align-self: flex-end; text-align: left; border: 1px solid #d32f2f; }
 .delete-msg-btn { position: absolute; top: 5px; right: 5px; background: transparent !important; border: none; color: #ffeb3b; cursor: pointer; font-size: 16px; line-height: 1; font-weight: bold; padding: 2px 5px; }
 .delete-msg-btn:hover { color: #fff; background-color: rgba(0,0,0,0.2) !important; border-radius: 50%; }
 
-/* ---- CUSTOM AUDIO PLAYER STYLES ---- */
-.custom-audio-player {
-    display: flex;
-    align-items: center;
-    background-color: #f5f5f5;
-    border-radius: 12px;
-    padding: 8px 15px;
-    width: 100%;
-    min-width: 240px;
-    margin-top: 8px;
-    box-sizing: border-box;
-}
-.audio-play-btn {
-    background: none;
-    border: none;
-    color: #333;
-    font-size: 20px;
-    cursor: pointer;
-    margin-right: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-}
-.audio-time-display {
-    color: #333;
-    font-size: 14px;
-    font-family: monospace;
-    font-weight: bold;
-    flex-grow: 1;
-    text-align: left; 
-}
+/* Custom Audio Player Style */
+.custom-audio-player { display: flex; align-items: center; background-color: #f5f5f5; border-radius: 12px; padding: 8px 15px; width: 100%; min-width: 240px; margin-top: 8px; box-sizing: border-box; }
+.audio-play-btn { background: none; border: none; color: #333; font-size: 20px; cursor: pointer; margin-right: 15px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+.audio-time-display { color: #333; font-size: 14px; font-family: monospace; font-weight: bold; flex-grow: 1; text-align: left; }
 
-/* ---- RESIZED MEDIA (STICKERS & VIDEO) ---- */
-.chat-media-content { 
-    max-width: 220px; /* Reduced size for stickers/images/videos */
-    max-height: 250px; 
-    width: auto;
-    height: auto;
-    border-radius: 8px; 
-    margin-top: 5px; 
-    display: block; 
-    border: 1px solid #555; 
-    object-fit: contain;
-}
+/* Media */
+.chat-media-content { max-width: 220px; max-height: 250px; width: auto; height: auto; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #555; object-fit: contain; }
+.chat-sticker { width: 100px; height: auto; display: block; margin-top: 5px; }
 
 .chat-input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; position: relative; }
 .chat-row-inputs { display: flex; gap: 5px; width: 100%; }
 .chat-row-tools { display: flex; gap: 5px; justify-content: flex-start; align-items: center; width: 100%; padding: 2px 0; }
-
 #chatNameInput, .chat-row-inputs input[type=text]:first-child { width: 25%; text-align: center; }
 #chatMsgInput, .chat-row-inputs input[type=text]:nth-child(2) { flex-grow: 1; text-align: left; }
 #sendChatBtn, .send-btn { background: #d32f2f; color: #fff; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
 .tool-btn { background: #424242; color: #fff; padding: 5px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; min-width: 30px; }
 .tool-btn:active { background: #616161; }
 .sticker-btn { background: #FF9800 !important; } 
@@ -131,45 +91,13 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .team-dots { display: flex; gap: 3px; margin-top: 2px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid #fff; } .dot-b { background: #2196F3; } .dot-y { background: #FFEB3B; }
 
-/* RECORDING UI STYLES */
-.recording-overlay {
-    display: none;
-    width: 100%;
-    height: 50px;
-    background: #2c2c2c;
-    border-radius: 10px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 15px;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-}
-.recording-text {
-    color: #ff1744;
-    font-weight: bold;
-    font-size: 16px;
-    flex-grow: 1;
-    text-align: center;
-    animation: pulseText 1.5s infinite;
-}
+/* RECORDING UI */
+.recording-overlay { display: none; width: 100%; height: 50px; background: #2c2c2c; border-radius: 10px; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; position: absolute; bottom: 0; left: 0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); }
+.recording-text { color: #ff1744; font-weight: bold; font-size: 16px; flex-grow: 1; text-align: center; animation: pulseText 1.5s infinite; }
 @keyframes pulseText { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
-
-.rec-action-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 5px 10px;
-}
-.rec-send-btn { color: #FFD700; font-size: 24px; } /* Gold Arrow */
-.rec-trash-btn { color: #ccc; font-size: 22px; } /* Trash */
-.rec-trash-btn:hover { color: #ff1744; }
-
-.chat-sticker { width: 100px; height: auto; display: block; margin-top: 5px; }
+.rec-action-btn { background: transparent; border: none; cursor: pointer; font-size: 20px; padding: 5px 10px; }
+.rec-send-btn { color: #FFD700; font-size: 24px; } 
+.rec-trash-btn { color: #ccc; font-size: 22px; } .rec-trash-btn:hover { color: #ff1744; }
 
 .sticker-popup { position: absolute; bottom: 60px; left: 0; right: 0; margin: auto; background: #2c2c2c; border: 1px solid #555; border-radius: 10px; width: 90%; max-width: 280px; height: 200px; display: none; flex-direction: column; z-index: 2500; box-shadow: 0 -2px 15px rgba(0,0,0,0.7); }
 .sticker-tabs { display: flex; justify-content: space-between; background: #1e1e1e; border-radius: 10px 10px 0 0; padding: 5px; }
@@ -690,9 +618,9 @@ async function addPlayer(){
   await supabase.from(table).insert([{ name, time: Date.now(), player_pin: pin }]);
   
   if(team.length < 24) {
-      sendSystemMessageToChat(name, `Joined Main Team`);
+      sendSystemMessageToChat(name, `joined the Main Team`);
   } else {
-      sendSystemMessageToChat(name, `Added to Waiting List`);
+      sendSystemMessageToChat(name, `added to Waiting List`);
       alert(`Main team is full (24). ${name} has been added to the Waiting List.`);
   }
   
@@ -747,7 +675,7 @@ async function refillMainTeam(){
     const f = waiting[0];
     await supabase.from("main_team").insert([{ name: f.name, time: Date.now(), player_pin: f.player_pin }]);
     await supabase.from("waiting_list").delete().eq("id", f.id);
-    sendSystemMessageToChat(f.name, `Moved to Main Team`);
+    sendSystemMessageToChat(f.name, `moved to Main Team`);
   }
 }
 function reloadList(table){
@@ -906,6 +834,7 @@ async function loadMatchAddress() {
 }
 function playNotificationSound() { document.getElementById('notification-sound').play().catch(()=>{}); }
 
+// --- SYSTEM HISTORY: ENGLISH UPDATED ---
 async function loadSystemHistory(toggle = true) {
   const historyContainer = document.getElementById('systemHistoryContainer');
   const historyList = document.getElementById('historyList');
@@ -952,7 +881,9 @@ async function loadSystemHistory(toggle = true) {
   });
 }
 
-async function sendSystemMessageToChat(name, msg) { await supabase.from('system_history').insert([{ content: msg, username: 'System' }]); }
+async function sendSystemMessageToChat(name, msg) { 
+    await supabase.from('system_history').insert([{ content: `${name} ${msg}`, username: 'System' }]); 
+}
 
 // FILE UPLOAD
 async function handleFileUpload(input, context) {
