@@ -19,12 +19,14 @@ button { padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font
 .nav-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
 .nav-buttons-top { display: flex; flex-direction: row; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 5px; }
 .nav-buttons-bottom { display: flex; justify-content: space-between; width: 100%; max-width: 400px; gap: 5px; }
-#homeBtn, #blueBtn, #yellowBtn, #addressBtn, #arcadeBtn { border-radius: 8px; font-size: 14px; }
+#homeBtn, #blueBtn, #yellowBtn, #addressBtn, #arcadeBtn, #kitWashBtn { border-radius: 8px; font-size: 14px; }
 #homeBtn { background:#d32f2f; color:#fff; width: 100%; margin: 0 5px; }
 #blueBtn { background:#1976d2; color:#fff; width: 100%; margin: 0 5px; }
 #yellowBtn { background:#fbc02d; color:#000; width: 100%; margin: 0 5px; }
 #addressBtn { background:#9c27b0; color:#fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 2; }
 #arcadeBtn { background: #673AB7; color: #fff; flex: 1; }
+#kitWashBtn { background: #009688; color: #fff; flex: 1.5; }
+
 .settings-audio-group { display: flex; gap: 5px; flex: 1.5; justify-content: center; }
 #audioToggleBtn, #settingsBtn { background: #616161 !important; color: #fff !important; font-size: 14px; padding: 8px 5px !important; width: 50% !important; margin: 0 !important; border-radius: 8px; box-sizing: border-box; }
 #settingsBtn { background: #795548 !important; }
@@ -68,7 +70,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .delete-msg-btn { position: absolute; top: 5px; right: 5px; background: transparent !important; border: none; color: #ffeb3b; cursor: pointer; font-size: 16px; line-height: 1; font-weight: bold; padding: 2px 5px; }
 .delete-msg-btn:hover { color: #fff; background-color: rgba(0,0,0,0.2) !important; border-radius: 50%; }
 
-/* Custom Audio Player Style */
+/* Custom Audio Player */
 .custom-audio-player { display: flex; align-items: center; background-color: #f5f5f5; border-radius: 12px; padding: 8px 15px; width: 100%; min-width: 240px; margin-top: 8px; box-sizing: border-box; }
 .audio-play-btn { background: none; border: none; color: #333; font-size: 20px; cursor: pointer; margin-right: 15px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
 .audio-time-display { color: #333; font-size: 14px; font-family: monospace; font-weight: bold; flex-grow: 1; text-align: left; }
@@ -142,6 +144,48 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .mini-modal-box { background: #2c2c2c; padding: 20px; border-radius: 10px; width: 85%; max-width: 300px; text-align: center; border: 1px solid #555; box-shadow: 0 4px 15px #000; }
 .mini-modal-box input { width: 90% !important; margin-bottom: 15px; }
 .team-select-btns { display: flex; justify-content: space-around; gap: 10px; }
+
+/* ---- JAR VISUAL STYLES ---- */
+#washModalOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:3000; flex-direction:column; }
+.jar-container { position: relative; width: 200px; height: 250px; margin-bottom: 20px; }
+.jar { 
+    width: 100%; height: 100%; 
+    background: rgba(255, 255, 255, 0.1); 
+    border: 4px solid rgba(255,255,255,0.5); 
+    border-radius: 15px; 
+    border-top: none;
+    position: relative; 
+    overflow: hidden; 
+    backdrop-filter: blur(2px);
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.2);
+}
+.jar::before { 
+    content:''; position:absolute; top:-15px; left:10%; width:80%; height:15px; 
+    border: 4px solid rgba(255,255,255,0.5); border-bottom:none; border-radius: 5px 5px 0 0;
+}
+.paper-slip {
+    position: absolute;
+    width: 40px; height: 30px;
+    background: #fff;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    display: flex; justify-content: center; align-items: center;
+    font-size: 8px; color: #000; overflow: hidden;
+    transition: all 0.2s;
+}
+.paper-slip.folded { width: 20px; height: 20px; background: #e0e0e0; border-radius: 2px; }
+@keyframes shakeJar {
+  0% { transform: rotate(0deg); } 25% { transform: rotate(5deg); }
+  50% { transform: rotate(0deg); } 75% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
+.shaking { animation: shakeJar 0.1s infinite; }
+#resultCard { 
+    background: #fff; color:#000; padding: 20px; border-radius: 10px; text-align: center; 
+    display: none; flex-direction: column; gap: 10px; animation: popIn 0.5s; 
+    min-width: 250px;
+}
+@keyframes popIn { 0%{transform:scale(0);} 100%{transform:scale(1);} }
+.wash-btn-group { display:flex; gap:10px; justify-content:center; }
 </style>
 </head>
 <body>
@@ -186,7 +230,12 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
   
-  <button onclick="loadSystemHistory()" style="background:#6a1b9a; color:#fff; margin-top:15px; width:80%;">Show Join/Leave History</button>
+  <div style="width: 80%; margin: 10px auto; max-width: 400px;">
+      <button id="kitWashBtn" onclick="openWashModal()">Kit Wash 🧼</button>
+  </div>
+
+  <button onclick="loadSystemHistory()" style="background:#6a1b9a; color:#fff; margin-top:10px; width:80%;">Show Join/Leave History</button>
+  
   <div id="systemHistoryContainer" style="margin-top:10px; padding:10px; background:#2c2c2c; border-radius:8px; max-width: 400px; margin-left: auto; margin-right: auto; text-align:left; display:none;">
       <h3 style="margin-top:0;">Event History</h3>
       <ul id="historyList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;"></ul>
@@ -204,7 +253,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
             <span class="recording-text">Recording...</span>
             <button class="rec-action-btn rec-trash-btn" onclick="finishVoiceRecording('global', 'cancel')">🗑️</button>
         </div>
-
         <div class="chat-row-inputs">
             <input type="text" id="chatNameInput" placeholder="Name" value="">
             <input type="text" id="chatMsgInput" placeholder="Type a message..." oninput="handleTyping('global')">
@@ -239,7 +287,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 <button class="radio-control-btn stop-btn" onclick="stopRadio()">⏹ Stop</button>
             </div>
         </div>
-
         <div id="stickerPopupGlobal" class="sticker-popup">
             <div class="sticker-tabs">
                 <button class="sticker-tab active" onclick="showStickerTab('global', 'football')">Football</button>
@@ -260,19 +307,16 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
     <button id="addBlueBtn" onclick="addBlue()">Add</button>
   </div>
   <ul id="blueList"></ul>
-  
   <div class="formation-controls">
     <button class="formation-btn" onclick="applyFormation('blue', '4-3-3')">4-3-3</button>
     <button class="formation-btn" onclick="applyFormation('blue', '4-4-2')">4-4-2</button>
     <button class="formation-btn" onclick="applyFormation('blue', '3-4-3')">3-4-3</button>
     <button id="blueDynamicBtn" class="dynamic-btn" onclick="applyDynamicPlan('blue')">Apply Dynamic Plan</button>
   </div>
-  
   <h3>Plan</h3>
   <div id="bluePlan" class="field">
     <div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>
   </div>
-
   <div class="chat-container team-chat-container">
     <h3>Blue Team Chat 🗩</h3>
     <div id="blueChatMessages" class="chat-messages"></div>
@@ -282,7 +326,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
             <span class="recording-text">Recording...</span>
             <button class="rec-action-btn rec-trash-btn" onclick="finishVoiceRecording('blue', 'cancel')">🗑️</button>
         </div>
-
         <div class="chat-row-inputs">
             <input type="text" id="blueChatNameInput" placeholder="Name" value="">
             <input type="text" id="blueChatMsgInput" placeholder="Message..." oninput="handleTyping('blue')">
@@ -314,19 +357,16 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
     <button id="addYellowBtn" onclick="addYellow()">Add</button>
   </div>
   <ul id="yellowList"></ul>
-  
   <div class="formation-controls">
     <button class="formation-btn" onclick="applyFormation('yellow', '4-3-3')">4-3-3</button>
     <button class="formation-btn" onclick="applyFormation('yellow', '4-4-2')">4-4-2</button>
     <button class="formation-btn" onclick="applyFormation('yellow', '3-4-3')">3-4-3</button>
     <button id="yellowDynamicBtn" class="dynamic-btn" onclick="applyDynamicPlan('yellow')">Apply Dynamic Plan</button>
   </div>
-  
   <h3>Plan</h3>
   <div id="yellowPlan" class="field">
     <div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>
   </div>
-
   <div class="chat-container team-chat-container">
     <h3 style="color: #000;">Yellow Team Chat 🗩</h3>
     <div id="yellowChatMessages" class="chat-messages"></div>
@@ -336,7 +376,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
             <span class="recording-text">Recording...</span>
             <button class="rec-action-btn rec-trash-btn" onclick="finishVoiceRecording('yellow', 'cancel')">🗑️</button>
         </div>
-
         <div class="chat-row-inputs">
             <input type="text" id="yellowChatNameInput" placeholder="Name" value="">
             <input type="text" id="yellowChatMsgInput" placeholder="Message..." oninput="handleTyping('yellow')">
@@ -361,11 +400,27 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   </div>
 </div>
 
+<div id="washModalOverlay">
+    <div class="jar-container">
+        <div class="jar" id="jar"></div>
+    </div>
+    <button onclick="shakeJar()" style="background:#ffeb3b; color:#000; font-weight:bold; padding:10px 30px; border-radius:20px; z-index:3002;">🔀 Shake!</button>
+    <button onclick="closeWashModal()" style="margin-top:10px; background:transparent; border:1px solid #fff; color:#fff;">Close</button>
+    
+    <div id="resultCard">
+        <h3>The Kit Wash Volunteer will be</h3>
+        <h1 id="winnerName" style="color:#d32f2f; margin:10px 0;"></h1>
+        <div class="wash-btn-group">
+            <button onclick="confirmWashWinner()" style="background:#4CAF50; color:#fff;">Confirm</button>
+            <button onclick="volunteerInstead()" style="background:#2196F3; color:#fff;">Volunteer Instead 🙋‍♂️</button>
+        </div>
+    </div>
+</div>
+
 <div id="positionMenuOverlay" class="position-menu-overlay" style="display:none;">
     <div class="position-menu-box">
         <h3 id="positionMenuTitle">Select Position for Player Name</h3>
-        <div id="positionMenuGrid" class="position-menu-grid">
-            </div>
+        <div id="positionMenuGrid" class="position-menu-grid"></div>
         <button onclick="closePositionMenu()" style="margin-top: 15px; background: #555;">Cancel</button>
     </div>
 </div>
@@ -537,6 +592,112 @@ async function openGoogleMaps() {
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`, '_blank');
 }
 
+// -------------------- KIT WASH LOGIC (JAR) --------------------
+async function openWashModal() {
+    const pwd = prompt("Admin Password:");
+    if (pwd !== ADMIN_PASSWORD) return alert("Access Denied");
+    
+    const { data: team } = await supabase.from("main_team").select("*");
+    const { data: history } = await supabase.from("laundry_history").select("*");
+    
+    const twoMonthsMs = 60 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const lastWashMap = {};
+    if(history) history.forEach(r => lastWashMap[r.player_name] = new Date(r.washed_at).getTime());
+
+    const eligible = team.filter(p => {
+        return (now - (lastWashMap[p.name] || 0)) > twoMonthsMs;
+    });
+    
+    if(eligible.length === 0) return alert("Everyone is exempt!");
+    
+    // Populate Jar
+    const jar = document.getElementById('jar');
+    jar.innerHTML = '';
+    eligible.forEach(p => {
+        const paper = document.createElement('div');
+        paper.className = 'paper-slip';
+        paper.innerText = p.name;
+        paper.style.top = Math.random() * 200 + 'px';
+        paper.style.left = Math.random() * 150 + 'px';
+        paper.style.transform = `rotate(${Math.random()*360}deg)`;
+        jar.appendChild(paper);
+    });
+    
+    document.getElementById('washModalOverlay').style.display = 'flex';
+    document.getElementById('resultCard').style.display = 'none';
+    
+    window.eligibleForWash = eligible;
+}
+
+function closeWashModal() { document.getElementById('washModalOverlay').style.display = 'none'; }
+
+function shakeJar() {
+    const jar = document.getElementById('jar');
+    jar.classList.add('shaking');
+    const papers = document.querySelectorAll('.paper-slip');
+    
+    // Start chat broadcast about shuffling
+    sendMessageToGroup("System", "jar-shuffling");
+    
+    let shakeInterval = setInterval(() => {
+        papers.forEach(p => {
+            p.style.top = Math.random() * 200 + 'px';
+            p.style.left = Math.random() * 150 + 'px';
+            p.style.transform = `rotate(${Math.random()*360}deg)`;
+        });
+    }, 100);
+    
+    setTimeout(() => {
+        clearInterval(shakeInterval);
+        jar.classList.remove('shaking');
+        pickWinner();
+    }, 2000);
+}
+
+function pickWinner() {
+    const players = window.eligibleForWash;
+    const winner = players[Math.floor(Math.random() * players.length)];
+    window.washWinner = winner;
+    
+    document.getElementById('resultCard').style.display = 'flex';
+    document.getElementById('winnerName').innerText = winner.name;
+}
+
+async function confirmWashWinner() {
+    const winner = window.washWinner;
+    await supabase.from("laundry_history").insert([{ player_name: winner.name }]);
+    // Broadcast winner
+    await sendMessageToGroup("System", `wash-winner:${winner.name}`);
+    alert("Confirmed!");
+    closeWashModal();
+}
+
+async function volunteerInstead() {
+    const name = prompt("Enter volunteer name:");
+    if(!name) return;
+    await supabase.from("laundry_history").insert([{ player_name: name }]);
+    await sendSystemMessageToChat(name, "Volunteered for Kit Wash 🙋‍♂️");
+    alert("Thanks!");
+    closeWashModal();
+}
+
+// Helper to send special messages to chat
+async function sendMessageToGroup(sender, type) {
+    let content = "";
+    if (type === "jar-shuffling") {
+        content = "🌀 Shuffling names for Kit Wash... who will it be? 🤔";
+    } else if (type.startsWith("wash-winner:")) {
+        const winnerName = type.split(":")[1];
+        content = `🧼 The volunteer for washing clothes will be: ${winnerName} 🧼`;
+    }
+    
+    if(content) {
+        await supabase.from('chat_messages').insert([{ username: sender, content: content }]);
+    }
+}
+
+
 // SETTINGS & PIN
 async function showSettingsModal() {
     document.getElementById('settingsPassword').value = ''; document.getElementById('passwordError').style.display = 'none'; document.getElementById('passwordSection').style.display = 'block'; document.getElementById('settingsControls').style.display = 'none'; document.getElementById('settingsModalOverlay').style.display = 'flex';
@@ -572,11 +733,27 @@ async function canEditCaptain(table, playerId) {
     const enteredPin = prompt(`Captain Action: Enter PIN:`);
     return enteredPin === allPlayers[0].player_pin;
 }
+
+// STRICT PIN VERIFICATION
 async function verifyIndividualPin(table, id) {
     const { data } = await supabase.from(table).select('player_pin').eq('id', id).single();
-    if (!data || !data.player_pin) return true;
-    return prompt("Enter your PIN:") === data.player_pin;
+    if (!data) return false;
+    
+    // If PIN exists, verify it. If user is Admin (pwd 2023), allow bypass.
+    const storedPin = data.player_pin;
+    if (!storedPin) return true; // No pin set, allow
+
+    const enteredPin = prompt("Enter your 4-digit PIN to confirm:");
+    if (enteredPin === ADMIN_PASSWORD) return true; // Admin Override
+    
+    if (enteredPin === storedPin) {
+        return true;
+    } else {
+        alert("Incorrect PIN. Action blocked.");
+        return false;
+    }
 }
+
 async function loadSystemConfig() {
     const { data } = await supabase.from('app_config').select('system_config').eq('id', 1).single(); 
     if (data && data.system_config) systemConfig = { ...systemConfig, ...JSON.parse(data.system_config) };
@@ -610,9 +787,13 @@ async function addPlayer(){
   }
   const name = document.getElementById("nameInput").value.trim();
   if(!name) return alert("Enter name");
-  if(systemConfig.requireTeamPinForAdd && prompt("Team PIN:") !== TEAM_ADD_PIN) return alert("Wrong PIN");
-  let pin = null;
-  if (systemConfig.requireIndividualPin) { pin = prompt("Create 4-digit PIN:"); if (!pin) return; }
+  
+  // ALWAYS REQUIRE PIN FOR NEW PLAYERS
+  let pin = prompt("Create a 4-digit PIN (Required for deleting/editing later):");
+  if (!pin || pin.length !== 4) return alert("PIN is required (4 digits).");
+
+  if(systemConfig.requireTeamPinForAdd && prompt("Team PIN:") !== TEAM_ADD_PIN) return alert("Wrong Team PIN");
+
   const { data: team } = await supabase.from("main_team").select("id");
   const table = team.length < 24 ? "main_team" : "waiting_list";
   await supabase.from(table).insert([{ name, time: Date.now(), player_pin: pin }]);
@@ -620,7 +801,7 @@ async function addPlayer(){
   if(team.length < 24) {
       sendSystemMessageToChat(name, `joined the Main Team`);
   } else {
-      sendSystemMessageToChat(name, `added to Waiting List`);
+      sendSystemMessageToChat(name, `added to the Waiting List`);
       alert(`Main team is full (24). ${name} has been added to the Waiting List.`);
   }
   
@@ -641,10 +822,13 @@ function renderList(id, data, table){
 async function deletePlayer(table, id){
   if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
   if(table.includes('_team') && !await canEditCaptain(table, id)) return;
-  if(!table.includes('_team') && systemConfig.requireIndividualPin && !await verifyIndividualPin(table, id)) return;
+  
+  // STRICT PIN CHECK
+  const pinOk = await verifyIndividualPin(table, id);
+  if (!pinOk) return;
+
   if(!confirm("Delete player?")) return;
   
-  // GET NAME BEFORE DELETING FOR LOG
   let playerName = "Unknown";
   const { data: pData } = await supabase.from(table).select("name").eq("id", id).single();
   if(pData) playerName = pData.name;
@@ -662,7 +846,11 @@ async function deletePlayer(table, id){
 async function editPlayer(table,id,oldName){
   if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
   if(table.includes('_team') && !await canEditCaptain(table, id)) return;
-  if(!table.includes('_team') && systemConfig.requireIndividualPin && !await verifyIndividualPin(table, id)) return;
+  
+  // STRICT PIN CHECK
+  const pinOk = await verifyIndividualPin(table, id);
+  if (!pinOk) return;
+
   const newName=prompt(`Edit name:`, oldName);
   if(!newName) return;
   await supabase.from(table).update({name:newName.trim()}).eq("id",id); 
@@ -675,7 +863,7 @@ async function refillMainTeam(){
     const f = waiting[0];
     await supabase.from("main_team").insert([{ name: f.name, time: Date.now(), player_pin: f.player_pin }]);
     await supabase.from("waiting_list").delete().eq("id", f.id);
-    sendSystemMessageToChat(f.name, `moved to Main Team`);
+    sendSystemMessageToChat(f.name, `moved to the Main Team`);
   }
 }
 function reloadList(table){
@@ -834,7 +1022,7 @@ async function loadMatchAddress() {
 }
 function playNotificationSound() { document.getElementById('notification-sound').play().catch(()=>{}); }
 
-// --- SYSTEM HISTORY: ENGLISH UPDATED ---
+// --- SYSTEM HISTORY: ENGLISH UPDATED & COLORED ---
 async function loadSystemHistory(toggle = true) {
   const historyContainer = document.getElementById('systemHistoryContainer');
   const historyList = document.getElementById('historyList');
@@ -859,16 +1047,18 @@ async function loadSystemHistory(toggle = true) {
     let bgColor = '#424242'; 
     let textColor = '#fff';
     let icon = '';
+    // Lowercase for reliable checking
     const contentLower = item.content.toLowerCase();
 
-    if (contentLower.includes('joined')) {
-        bgColor = '#2e7d32'; 
+    // Logic for coloring based on English keywords
+    if (contentLower.includes('joined') || contentLower.includes('volunteered')) {
+        bgColor = '#2e7d32'; // Green for Join
         icon = '✔';
     } else if (contentLower.includes('left')) {
-        bgColor = '#c62828'; 
+        bgColor = '#c62828'; // Red for Leave
         icon = '✖';
-    } else if (contentLower.includes('moved') || contentLower.includes('waiting list')) {
-        bgColor = '#f57f17'; 
+    } else if (contentLower.includes('moved') || contentLower.includes('waiting list') || contentLower.includes('selected')) {
+        bgColor = '#f57f17'; // Orange for Move/Wait
         textColor = '#000';
         icon = '⚠';
     }
@@ -882,6 +1072,7 @@ async function loadSystemHistory(toggle = true) {
 }
 
 async function sendSystemMessageToChat(name, msg) { 
+    // Ensure format is "[Name] [Action]" e.g. "Ahmed joined the Main Team"
     await supabase.from('system_history').insert([{ content: `${name} ${msg}`, username: 'System' }]); 
 }
 
