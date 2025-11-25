@@ -1619,6 +1619,55 @@ function setupRealtime() {
       }
     });
 }
+// --- دالة الغسيل التلقائي يوم السبت الساعة 9 مساءً ---
+async function checkAndRunAutoWash() {
+    const now = new Date();
+    // 6 = السبت، 21 = الساعة 9 مساءً
+    // إذا لم يكن السبت أو الساعة لم تأتِ التاسعة بعد، توقف
+    if (now.getDay() !== 6 || now.getHours() < 21) return; 
+
+    // التحقق: هل تم الاختيار في آخر 24 ساعة؟
+    const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000)).toISOString();
+    
+    const { data: recentWash } = await supabase
+        .from('laundry_history')
+        .select('*')
+        .gt('washed_at', oneDayAgo); 
+
+    if (recentWash && recentWash.length > 0) return; // تم الاختيار بالفعل
+
+    console.log("Starting Auto-Wash Selection...");
+
+    // جلب البيانات
+    const { data: team } = await supabase.from("main_team").select("*");
+    const { data: history } = await supabase.from("laundry_history").select("*");
+    
+    const twoMonthsMs = 60 * 24 * 60 * 60 * 1000;
+    const nowTs = Date.now();
+    const lastWashMap = {};
+    if(history) history.forEach(r => lastWashMap[r.player_name] = new Date(r.washed_at).getTime());
+
+    // استثناء من غسلوا آخر شهرين
+    const eligible = team.filter(p => {
+        return (nowTs - (lastWashMap[p.name] || 0)) > twoMonthsMs;
+    });
+
+    if(eligible.length === 0) return; 
+
+    // القرعة
+    const winner = eligible[Math.floor(Math.random() * eligible.length)];
+
+    // الحفظ
+    const { error } = await supabase.from("laundry_history").insert([{ player_name: winner.name }]);
+    
+    if (!error) {
+        await sendMessageToGroup("System", `wash-winner:${winner.name} (Auto-Selected 🤖)`);
+        if(document.getElementById('laundryHistoryContainer').style.display === 'block') {
+            loadLaundryHistory(false);
+        }
+        showToast(`🤖 Auto-System: Selected ${winner.name} for Laundry!`);
+    }
+}
 
 (async function init() {
     const storedUsername = localStorage.getItem('chat_username');
@@ -1636,8 +1685,13 @@ function setupRealtime() {
     await loadSystemConfig(); loadMatchAddress(); loadPlayers(); loadBlue(); loadYellow(); loadChatMessages(); 
     setupRealtime();
     
+    // 👇👇👇 هذا هو السطر الناقص الذي يجب إضافته 👇👇👇
+    checkAndRunAutoWash(); 
+    // 👆👆👆 بدونه لن تعمل الميزة 👆👆👆
+    
     showSection('main');
 })();
+
 </script>
 </body>
 </html>
