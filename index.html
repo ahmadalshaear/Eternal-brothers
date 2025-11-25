@@ -302,14 +302,18 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
             <button class="tool-btn radio-btn" style="margin-left:5px;" onclick="toggleRadio()" title="Radio">📻</button>
         </div>
         
-        <div id="radioPlayerSection">
+                    <div id="radioPlayerSection">
             <select id="radioSelect" onchange="changeRadioChannel()">
                 <optgroup label="Quran">
                     <option value="https://server8.mp3quran.net/afs/001.mp3">Mishary Alafasy</option>
                     <option value="https://server7.mp3quran.net/basit/001.mp3">Abdulbasit Abdulsamad</option>
                 </optgroup>
-                <optgroup label="News">
-                    <option value="https://live-hls-audio-web-aje.getaj.net/AJE/01.m3u8">Al Jazeera English</option>
+                <optgroup label="News & Talk">
+                    <option value="https://live-hls-web-aja.getaj.net/AJA/01.m3u8">Al Jazeera Arabic</option>
+                </optgroup>
+                <optgroup label="Music (FM)">
+                    <option value="https://stream.rotana.net/rotana_radio/rotana_fm_ksa/playlist.m3u8">Rotana FM (KSA)</option>
+                    <option value="https://media-ice.musicradio.com/CapitalMP3">Capital FM (London Hits)</option>
                 </optgroup>
             </select>
             <div class="radio-controls">
@@ -317,6 +321,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 <button class="radio-control-btn stop-btn" onclick="stopRadio()">⏹ Stop</button>
             </div>
         </div>
+
         <div id="stickerPopupGlobal" class="sticker-popup">
             <div class="sticker-tabs">
                 <button class="sticker-tab active" onclick="showStickerTab('global', 'football')">Football</button>
@@ -1517,8 +1522,11 @@ function updateKeeper() {
 }
 function drawBall(x,y,r,c){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=c; ctx.fill(); ctx.stroke(); }
 
-// TEAM ADD MODAL LOGIC
-function openTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'flex'; document.getElementById('chatTeamAddInput').value = document.getElementById('chatNameInput').value; }
+// TEAM ADD MODAL LOGIC (UPDATED: Does NOT copy value anymore)
+function openTeamAddModal() { 
+    document.getElementById('teamAddModalOverlay').style.display = 'flex'; 
+    document.getElementById('chatTeamAddInput').value = ""; // CLEARED as requested
+}
 function closeTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'none'; }
 function confirmAddToTeam(t) { const n = document.getElementById('chatTeamAddInput').value; if(t==='blue') addBlue(n); else addYellow(n); }
 
