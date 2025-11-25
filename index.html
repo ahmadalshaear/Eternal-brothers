@@ -186,6 +186,32 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 }
 @keyframes popIn { 0%{transform:scale(0);} 100%{transform:scale(1);} }
 .wash-btn-group { display:flex; gap:10px; justify-content:center; }
+
+/* --- LAUNDRY HISTORY --- */
+#laundryHistoryContainer {
+    margin-top: 10px;
+    padding: 10px;
+    background: #2c2c2c;
+    border-radius: 8px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    display: none; /* Hidden by default */
+}
+#laundryHistoryContainer h3 { margin-top: 0; color: #009688; display:flex; align-items:center; justify-content:space-between;}
+#laundryList { padding: 0; margin: 0; list-style: none; }
+#laundryList li {
+    background: #333;
+    border-bottom: 1px solid #444;
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+#kitWashBtn { background: #009688; color: #fff; width: 100%; margin: 0; }
 </style>
 </head>
 <body>
@@ -230,15 +256,24 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <h2>Waiting List</h2>
   <ul id="waitingList"></ul>
   
-  <div style="width: 80%; margin: 10px auto; max-width: 400px;">
-      <button id="kitWashBtn" onclick="openWashModal()">Kit Wash 🧼</button>
-  </div>
-
-  <button onclick="loadSystemHistory()" style="background:#6a1b9a; color:#fff; margin-top:10px; width:80%;">Show Join/Leave History</button>
-  
+  <button onclick="loadSystemHistory()" style="background:#6a1b9a; color:#fff; margin-top:15px; width:80%;">Show Join/Leave History</button>
   <div id="systemHistoryContainer" style="margin-top:10px; padding:10px; background:#2c2c2c; border-radius:8px; max-width: 400px; margin-left: auto; margin-right: auto; text-align:left; display:none;">
       <h3 style="margin-top:0;">Event History</h3>
       <ul id="historyList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;"></ul>
+  </div>
+
+  <div id="kitWashSection">
+      <div style="width: 80%; margin: 15px auto; max-width: 400px;">
+          <hr style="border-color: #444; margin-bottom: 15px;">
+          <button id="kitWashBtn" onclick="openWashModal()">Kit Wash 🧼</button>
+      </div>
+      
+      <button id="showLaundryHistoryBtn" onclick="loadLaundryHistory()" style="background:#009688; color:#fff; margin-top:5px; width:80%;">Show Laundry History 🧼</button>
+      
+      <div id="laundryHistoryContainer">
+          <h3>🧼 Laundry Log</h3>
+          <ul id="laundryList"></ul>
+      </div>
   </div>
 
   <div class="chat-container">
@@ -272,14 +307,9 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 <optgroup label="Quran">
                     <option value="https://server8.mp3quran.net/afs/001.mp3">Mishary Alafasy</option>
                     <option value="https://server7.mp3quran.net/basit/001.mp3">Abdulbasit Abdulsamad</option>
-                    <option value="https://server11.mp3quran.net/sds/001.mp3">Abdulrahman Al-Sudais</option>
                 </optgroup>
-                <optgroup label="News/Info">
+                <optgroup label="News">
                     <option value="https://live-hls-audio-web-aje.getaj.net/AJE/01.m3u8">Al Jazeera English</option>
-                    <option value="https://live-hls-audio-web-aja.getaj.net/AJA/01.m3u8">Al Jazeera Arabic</option>
-                </optgroup>
-                <optgroup label="Entertainment">
-                    <option value="https://l3.itworkscdn.net/itwaudio/9026/stream">Rotana FM</option>
                 </optgroup>
             </select>
             <div class="radio-controls">
@@ -292,7 +322,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 <button class="sticker-tab active" onclick="showStickerTab('global', 'football')">Football</button>
                 <button class="sticker-tab" onclick="showStickerTab('global', 'funny')">Funny</button>
                 <button class="sticker-tab" onclick="showStickerTab('global', 'action')">Action</button>
-                <button class="sticker-tab" onclick="toggleStickerMenu('global')" style="color: #f44336; font-weight: bold;">✕</button>
             </div>
             <div id="stickerGridGlobal" class="sticker-grid"></div>
         </div>
@@ -328,21 +357,18 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
         </div>
         <div class="chat-row-inputs">
             <input type="text" id="blueChatNameInput" placeholder="Name" value="">
-            <input type="text" id="blueChatMsgInput" placeholder="Message..." oninput="handleTyping('blue')">
+            <input type="text" id="blueChatMsgInput" placeholder="Message...">
             <button id="sendBlueChatBtn" class="send-btn" onclick="sendTeamMessage('blue')">Send</button>
         </div>
         <div class="chat-row-tools">
             <input type="file" id="blueChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'blue')">
             <button class="tool-btn" onclick="document.getElementById('blueChatFile').click()">📷</button>
-            <button id="recordBtnBlue" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('blue')">🎤</button>
+            <button id="recordBtnBlue" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('blue')" onmouseup="stopVoiceRecording('blue')" ontouchstart="startVoiceRecording('blue')" ontouchend="stopVoiceRecording('blue')">🎤</button>
             <button class="tool-btn sticker-btn" style="margin-left:5px;" onclick="toggleStickerMenu('blue')">☺</button>
         </div>
         <div id="stickerPopupBlue" class="sticker-popup">
             <div class="sticker-tabs">
                 <button class="sticker-tab active" onclick="showStickerTab('blue', 'football')">Football</button>
-                <button class="sticker-tab" onclick="showStickerTab('blue', 'funny')">Funny</button>
-                <button class="sticker-tab" onclick="showStickerTab('blue', 'action')">Action</button>
-                <button class="sticker-tab" onclick="toggleStickerMenu('blue')" style="color: #f44336; font-weight: bold;">✕</button>
             </div>
             <div id="stickerGridBlue" class="sticker-grid"></div>
         </div>
@@ -378,21 +404,18 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
         </div>
         <div class="chat-row-inputs">
             <input type="text" id="yellowChatNameInput" placeholder="Name" value="">
-            <input type="text" id="yellowChatMsgInput" placeholder="Message..." oninput="handleTyping('yellow')">
+            <input type="text" id="yellowChatMsgInput" placeholder="Message...">
             <button id="sendYellowChatBtn" class="send-btn" onclick="sendTeamMessage('yellow')">Send</button>
         </div>
         <div class="chat-row-tools">
             <input type="file" id="yellowChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'yellow')">
             <button class="tool-btn" onclick="document.getElementById('yellowChatFile').click()">📷</button>
-            <button id="recordBtnYellow" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('yellow')">🎤</button>
+            <button id="recordBtnYellow" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('yellow')" onmouseup="stopVoiceRecording('yellow')" ontouchstart="startVoiceRecording('yellow')" ontouchend="stopVoiceRecording('yellow')">🎤</button>
             <button class="tool-btn sticker-btn" style="margin-left:5px;" onclick="toggleStickerMenu('yellow')">☺</button>
         </div>
         <div id="stickerPopupYellow" class="sticker-popup">
             <div class="sticker-tabs">
                 <button class="sticker-tab active" onclick="showStickerTab('yellow', 'football')">Football</button>
-                <button class="sticker-tab" onclick="showStickerTab('yellow', 'funny')">Funny</button>
-                <button class="sticker-tab" onclick="showStickerTab('yellow', 'action')">Action</button>
-                <button class="sticker-tab" onclick="toggleStickerMenu('yellow')" style="color: #f44336; font-weight: bold;">✕</button>
             </div>
             <div id="stickerGridYellow" class="sticker-grid"></div>
         </div>
@@ -408,7 +431,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
     <button onclick="closeWashModal()" style="margin-top:10px; background:transparent; border:1px solid #fff; color:#fff;">Close</button>
     
     <div id="resultCard">
-        <h3>The Kit Wash Volunteer will be</h3>
+        <h3>The Kit Wash Volunteer will be:</h3>
         <h1 id="winnerName" style="color:#d32f2f; margin:10px 0;"></h1>
         <div class="wash-btn-group">
             <button onclick="confirmWashWinner()" style="background:#4CAF50; color:#fff;">Confirm</button>
@@ -420,7 +443,8 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <div id="positionMenuOverlay" class="position-menu-overlay" style="display:none;">
     <div class="position-menu-box">
         <h3 id="positionMenuTitle">Select Position for Player Name</h3>
-        <div id="positionMenuGrid" class="position-menu-grid"></div>
+        <div id="positionMenuGrid" class="position-menu-grid">
+            </div>
         <button onclick="closePositionMenu()" style="margin-top: 15px; background: #555;">Cancel</button>
     </div>
 </div>
@@ -444,17 +468,17 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 <div class="setting-item"><label for="allowPlayerEdit">Allow Player Add/Edit/Delete (Main Lists)</label><input type="checkbox" id="allowPlayerEdit"></div>
                 <div class="setting-item"><label for="allowTeamEdit">Allow Player Add/Edit/Delete (Teams)</label><input type="checkbox" id="allowTeamEdit"></div>
                 <div class="setting-item"><label for="allowFormationEdit">Allow Applying Formations (Plan)</label><input type="checkbox" id="allowFormationEdit"></div>
-                <div class="setting-item"><label for="allowAddressEdit">Allow Editing Match Address</label><input type="checkbox" id="allowAddressEdit"></div>
                 <div class="setting-item"><label for="allowChat">Allow Sending Chat Messages</label><input type="checkbox" id="allowChat"></div>
-                <div class="setting-item"><label for="allowImageUpload">Allow Image Uploads in Chat</label><input type="checkbox" id="allowImageUpload"></div>
-                <div class="setting-item"><label for="allowMusic">Allow Toggling Music</label><input type="checkbox" id="allowMusic"></div>
                 <div class="setting-item"><label for="enforceTimeRestriction">Enforce Time Restriction (Wed-Sun)</label><input type="checkbox" id="enforceTimeRestriction"></div>
-                <div class="setting-item"><label for="requireIndividualPin">Require Individual Player PIN (Main List)</label><input type="checkbox" id="requireIndividualPin"></div>
-                <div class="setting-item"><label for="requireTeamPinForAdd">Require Team PIN for Main List</label><input type="checkbox" id="requireTeamPinForAdd"></div>
+                <div class="setting-item"><label for="disableMainListPin" style="color:#00e676;">Disable PIN for Main List (No PIN)</label><input type="checkbox" id="disableMainListPin"></div>
+                
+                <div class="setting-item"><label for="hideLaundrySection" style="color:#ff9800;">Hide Kit Wash & Laundry History</label><input type="checkbox" id="hideLaundrySection"></div>
+
                 <div class="danger-zone">
                     <h2>Danger Zone - Data Deletion</h2>
                     <button class="danger-btn" onclick="clearGroupChat()">Clear Group Chat (Player Msgs)</button>
                     <button class="danger-btn" onclick="clearSystemHistory()">Clear System History (Alerts)</button>
+                    <button class="danger-btn" onclick="clearLaundryHistory()">Clear Laundry History</button>
                     <button class="danger-btn" onclick="clearBlueChat()">Clear Blue Team Chat</button>
                     <button class="danger-btn" onclick="clearYellowChat()">Clear Yellow Team Chat</button>
                     <button class="danger-btn" onclick="clearMainTeam()">Clear Main Team List</button>
@@ -521,10 +545,12 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script> 
 
 <script>
+// -------------------- GLOBAL CONFIG --------------------
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; 
 const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Mjk0MzA5NiwiZXhwIjoyMDc4NTE5MDk2fQ.qVT2CKqMKRW1Y1qEox9_cl4JvuLY659_UQxVDMBWBFA"; 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
 
+// Declare globals BEFORE usage in functions
 let currentPositionTarget = { team: null, playerId: null, playerName: null };
 const nameColors = ["#e53935", "#1e88e5", "#fbc02d","#43a047","#8e24aa","#fb8c00","#00acc1","#d81b60","#6d4c41","#3949ab","#f4511e","#7cb342"];
 let audioInitialized = false; 
@@ -532,6 +558,7 @@ let matchAddress = "Address 📍";
 const ADMIN_PASSWORD = "2023"; 
 const TEAM_ADD_PIN = "1111"; 
 let mediaRecorder = null; let audioChunks = []; let isRecording = false;
+let audioStream = null; // Store stream globally to stop tracks
 let typingTimeout;
 let roomChannel;
 const myId = Math.random().toString(36).substr(2, 9);
@@ -542,10 +569,10 @@ const STICKERS = {
     action: ["https://media.giphy.com/media/3o7TKtnuHOHHUjR38Y/giphy.gif", "https://media.giphy.com/media/l0Iy8hSJalxlbkXIk/giphy.gif", "https://media.giphy.com/media/l41lS23ZZKo8hiiZ2/giphy.gif"]
 };
 
-let systemConfig = { allowPlayerEdit: true, allowTeamEdit: true, allowFormationEdit: true, allowAddressEdit: true, allowChat: true, allowImageUpload: true, allowMusic: true, enforceTimeRestriction: true, requireIndividualPin: true, requireTeamPinForAdd: false };
+// NEW CONFIG STRUCTURE (Added hideLaundrySection)
+let systemConfig = { allowPlayerEdit: true, allowTeamEdit: true, allowFormationEdit: true, allowChat: true, enforceTimeRestriction: true, disableMainListPin: false, hideLaundrySection: false };
 const POSITIONS_LIST = [{ code: 'GK', label: 'Goalkeeper' }, { code: 'CB', label: 'Center Back' }, { code: 'RB', label: 'Right Back' }, { code: 'LB', label: 'Left Back' }, { code: 'DM', label: 'Defensive Mid' }, { code: 'CM', label: 'Center Mid' }, { code: 'RM', label: 'Right Mid' }, { code: 'LM', label: 'Left Mid' }, { code: 'CAM', label: 'Attacking Mid' }, { code: 'CF', label: 'Center Forward' }, { code: 'RW', label: 'Right Winger' }, { code: 'LW', label: 'Left Winger' }, { code: 'ST', label: 'Striker' }, { code: 'SUB', label: 'Substitute' }];
 
-// --- NEW HORIZONTAL FORMATIONS ---
 const FORMATIONS = {
     '4-3-3': [
         { left: '6%', top: '50%', code: 'GK' }, { left: '25%', top: '15%', code: 'LB' }, { left: '18%', top: '38%', code: 'CB' }, { left: '18%', top: '62%', code: 'CB' }, { left: '25%', top: '85%', code: 'RB' },
@@ -579,7 +606,7 @@ function showSection(id){
 showSection('main'); 
 
 function toggleBackgroundMusic() {
-    if (!systemConfig.allowMusic) { alert("Audio disabled by admin."); return; }
+    // Removed config check (Always Allowed)
     const audio = document.getElementById('musicPlayer');
     if (audio.paused) { audio.play(); document.getElementById('audioToggleBtn').innerHTML = 'Stop Audio'; } 
     else { audio.pause(); document.getElementById('audioToggleBtn').innerHTML = 'Audio'; }
@@ -611,7 +638,6 @@ async function openWashModal() {
     
     if(eligible.length === 0) return alert("Everyone is exempt!");
     
-    // Populate Jar
     const jar = document.getElementById('jar');
     jar.innerHTML = '';
     eligible.forEach(p => {
@@ -636,9 +662,6 @@ function shakeJar() {
     const jar = document.getElementById('jar');
     jar.classList.add('shaking');
     const papers = document.querySelectorAll('.paper-slip');
-    
-    // Start chat broadcast about shuffling
-    sendMessageToGroup("System", "jar-shuffling");
     
     let shakeInterval = setInterval(() => {
         papers.forEach(p => {
@@ -667,9 +690,9 @@ function pickWinner() {
 async function confirmWashWinner() {
     const winner = window.washWinner;
     await supabase.from("laundry_history").insert([{ player_name: winner.name }]);
-    // Broadcast winner
     await sendMessageToGroup("System", `wash-winner:${winner.name}`);
     alert("Confirmed!");
+    loadLaundryHistory(false);
     closeWashModal();
 }
 
@@ -679,17 +702,53 @@ async function volunteerInstead() {
     await supabase.from("laundry_history").insert([{ player_name: name }]);
     await sendSystemMessageToChat(name, "Volunteered for Kit Wash 🙋‍♂️");
     alert("Thanks!");
+    loadLaundryHistory(false);
     closeWashModal();
 }
 
-// Helper to send special messages to chat
+async function loadLaundryHistory(toggle = true) {
+    const container = document.getElementById('laundryHistoryContainer');
+    if (toggle) {
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    if (container.style.display === 'none') return;
+
+    const list = document.getElementById('laundryList');
+    list.innerHTML = '<li style="color:#aaa; text-align:center;">Loading...</li>';
+    
+    const { data, error } = await supabase
+        .from('laundry_history')
+        .select('*')
+        .order('washed_at', { ascending: false })
+        .limit(20);
+
+    if (error || !data || data.length === 0) {
+        list.innerHTML = '<li style="color:#aaa; text-align:center;">No history yet.</li>';
+        return;
+    }
+
+    list.innerHTML = '';
+    data.forEach(item => {
+        const date = new Date(item.washed_at).toLocaleDateString();
+        list.innerHTML += `
+            <li>
+                <span style="font-weight:bold; color:#FF9800;">🧼 The Kit Wash Volunteer will be: ${item.player_name}</span>
+                <span style="color:#aaa; font-size:12px;">${date}</span>
+            </li>
+        `;
+    });
+}
+
 async function sendMessageToGroup(sender, type) {
     let content = "";
     if (type === "jar-shuffling") {
         content = "🌀 Shuffling names for Kit Wash... who will it be? 🤔";
+    } else if (type === "gif-shuffling") {
+        content = `[IMG]https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif`;
     } else if (type.startsWith("wash-winner:")) {
         const winnerName = type.split(":")[1];
-        content = `🧼 The volunteer for washing clothes will be: ${winnerName} 🧼`;
+        content = `🧼 The Kit Wash Volunteer will be: ${winnerName} 🧼`;
     }
     
     if(content) {
@@ -707,11 +766,28 @@ async function showSettingsModal() {
 function authenticateSettings() {
     if (document.getElementById('settingsPassword').value === ADMIN_PASSWORD) {
         document.getElementById('passwordSection').style.display = 'none'; document.getElementById('settingsControls').style.display = 'flex';
-        document.getElementById('allowPlayerEdit').checked = systemConfig.allowPlayerEdit; document.getElementById('allowTeamEdit').checked = systemConfig.allowTeamEdit; document.getElementById('allowFormationEdit').checked = systemConfig.allowFormationEdit; document.getElementById('allowAddressEdit').checked = systemConfig.allowAddressEdit; document.getElementById('allowChat').checked = systemConfig.allowChat; document.getElementById('allowImageUpload').checked = systemConfig.allowImageUpload; document.getElementById('allowMusic').checked = systemConfig.allowMusic; document.getElementById('enforceTimeRestriction').checked = systemConfig.enforceTimeRestriction; document.getElementById('requireIndividualPin').checked = systemConfig.requireIndividualPin; document.getElementById('requireTeamPinForAdd').checked = systemConfig.requireTeamPinForAdd;
+        // Updated Load Settings (Deleted ones removed, added disableMainListPin)
+        document.getElementById('allowPlayerEdit').checked = systemConfig.allowPlayerEdit; 
+        document.getElementById('allowTeamEdit').checked = systemConfig.allowTeamEdit; 
+        document.getElementById('allowFormationEdit').checked = systemConfig.allowFormationEdit; 
+        document.getElementById('allowChat').checked = systemConfig.allowChat; 
+        document.getElementById('enforceTimeRestriction').checked = systemConfig.enforceTimeRestriction;
+        document.getElementById('disableMainListPin').checked = systemConfig.disableMainListPin; 
+        
+        // NEW HIDE LAUNDRY OPTION
+        document.getElementById('hideLaundrySection').checked = systemConfig.hideLaundrySection;
     } else { document.getElementById('passwordError').style.display = 'block'; }
 }
 async function saveSettings() {
-    const newConfig = { allowPlayerEdit: document.getElementById('allowPlayerEdit').checked, allowTeamEdit: document.getElementById('allowTeamEdit').checked, allowFormationEdit: document.getElementById('allowFormationEdit').checked, allowAddressEdit: document.getElementById('allowAddressEdit').checked, allowChat: document.getElementById('allowChat').checked, allowImageUpload: document.getElementById('allowImageUpload').checked, allowMusic: document.getElementById('allowMusic').checked, enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked, requireIndividualPin: document.getElementById('requireIndividualPin').checked, requireTeamPinForAdd: document.getElementById('requireTeamPinForAdd').checked };
+    const newConfig = { 
+        allowPlayerEdit: document.getElementById('allowPlayerEdit').checked, 
+        allowTeamEdit: document.getElementById('allowTeamEdit').checked, 
+        allowFormationEdit: document.getElementById('allowFormationEdit').checked, 
+        allowChat: document.getElementById('allowChat').checked, 
+        enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked,
+        disableMainListPin: document.getElementById('disableMainListPin').checked,
+        hideLaundrySection: document.getElementById('hideLaundrySection').checked // Save new option
+    };
     await supabase.from('app_config').update({ system_config: JSON.stringify(newConfig), match_address: document.getElementById('matchAddressInput').value.trim() }).eq('id', 1);
     systemConfig = newConfig; matchAddress = document.getElementById('matchAddressInput').value.trim(); loadMatchAddress(); applyUIRestrictions(); document.getElementById('settingsModalOverlay').style.display = 'none'; alert('Settings saved!');
 }
@@ -726,6 +802,9 @@ function clearWaitingList() { clearTableData('waiting_list', "Clear Waiting List
 function clearBlueTeam() { clearTableData('blue_team', "Clear Blue Team?", "Blue Team"); }
 function clearYellowTeam() { clearTableData('yellow_team', "Clear Yellow Team?", "Yellow Team"); }
 
+// NEW FUNCTION TO CLEAR LAUNDRY
+function clearLaundryHistory() { clearTableData('laundry_history', "Clear Laundry History?", "Laundry History"); }
+
 async function canEditCaptain(table, playerId) {
     if (table !== 'blue_team' && table !== 'yellow_team') return true;
     const { data: allPlayers } = await supabase.from(table).select('id, player_pin').order('id', { ascending: true });
@@ -734,17 +813,21 @@ async function canEditCaptain(table, playerId) {
     return enteredPin === allPlayers[0].player_pin;
 }
 
-// STRICT PIN VERIFICATION
+// STRICT PIN VERIFICATION (MODIFIED TO RESPECT DISABLE TOGGLE)
 async function verifyIndividualPin(table, id) {
+    // If setting is checked (True), Disable verification for main lists
+    if (systemConfig.disableMainListPin && (table === "main_team" || table === "waiting_list")) {
+        return true; 
+    }
+
     const { data } = await supabase.from(table).select('player_pin').eq('id', id).single();
     if (!data) return false;
     
-    // If PIN exists, verify it. If user is Admin (pwd 2023), allow bypass.
     const storedPin = data.player_pin;
-    if (!storedPin) return true; // No pin set, allow
+    if (!storedPin) return true; 
 
     const enteredPin = prompt("Enter your 4-digit PIN to confirm:");
-    if (enteredPin === ADMIN_PASSWORD) return true; // Admin Override
+    if (enteredPin === ADMIN_PASSWORD) return true; 
     
     if (enteredPin === storedPin) {
         return true;
@@ -769,6 +852,12 @@ function applyUIRestrictions() {
     document.getElementById('yellowPlayerManagement').style.display = systemConfig.allowTeamEdit ? 'block' : 'none';
     document.querySelectorAll('.formation-btn, .dynamic-btn').forEach(btn => btn.style.display = systemConfig.allowFormationEdit ? 'inline-block' : 'none');
     document.querySelectorAll('.chat-input-area').forEach(el => el.style.display = systemConfig.allowChat ? 'flex' : 'none');
+    
+    // HIDE LAUNDRY LOGIC
+    const laundrySection = document.getElementById('kitWashSection');
+    if (laundrySection) {
+        laundrySection.style.display = systemConfig.hideLaundrySection ? 'none' : 'block';
+    }
 }
 
 function isWithinAllowedTime(){
@@ -778,7 +867,7 @@ function isWithinAllowedTime(){
 }
 function formatPlayerTime(timestamp) { if (!timestamp) return ''; return new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); }
 
-// PLAYER & LIST LOGIC
+// PLAYER & LIST LOGIC (MODIFIED FOR PIN TOGGLE)
 async function addPlayer(){
   if(!systemConfig.allowPlayerEdit) return alert("Add disabled");
   if(!isWithinAllowedTime()){
@@ -788,11 +877,12 @@ async function addPlayer(){
   const name = document.getElementById("nameInput").value.trim();
   if(!name) return alert("Enter name");
   
-  // ALWAYS REQUIRE PIN FOR NEW PLAYERS
-  let pin = prompt("Create a 4-digit PIN (Required for deleting/editing later):");
-  if (!pin || pin.length !== 4) return alert("PIN is required (4 digits).");
-
-  if(systemConfig.requireTeamPinForAdd && prompt("Team PIN:") !== TEAM_ADD_PIN) return alert("Wrong Team PIN");
+  // NEW PIN LOGIC
+  let pin = "0000"; // Default dummy pin
+  if (!systemConfig.disableMainListPin) {
+      pin = prompt("Create a 4-digit PIN (Required for deleting/editing later):");
+      if (!pin || pin.length !== 4) return alert("PIN is required (4 digits).");
+  }
 
   const { data: team } = await supabase.from("main_team").select("id");
   const table = team.length < 24 ? "main_team" : "waiting_list";
@@ -823,7 +913,7 @@ async function deletePlayer(table, id){
   if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
   if(table.includes('_team') && !await canEditCaptain(table, id)) return;
   
-  // STRICT PIN CHECK
+  // STRICT PIN CHECK (Updated to check disable setting)
   const pinOk = await verifyIndividualPin(table, id);
   if (!pinOk) return;
 
@@ -871,6 +961,7 @@ function reloadList(table){
   else if(table==="blue_team") loadBlue(); else if(table==="yellow_team") loadYellow();
   else if(table.includes("chat")) { if(table.includes("blue")) loadTeamChatMessages('blue'); else if(table.includes("yellow")) loadTeamChatMessages('yellow'); else loadChatMessages(); }
   else if(table.includes("system_history")) loadSystemHistory(false);
+  else if(table.includes("laundry_history")) loadLaundryHistory(false);
 }
 
 // TEAM LOGIC
@@ -1047,18 +1138,16 @@ async function loadSystemHistory(toggle = true) {
     let bgColor = '#424242'; 
     let textColor = '#fff';
     let icon = '';
-    // Lowercase for reliable checking
     const contentLower = item.content.toLowerCase();
 
-    // Logic for coloring based on English keywords
     if (contentLower.includes('joined') || contentLower.includes('volunteered')) {
-        bgColor = '#2e7d32'; // Green for Join
+        bgColor = '#2e7d32'; 
         icon = '✔';
     } else if (contentLower.includes('left')) {
-        bgColor = '#c62828'; // Red for Leave
+        bgColor = '#c62828'; 
         icon = '✖';
     } else if (contentLower.includes('moved') || contentLower.includes('waiting list') || contentLower.includes('selected')) {
-        bgColor = '#f57f17'; // Orange for Move/Wait
+        bgColor = '#f57f17'; 
         textColor = '#000';
         icon = '⚠';
     }
@@ -1072,11 +1161,10 @@ async function loadSystemHistory(toggle = true) {
 }
 
 async function sendSystemMessageToChat(name, msg) { 
-    // Ensure format is "[Name] [Action]" e.g. "Ahmed joined the Main Team"
     await supabase.from('system_history').insert([{ content: `${name} ${msg}`, username: 'System' }]); 
 }
 
-// FILE UPLOAD
+// FILE UPLOAD (Always Allowed now)
 async function handleFileUpload(input, context) {
     const file = input.files[0]; if (!file) return;
     const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
@@ -1141,7 +1229,6 @@ async function startVoiceRecording(context) {
         audioChunks = [];
         mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
         
-        // Show the specific recording bar
         const barId = context === 'global' ? 'recordingBar_global' : (context === 'blue' ? 'recordingBar_blue' : 'recordingBar_yellow');
         document.getElementById(barId).style.display = 'flex';
         
@@ -1156,7 +1243,7 @@ async function finishVoiceRecording(context, action) {
     const barId = context === 'global' ? 'recordingBar_global' : (context === 'blue' ? 'recordingBar_blue' : 'recordingBar_yellow');
     
     mediaRecorder.onstop = async () => {
-        document.getElementById(barId).style.display = 'none'; // Hide bar
+        document.getElementById(barId).style.display = 'none'; 
         if (action === 'send') {
              const blob = new Blob(audioChunks, { type: 'audio/webm' });
              const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
@@ -1170,7 +1257,6 @@ async function finishVoiceRecording(context, action) {
              const table = context === 'global' ? 'chat_messages' : `${context}_chat`;
              await supabase.from(table).insert([{ username: name, content: `[AUDIO]${data.publicUrl}` }]);
         }
-        // clear tracks
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
     };
     
@@ -1183,11 +1269,9 @@ function toggleCustomAudio(uniqueId) {
     const audio = document.getElementById(uniqueId);
     const btn = document.getElementById('btn-' + uniqueId);
     
-    // Pause all other audios
     document.querySelectorAll('audio').forEach(a => {
         if (a.id !== uniqueId && !a.paused) {
             a.pause();
-            // Reset their buttons if they are custom players
             if (a.id && a.id.startsWith('audio-')) {
                 const otherBtn = document.getElementById('btn-' + a.id);
                 if (otherBtn) otherBtn.innerText = '▶';
@@ -1228,7 +1312,7 @@ function formatTime(seconds) {
 }
 // -----------------------------------
 
-// RENDER MESSAGES (UPDATED WITH PRESENCE/BROADCAST)
+// RENDER MESSAGES
 function renderMessage(m, id) {
     const div = document.getElementById(id); const isMe = m.username === localStorage.getItem('chat_username');
     let c = m.content;
@@ -1286,14 +1370,13 @@ async function sendTeamMessage(team) {
     await supabase.from(`${team}_chat`).insert([{ username:n, content:c }]); document.getElementById(`${team}ChatMsgInput`).value='';
 }
 
-// --- ARCADE LOGIC (Updated with 5 Games) ---
+// --- ARCADE LOGIC ---
 let gameInterval, gameActive = false, currentScore = 0, currentGameType = '';
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 let ball = { x: 160, y: 200, r: 15, dy: 0, dx: 0, state: 'ready' };
 let obstacles = []; let goalTarget = {}; let playerTargetX = 160;
 
-// Mouse/Touch tracking for Dribbler & Keeper
 canvas.addEventListener('mousemove', (e) => {
     if (!gameActive) return;
     const rect = canvas.getBoundingClientRect();
@@ -1320,14 +1403,12 @@ function startGame(type) {
     currentScore=0; gameActive=false; document.getElementById('scoreDisplay').innerText="Score: 0";
     document.getElementById('startPrompt').style.display='block';
     
-    // Reset Game States
     if(type==='juggling') ball = { x: 160, y: 200, r: 20, dy: 0, dx: 2 };
     if(type==='flappy') { ball = { x: 50, y: 200, r: 12, dy: 0, dx: 0 }; obstacles = []; }
     if(type==='penalty') { ball = { x: 160, y: 360, r: 15, state:'ready' }; goalTarget={x:50, w:80, spd:3, dir:1}; }
     if(type==='dribbler') { ball = { x: 160, y: 350, r: 15 }; obstacles = []; playerTargetX = 160; }
-    if(type==='keeper') { ball = { x: 160, y: 340, r: 20 }; obstacles = []; playerTargetX = 160; } // obstacles = balls array here
+    if(type==='keeper') { ball = { x: 160, y: 340, r: 20 }; obstacles = []; playerTargetX = 160; } 
 
-    // Input Handler for Tap games
     canvas.onmousedown = canvas.ontouchstart = (e) => {
         e.preventDefault();
         if (!gameActive) { gameActive=true; document.getElementById('startPrompt').style.display='none'; gameLoop(); 
@@ -1342,7 +1423,7 @@ function startGame(type) {
     drawGame();
 }
 
-function drawGame() { ctx.clearRect(0,0,320,400); } // Initial clear
+function drawGame() { ctx.clearRect(0,0,320,400); } 
 
 function gameLoop() {
     if(!gameActive) return;
@@ -1398,69 +1479,42 @@ function updatePenalty() {
     }
     drawBall(ball.x, ball.y, ball.r, "#fff");
 }
-// NEW: DRIBBLER
 function updateDribbler() {
-    // Background field
     ctx.fillStyle="#388E3C"; ctx.fillRect(0,0,320,400); ctx.strokeStyle="rgba(255,255,255,0.2)"; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(0, (currentScore*10)%400); ctx.lineTo(320, (currentScore*10)%400); ctx.stroke(); // Moving line effect
-    
-    // Player movement
+    ctx.beginPath(); ctx.moveTo(0, (currentScore*10)%400); ctx.lineTo(320, (currentScore*10)%400); ctx.stroke(); 
     ball.x += (playerTargetX - ball.x) * 0.1;
-    
-    // Spawn obstacles (Defenders/Cones)
     if(Math.random() < 0.03 + (currentScore*0.001)) {
         obstacles.push({x: Math.random() * 280 + 20, y: -20, type: Math.random()>0.5?'cone':'defender'});
     }
-    
     obstacles.forEach((o, i) => {
         o.y += 4 + (currentScore * 0.1);
-        // Draw Obstacle
         ctx.fillStyle = o.type==='cone' ? '#FF9800' : '#d32f2f';
         ctx.beginPath(); ctx.arc(o.x, o.y, 10, 0, Math.PI*2); ctx.fill();
-        
-        // Collision
         const dist = Math.hypot(ball.x - o.x, 350 - o.y);
         if(dist < 25) gameOver();
-        
-        // Score & Cleanup
         if(o.y > 420) { obstacles.splice(i, 1); currentScore++; }
     });
-    
-    drawBall(ball.x, 350, 15, "#fff"); // Player is white ball
+    drawBall(ball.x, 350, 15, "#fff");
 }
-// NEW: KEEPER
 function updateKeeper() {
-    // Background goal
-    ctx.fillStyle="#444"; ctx.fillRect(0,360,320,40); // Ground
-    ctx.strokeStyle="#fff"; ctx.lineWidth=5; ctx.strokeRect(20, 20, 280, 340); // Goal Frame
-    
-    // Gloves movement
+    ctx.fillStyle="#444"; ctx.fillRect(0,360,320,40); 
+    ctx.strokeStyle="#fff"; ctx.lineWidth=5; ctx.strokeRect(20, 20, 280, 340); 
     ball.x += (playerTargetX - ball.x) * 0.15;
-    
-    // Spawn Balls
     if(Math.random() < 0.02 + (currentScore*0.002)) {
-        obstacles.push({x: Math.random() * 260 + 30, y: -20, caught: false}); // obstacles = balls
+        obstacles.push({x: Math.random() * 260 + 30, y: -20, caught: false}); 
     }
-    
     obstacles.forEach((b, i) => {
         b.y += 5 + (currentScore * 0.1);
-        drawBall(b.x, b.y, 12, "#fff"); // Incoming ball
-        
-        // Catch collision
+        drawBall(b.x, b.y, 12, "#fff"); 
         const dist = Math.hypot(ball.x - b.x, 340 - b.y);
         if(dist < 30 && !b.caught) {
             b.caught = true; currentScore++; obstacles.splice(i, 1);
         }
-        
-        // Missed ball
         if(b.y > 400) gameOver();
     });
-    
-    // Draw Gloves
     ctx.fillStyle="#FFEB3B"; 
     ctx.fillRect(ball.x-20, 330, 40, 20); 
 }
-
 function drawBall(x,y,r,c){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=c; ctx.fill(); ctx.stroke(); }
 
 // TEAM ADD MODAL LOGIC
@@ -1472,18 +1526,12 @@ function confirmAddToTeam(t) { const n = document.getElementById('chatTeamAddInp
 function handleTyping(context) {
     const name = document.getElementById(context==='global'?'chatNameInput':`${context}ChatNameInput`).value;
     if(!roomChannel || !name) return;
-    
-    roomChannel.send({
-        type: 'broadcast',
-        event: 'typing',
-        payload: { name: name }
-    });
+    roomChannel.send({ type: 'broadcast', event: 'typing', payload: { name: name } });
 }
 
 function updateOnlineUsersUI(users) {
     const bar = document.getElementById('onlineUsersBar');
     if(!bar) return;
-    // Filter duplicates
     const uniqueUsers = [...new Set(users)];
     bar.innerHTML = uniqueUsers.map(u => `
         <div class="online-user-pill">
@@ -1496,7 +1544,6 @@ function updateOnlineUsersUI(users) {
 function setupRealtime() {
   const myName = localStorage.getItem('chat_username') || 'Guest';
   
-  // 1. DATABASE CHANGES
   supabase.channel('global-chat-updates')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { renderMessage(payload.new, 'chatMessages'); })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
@@ -1506,6 +1553,12 @@ function setupRealtime() {
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { 
         const hc = document.getElementById('systemHistoryContainer');
         if (hc.style.display === 'block') loadSystemHistory(false); 
+    }).subscribe();
+    
+  supabase.channel('laundry-history-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { 
+        const container = document.getElementById('laundryHistoryContainer');
+        if (container.style.display === 'block') loadLaundryHistory(false);
     }).subscribe();
 
   supabase.channel('blue-chat-updates')
@@ -1525,7 +1578,6 @@ function setupRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
     .subscribe();
 
-  // 2. PRESENCE & BROADCAST (Room Channel)
   roomChannel = supabase.channel('online-room', {
     config: {
       presence: {
@@ -1566,15 +1618,17 @@ function setupRealtime() {
         document.getElementById('chatNameInput').value = storedUsername;
         document.getElementById('blueChatNameInput').value = storedUsername;
         document.getElementById('yellowChatNameInput').value = storedUsername;
+        document.getElementById('nameInput').value = storedUsername;
     }
 
-    // RE-ADDED ENTER KEY SUPPORT
     document.getElementById('chatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
     document.getElementById('blueChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('blue'); } });
     document.getElementById('yellowChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
 
-    await loadSystemConfig(); loadMatchAddress(); loadPlayers(); loadBlue(); loadYellow(); loadChatMessages();
+    await loadSystemConfig(); loadMatchAddress(); loadPlayers(); loadBlue(); loadYellow(); loadChatMessages(); 
     setupRealtime();
+    
+    showSection('main');
 })();
 </script>
 </body>
