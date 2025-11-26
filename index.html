@@ -545,7 +545,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
         <button onclick="closeGameCenter()" id="closeGameBtn" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close Arcade</button>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script> 
 
@@ -563,7 +562,7 @@ let matchAddress = "Address 📍";
 const ADMIN_PASSWORD = "2023"; 
 const TEAM_ADD_PIN = "1111"; 
 let mediaRecorder = null; let audioChunks = []; let isRecording = false;
-let audioStream = null; // Store stream globally to stop tracks
+let audioStream = null; 
 let typingTimeout;
 let roomChannel;
 const myId = Math.random().toString(36).substr(2, 9);
@@ -574,7 +573,6 @@ const STICKERS = {
     action: ["https://media.giphy.com/media/3o7TKtnuHOHHUjR38Y/giphy.gif", "https://media.giphy.com/media/l0Iy8hSJalxlbkXIk/giphy.gif", "https://media.giphy.com/media/l41lS23ZZKo8hiiZ2/giphy.gif"]
 };
 
-// NEW CONFIG STRUCTURE (Added hideLaundrySection)
 let systemConfig = { allowPlayerEdit: true, allowTeamEdit: true, allowFormationEdit: true, allowChat: true, enforceTimeRestriction: true, disableMainListPin: false, hideLaundrySection: false };
 const POSITIONS_LIST = [{ code: 'GK', label: 'Goalkeeper' }, { code: 'CB', label: 'Center Back' }, { code: 'RB', label: 'Right Back' }, { code: 'LB', label: 'Left Back' }, { code: 'DM', label: 'Defensive Mid' }, { code: 'CM', label: 'Center Mid' }, { code: 'RM', label: 'Right Mid' }, { code: 'LM', label: 'Left Mid' }, { code: 'CAM', label: 'Attacking Mid' }, { code: 'CF', label: 'Center Forward' }, { code: 'RW', label: 'Right Winger' }, { code: 'LW', label: 'Left Winger' }, { code: 'ST', label: 'Striker' }, { code: 'SUB', label: 'Substitute' }];
 
@@ -608,10 +606,8 @@ function showSection(id){
   else if (id === 'yellow') { loadTeamChatMessages('yellow'); document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || ''; setupDraggable('yellow'); } 
   else if (id === 'main') { loadChatMessages(); }
 }
-showSection('main'); 
 
 function toggleBackgroundMusic() {
-    // Removed config check (Always Allowed)
     const audio = document.getElementById('musicPlayer');
     if (audio.paused) { audio.play(); document.getElementById('audioToggleBtn').innerHTML = 'Stop Audio'; } 
     else { audio.pause(); document.getElementById('audioToggleBtn').innerHTML = 'Audio'; }
@@ -624,7 +620,7 @@ async function openGoogleMaps() {
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`, '_blank');
 }
 
-// -------------------- KIT WASH LOGIC (JAR) --------------------
+// -------------------- KIT WASH LOGIC --------------------
 async function openWashModal() {
     const pwd = prompt("Admin Password:");
     if (pwd !== ADMIN_PASSWORD) return alert("Access Denied");
@@ -713,56 +709,32 @@ async function volunteerInstead() {
 
 async function loadLaundryHistory(toggle = true) {
     const container = document.getElementById('laundryHistoryContainer');
-    if (toggle) {
-        container.style.display = container.style.display === 'none' ? 'block' : 'none';
-    }
-    
+    if (toggle) { container.style.display = container.style.display === 'none' ? 'block' : 'none'; }
     if (container.style.display === 'none') return;
 
     const list = document.getElementById('laundryList');
     list.innerHTML = '<li style="color:#aaa; text-align:center;">Loading...</li>';
     
-    const { data, error } = await supabase
-        .from('laundry_history')
-        .select('*')
-        .order('washed_at', { ascending: false })
-        .limit(20);
+    const { data, error } = await supabase.from('laundry_history').select('*').order('washed_at', { ascending: false }).limit(20);
 
-    if (error || !data || data.length === 0) {
-        list.innerHTML = '<li style="color:#aaa; text-align:center;">No history yet.</li>';
-        return;
-    }
+    if (error || !data || data.length === 0) { list.innerHTML = '<li style="color:#aaa; text-align:center;">No history yet.</li>'; return; }
 
     list.innerHTML = '';
     data.forEach(item => {
         const date = new Date(item.washed_at).toLocaleDateString();
-        list.innerHTML += `
-            <li>
-                <span style="font-weight:bold; color:#FF9800;">🧼 The Kit Wash Volunteer will be: ${item.player_name}</span>
-                <span style="color:#aaa; font-size:12px;">${date}</span>
-            </li>
-        `;
+        list.innerHTML += `<li><span style="font-weight:bold; color:#FF9800;">🧼 The Kit Wash Volunteer will be: ${item.player_name}</span><span style="color:#aaa; font-size:12px;">${date}</span></li>`;
     });
 }
 
 async function sendMessageToGroup(sender, type) {
     let content = "";
-    if (type === "jar-shuffling") {
-        content = "🌀 Shuffling names for Kit Wash... who will it be? 🤔";
-    } else if (type === "gif-shuffling") {
-        content = `[IMG]https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif`;
-    } else if (type.startsWith("wash-winner:")) {
-        const winnerName = type.split(":")[1];
-        content = `🧼 The Kit Wash Volunteer will be: ${winnerName} 🧼`;
-    }
+    if (type === "jar-shuffling") { content = "🌀 Shuffling names for Kit Wash... who will it be? 🤔"; } 
+    else if (type === "gif-shuffling") { content = `[IMG]https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif`; } 
+    else if (type.startsWith("wash-winner:")) { const winnerName = type.split(":")[1]; content = `🧼 The Kit Wash Volunteer will be: ${winnerName} 🧼`; }
     
-    if(content) {
-        await supabase.from('chat_messages').insert([{ username: sender, content: content }]);
-    }
+    if(content) { await supabase.from('chat_messages').insert([{ username: sender, content: content }]); }
 }
 
-
-// SETTINGS & PIN
 async function showSettingsModal() {
     document.getElementById('settingsPassword').value = ''; document.getElementById('passwordError').style.display = 'none'; document.getElementById('passwordSection').style.display = 'block'; document.getElementById('settingsControls').style.display = 'none'; document.getElementById('settingsModalOverlay').style.display = 'flex';
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
@@ -771,15 +743,12 @@ async function showSettingsModal() {
 function authenticateSettings() {
     if (document.getElementById('settingsPassword').value === ADMIN_PASSWORD) {
         document.getElementById('passwordSection').style.display = 'none'; document.getElementById('settingsControls').style.display = 'flex';
-        // Updated Load Settings (Deleted ones removed, added disableMainListPin)
         document.getElementById('allowPlayerEdit').checked = systemConfig.allowPlayerEdit; 
         document.getElementById('allowTeamEdit').checked = systemConfig.allowTeamEdit; 
         document.getElementById('allowFormationEdit').checked = systemConfig.allowFormationEdit; 
         document.getElementById('allowChat').checked = systemConfig.allowChat; 
         document.getElementById('enforceTimeRestriction').checked = systemConfig.enforceTimeRestriction;
         document.getElementById('disableMainListPin').checked = systemConfig.disableMainListPin; 
-        
-        // NEW HIDE LAUNDRY OPTION
         document.getElementById('hideLaundrySection').checked = systemConfig.hideLaundrySection;
     } else { document.getElementById('passwordError').style.display = 'block'; }
 }
@@ -791,7 +760,7 @@ async function saveSettings() {
         allowChat: document.getElementById('allowChat').checked, 
         enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked,
         disableMainListPin: document.getElementById('disableMainListPin').checked,
-        hideLaundrySection: document.getElementById('hideLaundrySection').checked // Save new option
+        hideLaundrySection: document.getElementById('hideLaundrySection').checked 
     };
     await supabase.from('app_config').update({ system_config: JSON.stringify(newConfig), match_address: document.getElementById('matchAddressInput').value.trim() }).eq('id', 1);
     systemConfig = newConfig; matchAddress = document.getElementById('matchAddressInput').value.trim(); loadMatchAddress(); applyUIRestrictions(); document.getElementById('settingsModalOverlay').style.display = 'none'; alert('Settings saved!');
@@ -806,8 +775,6 @@ function clearMainTeam() { clearTableData('main_team', "Clear Main Team?", "Main
 function clearWaitingList() { clearTableData('waiting_list', "Clear Waiting List?", "Waiting List"); }
 function clearBlueTeam() { clearTableData('blue_team', "Clear Blue Team?", "Blue Team"); }
 function clearYellowTeam() { clearTableData('yellow_team', "Clear Yellow Team?", "Yellow Team"); }
-
-// NEW FUNCTION TO CLEAR LAUNDRY
 function clearLaundryHistory() { clearTableData('laundry_history', "Clear Laundry History?", "Laundry History"); }
 
 async function canEditCaptain(table, playerId) {
@@ -818,28 +785,15 @@ async function canEditCaptain(table, playerId) {
     return enteredPin === allPlayers[0].player_pin;
 }
 
-// STRICT PIN VERIFICATION (MODIFIED TO RESPECT DISABLE TOGGLE)
 async function verifyIndividualPin(table, id) {
-    // If setting is checked (True), Disable verification for main lists
-    if (systemConfig.disableMainListPin && (table === "main_team" || table === "waiting_list")) {
-        return true; 
-    }
-
+    if (systemConfig.disableMainListPin && (table === "main_team" || table === "waiting_list")) { return true; }
     const { data } = await supabase.from(table).select('player_pin').eq('id', id).single();
     if (!data) return false;
-    
     const storedPin = data.player_pin;
     if (!storedPin) return true; 
-
     const enteredPin = prompt("Enter your 4-digit PIN to confirm:");
     if (enteredPin === ADMIN_PASSWORD) return true; 
-    
-    if (enteredPin === storedPin) {
-        return true;
-    } else {
-        alert("Incorrect PIN. Action blocked.");
-        return false;
-    }
+    if (enteredPin === storedPin) { return true; } else { alert("Incorrect PIN. Action blocked."); return false; }
 }
 
 async function loadSystemConfig() {
@@ -857,12 +811,8 @@ function applyUIRestrictions() {
     document.getElementById('yellowPlayerManagement').style.display = systemConfig.allowTeamEdit ? 'block' : 'none';
     document.querySelectorAll('.formation-btn, .dynamic-btn').forEach(btn => btn.style.display = systemConfig.allowFormationEdit ? 'inline-block' : 'none');
     document.querySelectorAll('.chat-input-area').forEach(el => el.style.display = systemConfig.allowChat ? 'flex' : 'none');
-    
-    // HIDE LAUNDRY LOGIC
     const laundrySection = document.getElementById('kitWashSection');
-    if (laundrySection) {
-        laundrySection.style.display = systemConfig.hideLaundrySection ? 'none' : 'block';
-    }
+    if (laundrySection) { laundrySection.style.display = systemConfig.hideLaundrySection ? 'none' : 'block'; }
 }
 
 function isWithinAllowedTime(){
@@ -872,18 +822,13 @@ function isWithinAllowedTime(){
 }
 function formatPlayerTime(timestamp) { if (!timestamp) return ''; return new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); }
 
-// PLAYER & LIST LOGIC (MODIFIED FOR PIN TOGGLE)
 async function addPlayer(){
   if(!systemConfig.allowPlayerEdit) return alert("Add disabled");
-  if(!isWithinAllowedTime()){
-    alert("Adding players is only allowed from Wednesday 3 PM to Sunday 12 PM.");
-    return;
-  }
+  if(!isWithinAllowedTime()){ alert("Adding players is only allowed from Wednesday 3 PM to Sunday 12 PM."); return; }
   const name = document.getElementById("nameInput").value.trim();
   if(!name) return alert("Enter name");
   
-  // NEW PIN LOGIC
-  let pin = "0000"; // Default dummy pin
+  let pin = "0000"; 
   if (!systemConfig.disableMainListPin) {
       pin = prompt("Create a 4-digit PIN (Required for deleting/editing later):");
       if (!pin || pin.length !== 4) return alert("PIN is required (4 digits).");
@@ -893,13 +838,8 @@ async function addPlayer(){
   const table = team.length < 24 ? "main_team" : "waiting_list";
   await supabase.from(table).insert([{ name, time: Date.now(), player_pin: pin }]);
   
-  if(team.length < 24) {
-      sendSystemMessageToChat(name, `joined the Main Team`);
-  } else {
-      sendSystemMessageToChat(name, `added to the Waiting List`);
-      alert(`Main team is full (24). ${name} has been added to the Waiting List.`);
-  }
-  
+  if(team.length < 24) { sendSystemMessageToChat(name, `joined the Main Team`); } 
+  else { sendSystemMessageToChat(name, `added to the Waiting List`); alert(`Main team is full (24). ${name} has been added to the Waiting List.`); }
   document.getElementById("nameInput").value=""; loadPlayers();
 }
 async function loadPlayers(){
@@ -917,35 +857,23 @@ function renderList(id, data, table){
 async function deletePlayer(table, id){
   if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
   if(table.includes('_team') && !await canEditCaptain(table, id)) return;
-  
-  // STRICT PIN CHECK (Updated to check disable setting)
   const pinOk = await verifyIndividualPin(table, id);
   if (!pinOk) return;
 
   if(!confirm("Delete player?")) return;
-  
   let playerName = "Unknown";
   const { data: pData } = await supabase.from(table).select("name").eq("id", id).single();
   if(pData) playerName = pData.name;
-
   await supabase.from(table).delete().eq("id",id);
-
-  if (table === "main_team" || table === "waiting_list") {
-      const listName = table === "main_team" ? "Main Team" : "Waiting List";
-      sendSystemMessageToChat(playerName, `left the ${listName}`);
-  }
-
+  if (table === "main_team" || table === "waiting_list") { const listName = table === "main_team" ? "Main Team" : "Waiting List"; sendSystemMessageToChat(playerName, `left the ${listName}`); }
   if(table==="main_team") refillMainTeam();
   reloadList(table);
 }
 async function editPlayer(table,id,oldName){
   if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
   if(table.includes('_team') && !await canEditCaptain(table, id)) return;
-  
-  // STRICT PIN CHECK
   const pinOk = await verifyIndividualPin(table, id);
   if (!pinOk) return;
-
   const newName=prompt(`Edit name:`, oldName);
   if(!newName) return;
   await supabase.from(table).update({name:newName.trim()}).eq("id",id); 
@@ -969,7 +897,6 @@ function reloadList(table){
   else if(table.includes("laundry_history")) loadLaundryHistory(false);
 }
 
-// TEAM LOGIC
 async function addTeam(team, inputId, providedName){
   if(!systemConfig.allowTeamEdit) return;
   let name = providedName || document.getElementById(inputId).value.trim();
@@ -1004,7 +931,6 @@ async function loadTeamData(team){
 function loadBlue(){ loadTeamData('blue'); }
 function loadYellow(){ loadTeamData('yellow'); }
 
-// FORMATION LOGIC (UPDATED FOR HORIZONTAL)
 async function canControlPlan(team) {
     if (!systemConfig.allowFormationEdit) { alert("Formation disabled."); return false; }
     if (sessionStorage.getItem(`${team}_captain_unlocked`) === 'true') return true;
@@ -1079,17 +1005,9 @@ async function applyDynamicPlan(team) {
 function createPlayerMarker(team, name, id, pos, code, num) { 
   const m = document.createElement('div'); m.classList.add('player-marker'); m.id = `marker-${team}-${id}`; m.dataset.playerId = id; 
   m.style.background = team==='blue'? '#1976d2' : '#fbc02d'; m.style.left = pos.left; m.style.top = pos.top;
-  
   const textColor = team === 'blue' ? '#fff' : '#000';
   const numBg = team === 'blue' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)';
-  
-  m.innerHTML = `
-    <span class="player-position-label">${code || 'SUB'}</span>
-    <div class="player-name" style="color:${textColor}; display:flex; align-items:center; gap:3px; justify-content:center;">
-        <span style="background:${numBg}; padding:1px 4px; border-radius:4px; font-size:10px;">${num}</span>
-        ${name}
-    </div>
-  `;
+  m.innerHTML = `<span class="player-position-label">${code || 'SUB'}</span><div class="player-name" style="color:${textColor}; display:flex; align-items:center; gap:3px; justify-content:center;"><span style="background:${numBg}; padding:1px 4px; border-radius:4px; font-size:10px;">${num}</span>${name}</div>`;
   m.addEventListener('click', (e) => { if (e.detail === 1) showPositionMenu(team, id, name); });
   document.getElementById(`${team}Plan`).appendChild(m);
 }
@@ -1108,7 +1026,6 @@ async function selectPosition(code) {
     closePositionMenu(); reloadList(table);
 }
 
-// CHAT & UTILS
 function showToast(m) { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); t.innerText=m; t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px;border-radius:20px;'; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
 
 async function loadMatchAddress() {
@@ -1118,65 +1035,35 @@ async function loadMatchAddress() {
 }
 function playNotificationSound() { document.getElementById('notification-sound').play().catch(()=>{}); }
 
-// --- SYSTEM HISTORY: ENGLISH UPDATED & COLORED ---
 async function loadSystemHistory(toggle = true) {
   const historyContainer = document.getElementById('systemHistoryContainer');
   const historyList = document.getElementById('historyList');
   if (toggle) { historyContainer.style.display = historyContainer.style.display === 'block' ? 'none' : 'block'; }
   if (historyContainer.style.display === 'none') return;
-  
   historyList.innerHTML = '<li style="text-align:center; color:#aaa;">Loading...</li>'; 
-
   const { data, error } = await supabase.from('system_history').select('*').order('created_at', { ascending: false }).limit(50);
-
-  if (error || !data || data.length === 0) {
-    historyList.innerHTML = '<li style="text-align:center; color:#aaa;">No recent events.</li>';
-    return;
-  }
-  
+  if (error || !data || data.length === 0) { historyList.innerHTML = '<li style="text-align:center; color:#aaa;">No recent events.</li>'; return; }
   historyList.innerHTML = ''; 
-  
   data.forEach(item => {
     const dateObj = new Date(item.created_at);
     const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    
-    let bgColor = '#424242'; 
-    let textColor = '#fff';
-    let icon = '';
+    let bgColor = '#424242'; let textColor = '#fff'; let icon = '';
     const contentLower = item.content.toLowerCase();
-
-    if (contentLower.includes('joined') || contentLower.includes('volunteered')) {
-        bgColor = '#2e7d32'; 
-        icon = '✔';
-    } else if (contentLower.includes('left')) {
-        bgColor = '#c62828'; 
-        icon = '✖';
-    } else if (contentLower.includes('moved') || contentLower.includes('waiting list') || contentLower.includes('selected')) {
-        bgColor = '#f57f17'; 
-        textColor = '#000';
-        icon = '⚠';
-    }
-
-    historyList.innerHTML += `
-      <li style="background-color: ${bgColor}; color: ${textColor}; padding: 10px 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: flex-start; text-align: left; border: 1px solid rgba(255,255,255,0.1);">
-        <div style="font-size: 14px; font-weight: bold; width:100%;"><span style="margin-right:5px;">${icon}</span> ${item.content}</div>
-        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px; align-self: flex-end;">${time}</div>
-      </li>`;
+    if (contentLower.includes('joined') || contentLower.includes('volunteered')) { bgColor = '#2e7d32'; icon = '✔'; } 
+    else if (contentLower.includes('left')) { bgColor = '#c62828'; icon = '✖'; } 
+    else if (contentLower.includes('moved') || contentLower.includes('waiting list') || contentLower.includes('selected')) { bgColor = '#f57f17'; textColor = '#000'; icon = '⚠'; }
+    historyList.innerHTML += `<li style="background-color: ${bgColor}; color: ${textColor}; padding: 10px 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: flex-start; text-align: left; border: 1px solid rgba(255,255,255,0.1);"><div style="font-size: 14px; font-weight: bold; width:100%;"><span style="margin-right:5px;">${icon}</span> ${item.content}</div><div style="font-size: 11px; opacity: 0.8; margin-top: 5px; align-self: flex-end;">${time}</div></li>`;
   });
 }
 
-async function sendSystemMessageToChat(name, msg) { 
-    await supabase.from('system_history').insert([{ content: `${name} ${msg}`, username: 'System' }]); 
-}
+async function sendSystemMessageToChat(name, msg) { await supabase.from('system_history').insert([{ content: `${name} ${msg}`, username: 'System' }]); }
 
-// FILE UPLOAD (Always Allowed now)
 async function handleFileUpload(input, context) {
     const file = input.files[0]; if (!file) return;
     const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
     const name = document.getElementById(nameInputId).value.trim();
     if (!name) return alert("Enter name");
     localStorage.setItem('chat_username', name);
-
     const ext = file.name.split('.').pop(); const fileName = `${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from('chat_images').upload(fileName, file);
     if(error) return alert("Upload failed");
@@ -1187,13 +1074,9 @@ async function handleFileUpload(input, context) {
     input.value = '';
 }
 
-// --- NEW FEATURES LOGIC ---
 function toggleRadio() { const e=document.getElementById('radioPlayerSection'); e.style.display = e.style.display==='block'?'none':'block'; }
 function playRadio() { const a=document.getElementById('radioStreamPlayer'); const s=document.getElementById('radioSelect'); if(a.src!==s.value) a.src=s.value; a.play(); }
-function stopRadio() { 
-    document.getElementById('radioStreamPlayer').pause(); 
-    document.getElementById('radioPlayerSection').style.display='none';
-}
+function stopRadio() { document.getElementById('radioStreamPlayer').pause(); document.getElementById('radioPlayerSection').style.display='none'; }
 function changeRadioChannel() { playRadio(); document.getElementById('radioPlayerSection').style.display='none'; }
 
 function toggleStickerMenu(context) {
@@ -1222,21 +1105,17 @@ async function sendSticker(context, url) {
     toggleStickerMenu(context);
 }
 
-// --- NEW RECORDING LOGIC (Bar Style) ---
 async function startVoiceRecording(context) {
     if (!navigator.mediaDevices) return alert("Microphone not supported");
     const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
     if (!document.getElementById(nameInputId).value.trim()) return alert("Enter name first");
-
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
         mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        
         const barId = context === 'global' ? 'recordingBar_global' : (context === 'blue' ? 'recordingBar_blue' : 'recordingBar_yellow');
         document.getElementById(barId).style.display = 'flex';
-        
         isRecording = true;
         mediaRecorder.start();
     } catch (e) { console.error(e); alert("Mic access denied"); }
@@ -1244,9 +1123,7 @@ async function startVoiceRecording(context) {
 
 async function finishVoiceRecording(context, action) {
     if (!mediaRecorder || !isRecording) return;
-    
     const barId = context === 'global' ? 'recordingBar_global' : (context === 'blue' ? 'recordingBar_blue' : 'recordingBar_yellow');
-    
     mediaRecorder.onstop = async () => {
         document.getElementById(barId).style.display = 'none'; 
         if (action === 'send') {
@@ -1254,7 +1131,6 @@ async function finishVoiceRecording(context, action) {
              const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
              const nameInputId = context === 'global' ? 'chatNameInput' : (context==='blue'?'blueChatNameInput':'yellowChatNameInput');
              const name = document.getElementById(nameInputId).value.trim();
-             
              const fileName = `${Date.now()}.webm`;
              const { error } = await supabase.storage.from('chat_images').upload(fileName, file);
              if(error) return alert("Audio upload failed");
@@ -1264,99 +1140,53 @@ async function finishVoiceRecording(context, action) {
         }
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
     };
-    
     mediaRecorder.stop();
     isRecording = false;
 }
 
-// ---- CUSTOM AUDIO PLAYER LOGIC ----
 function toggleCustomAudio(uniqueId) {
     const audio = document.getElementById(uniqueId);
     const btn = document.getElementById('btn-' + uniqueId);
-    
     document.querySelectorAll('audio').forEach(a => {
         if (a.id !== uniqueId && !a.paused) {
             a.pause();
-            if (a.id && a.id.startsWith('audio-')) {
-                const otherBtn = document.getElementById('btn-' + a.id);
-                if (otherBtn) otherBtn.innerText = '▶';
-            }
+            if (a.id && a.id.startsWith('audio-')) { const otherBtn = document.getElementById('btn-' + a.id); if (otherBtn) otherBtn.innerText = '▶'; }
         }
     });
-
-    if (audio.paused) {
-        audio.play();
-        btn.innerText = '⏸';
-    } else {
-        audio.pause();
-        btn.innerText = '▶';
-    }
+    if (audio.paused) { audio.play(); btn.innerText = '⏸'; } else { audio.pause(); btn.innerText = '▶'; }
 }
 
 function updateAudioTime(uniqueId) {
     const audio = document.getElementById(uniqueId);
     const timeDisplay = document.getElementById('time-' + uniqueId);
     if (!audio || !timeDisplay) return;
-
     const current = formatTime(audio.currentTime);
     const duration = formatTime(audio.duration || 0);
-    
     timeDisplay.innerText = `${current} / ${duration}`;
 }
 
-function resetAudio(uniqueId) {
-    const btn = document.getElementById('btn-' + uniqueId);
-    if (btn) btn.innerText = '▶';
-}
+function resetAudio(uniqueId) { const btn = document.getElementById('btn-' + uniqueId); if (btn) btn.innerText = '▶'; }
+function formatTime(seconds) { if (isNaN(seconds)) return "0:00"; const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60); return `${m}:${s < 10 ? '0' : ''}${s}`; }
 
-function formatTime(seconds) {
-    if (isNaN(seconds)) return "0:00";
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-}
-// -----------------------------------
-
-// RENDER MESSAGES
 function renderMessage(m, id) {
     const div = document.getElementById(id); const isMe = m.username === localStorage.getItem('chat_username');
     let c = m.content;
-    
-    if (c.startsWith('[IMG]')) {
-        c = `<img src="${c.substring(5)}" class="chat-media-content" onclick="window.open(this.src)">`;
-    } else if (c.startsWith('[VID]')) {
-        c = `<video src="${c.substring(5)}" controls class="chat-media-content"></video>`;
-    } else if (c.startsWith('[AUDIO]')) {
+    if (c.startsWith('[IMG]')) { c = `<img src="${c.substring(5)}" class="chat-media-content" onclick="window.open(this.src)">`; } 
+    else if (c.startsWith('[VID]')) { c = `<video src="${c.substring(5)}" controls class="chat-media-content"></video>`; } 
+    else if (c.startsWith('[AUDIO]')) {
         const uniqueId = 'audio-' + Math.random().toString(36).substr(2, 9);
         const src = c.substring(7);
-        
-        c = `
-        <div class="custom-audio-player">
-            <button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button>
-            <span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span>
-            <audio id="${uniqueId}" src="${src}" ontimeupdate="updateAudioTime('${uniqueId}')" onloadedmetadata="updateAudioTime('${uniqueId}')" onended="resetAudio('${uniqueId}')" style="display:none;"></audio>
-        </div>`;
+        c = `<div class="custom-audio-player"><button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button><span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span><audio id="${uniqueId}" src="${src}" ontimeupdate="updateAudioTime('${uniqueId}')" onloadedmetadata="updateAudioTime('${uniqueId}')" onended="resetAudio('${uniqueId}')" style="display:none;"></audio></div>`;
     }
-    
     let delBtn = '';
     const table = id.includes('blue') ? 'blue_chat' : (id.includes('yellow') ? 'yellow_chat' : 'chat_messages');
     if (isMe) delBtn = `<button class="delete-msg-btn" title="Delete" onclick="deleteSingleMessage('${table}', ${m.id})">✕</button>`;
-
     const timeSpan = new Date(m.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
-
-    div.innerHTML += `<div class="message ${isMe?'my-message':''}" style="border-color:${getColorForUsername(m.username)}">
-        <div style="font-size:12px; color:${getColorForUsername(m.username)}; font-weight:bold;">${m.username} <span style="font-weight:normal; color:#888; font-size:10px;">${timeSpan}</span></div>
-        <div>${c}</div>
-        ${delBtn}
-    </div>`;
+    div.innerHTML += `<div class="message ${isMe?'my-message':''}" style="border-color:${getColorForUsername(m.username)}"><div style="font-size:12px; color:${getColorForUsername(m.username)}; font-weight:bold;">${m.username} <span style="font-weight:normal; color:#888; font-size:10px;">${timeSpan}</span></div><div>${c}</div>${delBtn}</div>`;
     div.scrollTop = div.scrollHeight;
 }
 
-async function deleteSingleMessage(table, id) {
-    if(!confirm("Delete?")) return;
-    await supabase.from(table).delete().eq('id', id);
-    reloadList(table);
-}
+async function deleteSingleMessage(table, id) { if(!confirm("Delete?")) return; await supabase.from(table).delete().eq('id', id); reloadList(table); }
 
 async function loadChatMessages() { const { data } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); document.getElementById('chatMessages').innerHTML=''; data.forEach(m=>renderMessage(m,'chatMessages')); }
 async function loadTeamChatMessages(team) { 
@@ -1364,18 +1194,24 @@ async function loadTeamChatMessages(team) {
     document.getElementById(`${team}ChatMessages`).innerHTML=''; 
     data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
 }
+
+// MODIFIED SEND MESSAGE (Enforce English)
 async function sendMessage() {
-    const n = document.getElementById('chatNameInput').value; const c = document.getElementById('chatMsgInput').value;
+    const n = document.getElementById('chatNameInput').value; 
+    if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
+    const c = document.getElementById('chatMsgInput').value;
     if(!n || !c) return; localStorage.setItem('chat_username', n);
     await supabase.from('chat_messages').insert([{ username:n, content:c }]); document.getElementById('chatMsgInput').value='';
 }
+// MODIFIED TEAM MESSAGE (Enforce English)
 async function sendTeamMessage(team) {
-    const n = document.getElementById(`${team}ChatNameInput`).value; const c = document.getElementById(`${team}ChatMsgInput`).value;
+    const n = document.getElementById(`${team}ChatNameInput`).value; 
+    if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
+    const c = document.getElementById(`${team}ChatMsgInput`).value;
     if(!n || !c) return; localStorage.setItem('chat_username', n);
     await supabase.from(`${team}_chat`).insert([{ username:n, content:c }]); document.getElementById(`${team}ChatMsgInput`).value='';
 }
 
-// --- ARCADE LOGIC ---
 let gameInterval, gameActive = false, currentScore = 0, currentGameType = '';
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -1433,13 +1269,11 @@ function drawGame() { ctx.clearRect(0,0,320,400); }
 function gameLoop() {
     if(!gameActive) return;
     ctx.clearRect(0,0,320,400);
-    
     if (currentGameType === 'juggling') updateJuggling();
     else if (currentGameType === 'flappy') updateFlappy();
     else if (currentGameType === 'penalty') updatePenalty();
     else if (currentGameType === 'dribbler') updateDribbler();
     else if (currentGameType === 'keeper') updateKeeper();
-
     document.getElementById('scoreDisplay').innerText = `Score: ${currentScore}`;
     gameInterval = requestAnimationFrame(gameLoop);
 }
@@ -1451,7 +1285,6 @@ async function gameOver() {
     alert(`Game Over! Score: ${currentScore}`); exitGame(); loadLeaderboard(currentGameType);
 }
 
-// --- GAME LOGICS ---
 function updateJuggling() {
     ball.dy += 0.5; ball.y += ball.dy; ball.x += ball.dx;
     if(ball.x+ball.r>320 || ball.x-ball.r<0) ball.dx = -ball.dx;
@@ -1488,9 +1321,7 @@ function updateDribbler() {
     ctx.fillStyle="#388E3C"; ctx.fillRect(0,0,320,400); ctx.strokeStyle="rgba(255,255,255,0.2)"; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(0, (currentScore*10)%400); ctx.lineTo(320, (currentScore*10)%400); ctx.stroke(); 
     ball.x += (playerTargetX - ball.x) * 0.1;
-    if(Math.random() < 0.03 + (currentScore*0.001)) {
-        obstacles.push({x: Math.random() * 280 + 20, y: -20, type: Math.random()>0.5?'cone':'defender'});
-    }
+    if(Math.random() < 0.03 + (currentScore*0.001)) { obstacles.push({x: Math.random() * 280 + 20, y: -20, type: Math.random()>0.5?'cone':'defender'}); }
     obstacles.forEach((o, i) => {
         o.y += 4 + (currentScore * 0.1);
         ctx.fillStyle = o.type==='cone' ? '#FF9800' : '#d32f2f';
@@ -1505,32 +1336,22 @@ function updateKeeper() {
     ctx.fillStyle="#444"; ctx.fillRect(0,360,320,40); 
     ctx.strokeStyle="#fff"; ctx.lineWidth=5; ctx.strokeRect(20, 20, 280, 340); 
     ball.x += (playerTargetX - ball.x) * 0.15;
-    if(Math.random() < 0.02 + (currentScore*0.002)) {
-        obstacles.push({x: Math.random() * 260 + 30, y: -20, caught: false}); 
-    }
+    if(Math.random() < 0.02 + (currentScore*0.002)) { obstacles.push({x: Math.random() * 260 + 30, y: -20, caught: false}); }
     obstacles.forEach((b, i) => {
         b.y += 5 + (currentScore * 0.1);
         drawBall(b.x, b.y, 12, "#fff"); 
         const dist = Math.hypot(ball.x - b.x, 340 - b.y);
-        if(dist < 30 && !b.caught) {
-            b.caught = true; currentScore++; obstacles.splice(i, 1);
-        }
+        if(dist < 30 && !b.caught) { b.caught = true; currentScore++; obstacles.splice(i, 1); }
         if(b.y > 400) gameOver();
     });
-    ctx.fillStyle="#FFEB3B"; 
-    ctx.fillRect(ball.x-20, 330, 40, 20); 
+    ctx.fillStyle="#FFEB3B"; ctx.fillRect(ball.x-20, 330, 40, 20); 
 }
 function drawBall(x,y,r,c){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=c; ctx.fill(); ctx.stroke(); }
 
-// TEAM ADD MODAL LOGIC (UPDATED: Does NOT copy value anymore)
-function openTeamAddModal() { 
-    document.getElementById('teamAddModalOverlay').style.display = 'flex'; 
-    document.getElementById('chatTeamAddInput').value = ""; // CLEARED as requested
-}
+function openTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'flex'; document.getElementById('chatTeamAddInput').value = ""; }
 function closeTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'none'; }
 function confirmAddToTeam(t) { const n = document.getElementById('chatTeamAddInput').value; if(t==='blue') addBlue(n); else addYellow(n); }
 
-// -------------------- PRESENCE & BROADCAST (ONLINE/TYPING) --------------------
 function handleTyping(context) {
     const name = document.getElementById(context==='global'?'chatNameInput':`${context}ChatNameInput`).value;
     if(!roomChannel || !name) return;
@@ -1541,14 +1362,9 @@ function updateOnlineUsersUI(users) {
     const bar = document.getElementById('onlineUsersBar');
     if(!bar) return;
     const uniqueUsers = [...new Set(users)];
-    bar.innerHTML = uniqueUsers.map(u => `
-        <div class="online-user-pill">
-            ${u} <div class="online-dot"></div>
-        </div>
-    `).join('');
+    bar.innerHTML = uniqueUsers.map(u => `<div class="online-user-pill">${u} <div class="online-dot"></div></div>`).join('');
 }
 
-// INIT
 function setupRealtime() {
   const myName = localStorage.getItem('chat_username') || 'Guest';
   
@@ -1557,51 +1373,18 @@ function setupRealtime() {
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
     .subscribe();
     
-  supabase.channel('system-history-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { 
-        const hc = document.getElementById('systemHistoryContainer');
-        if (hc.style.display === 'block') loadSystemHistory(false); 
-    }).subscribe();
-    
-  supabase.channel('laundry-history-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { 
-        const container = document.getElementById('laundryHistoryContainer');
-        if (container.style.display === 'block') loadLaundryHistory(false);
-    }).subscribe();
+  supabase.channel('system-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { const hc = document.getElementById('systemHistoryContainer'); if (hc.style.display === 'block') loadSystemHistory(false); }).subscribe();
+  supabase.channel('laundry-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { const container = document.getElementById('laundryHistoryContainer'); if (container.style.display === 'block') loadLaundryHistory(false); }).subscribe();
+  supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { if(document.getElementById('blue').style.display === 'block') renderMessage(payload.new, 'blueChatMessages'); }).subscribe();
+  supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { if(document.getElementById('yellow').style.display === 'block') renderMessage(payload.new, 'yellowChatMessages'); }).subscribe();
+  supabase.channel('teams-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue()).on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow()).subscribe();
 
-  supabase.channel('blue-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
-        if(document.getElementById('blue').style.display === 'block') renderMessage(payload.new, 'blueChatMessages'); 
-    }).subscribe();
-
-  supabase.channel('yellow-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
-        if(document.getElementById('yellow').style.display === 'block') renderMessage(payload.new, 'yellowChatMessages'); 
-    }).subscribe();
-    
-  supabase.channel('teams-updates')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
-    .subscribe();
-
-  roomChannel = supabase.channel('online-room', {
-    config: {
-      presence: {
-        key: myId,
-      },
-    },
-  });
-
+  roomChannel = supabase.channel('online-room', { config: { presence: { key: myId, }, }, });
   roomChannel
     .on('presence', { event: 'sync' }, () => {
       const newState = roomChannel.presenceState();
       const users = [];
-      for (const id in newState) {
-        const userObj = newState[id][0];
-        if (userObj && userObj.name) users.push(userObj.name);
-      }
+      for (const id in newState) { const userObj = newState[id][0]; if (userObj && userObj.name) users.push(userObj.name); }
       updateOnlineUsersUI(users);
     })
     .on('broadcast', { event: 'typing' }, ({ payload }) => {
@@ -1612,33 +1395,17 @@ function setupRealtime() {
             typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
         }
     })
-    .subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        const name = document.getElementById('chatNameInput').value || 'Guest';
-        await roomChannel.track({ name: name, online_at: new Date().toISOString() });
-      }
-    });
+    .subscribe(async (status) => { if (status === 'SUBSCRIBED') { const name = document.getElementById('chatNameInput').value || 'Guest'; await roomChannel.track({ name: name, online_at: new Date().toISOString() }); } });
 }
-// --- دالة الغسيل التلقائي يوم السبت الساعة 9 مساءً ---
+
 async function checkAndRunAutoWash() {
     const now = new Date();
-    // 6 = السبت، 21 = الساعة 9 مساءً
-    // إذا لم يكن السبت أو الساعة لم تأتِ التاسعة بعد، توقف
     if (now.getDay() !== 6 || now.getHours() < 21) return; 
-
-    // التحقق: هل تم الاختيار في آخر 24 ساعة؟
     const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000)).toISOString();
-    
-    const { data: recentWash } = await supabase
-        .from('laundry_history')
-        .select('*')
-        .gt('washed_at', oneDayAgo); 
-
-    if (recentWash && recentWash.length > 0) return; // تم الاختيار بالفعل
+    const { data: recentWash } = await supabase.from('laundry_history').select('*').gt('washed_at', oneDayAgo); 
+    if (recentWash && recentWash.length > 0) return; 
 
     console.log("Starting Auto-Wash Selection...");
-
-    // جلب البيانات
     const { data: team } = await supabase.from("main_team").select("*");
     const { data: history } = await supabase.from("laundry_history").select("*");
     
@@ -1646,25 +1413,15 @@ async function checkAndRunAutoWash() {
     const nowTs = Date.now();
     const lastWashMap = {};
     if(history) history.forEach(r => lastWashMap[r.player_name] = new Date(r.washed_at).getTime());
-
-    // استثناء من غسلوا آخر شهرين
-    const eligible = team.filter(p => {
-        return (nowTs - (lastWashMap[p.name] || 0)) > twoMonthsMs;
-    });
+    const eligible = team.filter(p => { return (nowTs - (lastWashMap[p.name] || 0)) > twoMonthsMs; });
 
     if(eligible.length === 0) return; 
-
-    // القرعة
     const winner = eligible[Math.floor(Math.random() * eligible.length)];
-
-    // الحفظ
     const { error } = await supabase.from("laundry_history").insert([{ player_name: winner.name }]);
     
     if (!error) {
         await sendMessageToGroup("System", `wash-winner:${winner.name} (Auto-Selected 🤖)`);
-        if(document.getElementById('laundryHistoryContainer').style.display === 'block') {
-            loadLaundryHistory(false);
-        }
+        if(document.getElementById('laundryHistoryContainer').style.display === 'block') { loadLaundryHistory(false); }
         showToast(`🤖 Auto-System: Selected ${winner.name} for Laundry!`);
     }
 }
@@ -1683,15 +1440,78 @@ async function checkAndRunAutoWash() {
     document.getElementById('yellowChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
 
     await loadSystemConfig(); loadMatchAddress(); loadPlayers(); loadBlue(); loadYellow(); loadChatMessages(); 
-    setupRealtime();
-    
-    // 👇👇👇 هذا هو السطر الناقص الذي يجب إضافته 👇👇👇
     checkAndRunAutoWash(); 
-    // 👆👆👆 بدونه لن تعمل الميزة 👆👆👆
-    
     showSection('main');
 })();
 
+// --- NEW ENGLISH NAME VALIDATION FUNCTIONS ---
+function submitEnglishName() {
+    const input = document.getElementById('forcedNameInput');
+    const name = input.value.trim();
+    const errorMsg = document.getElementById('nameErrorMsg');
+    const englishRegex = /^[A-Za-z0-9\s]+$/;
+
+    if (!name || name.length < 3) {
+        errorMsg.innerText = "Name is too short / الاسم قصير جداً";
+        errorMsg.style.display = 'block';
+        return;
+    }
+    if (!englishRegex.test(name)) {
+        errorMsg.innerHTML = "Only English letters allowed! <br> مسموح فقط بالأحرف الإنجليزية";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    localStorage.setItem('chat_username', name);
+    updateAllNameInputs(name);
+    document.getElementById('englishNameModal').style.display = 'none';
+    setupRealtime(); 
+}
+
+function updateAllNameInputs(name) {
+    if(document.getElementById('chatNameInput')) document.getElementById('chatNameInput').value = name;
+    if(document.getElementById('blueChatNameInput')) document.getElementById('blueChatNameInput').value = name;
+    if(document.getElementById('yellowChatNameInput')) document.getElementById('yellowChatNameInput').value = name;
+    if(document.getElementById('nameInput')) document.getElementById('nameInput').value = name;
+}
+
+// CHECK NAME ON LOAD (WITH DELAY TO ENSURE HTML IS READY)
+setTimeout(function() {
+    const storedName = localStorage.getItem('chat_username');
+    const englishRegex = /^[A-Za-z0-9\s]+$/;
+    const modal = document.getElementById('englishNameModal');
+
+    if (modal) {
+        if (!storedName || !englishRegex.test(storedName)) {
+            modal.style.display = 'flex'; 
+        } else {
+            updateAllNameInputs(storedName);
+            setupRealtime(); 
+        }
+    }
+}, 1000); 
+
 </script>
+
+<div id="englishNameModal" class="mini-modal-overlay" style="display:none; z-index: 9999; background: rgba(0,0,0,0.96); backdrop-filter: blur(5px);">
+    <div class="mini-modal-box" style="border: 1px solid #444; box-shadow: 0 10px 40px rgba(0,0,0,0.8); max-width: 320px;">
+        <h2 style="color:#e53935; margin-top:0; font-size: 22px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            ⚠️ Name Required
+        </h2>
+        
+        <p style="color:#e0e0e0; font-size: 16px; margin: 20px 0; line-height: 1.6;">
+            Please write your name
+        </p>
+        
+        <input type="text" id="forcedNameInput" placeholder="Enter Name..." style="width:100%; padding:12px; margin:10px 0; border-radius: 8px; border: 1px solid #555; background: #1e1e1e; color: #fff; text-align: center; font-size:16px; box-sizing: border-box;">
+        
+        <p id="nameErrorMsg" style="color:#ff5252; display:none; font-size:13px; margin:8px 0; font-weight: bold; background: rgba(255, 82, 82, 0.1); padding: 8px; border-radius: 6px;">
+            Only English letters allowed!
+        </p>
+        
+        <button onclick="submitEnglishName()" style="background:#e53935; color:#fff; width:100%; padding:14px; font-weight:bold; margin-top: 15px; border-radius: 8px; font-size:16px; transition: 0.2s;">Confirm & Enter</button>
+    </div>
+</div>
+
 </body>
 </html>
