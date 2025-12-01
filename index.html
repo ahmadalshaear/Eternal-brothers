@@ -265,12 +265,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   </div>
 
 
-
-  <div id="userLogContainer" style="margin-top:10px; padding:10px; background:#2c2c2c; border-radius:8px; max-width: 400px; margin-left: auto; margin-right: auto; text-align:left; display:none;">
-      <h3 style="margin-top:0; color:#90a4ae; border-bottom: 1px solid #555; padding-bottom: 5px;">User Activity (Last 24h)</h3>
-      <ul id="userLogList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;"></ul>
-  </div>
-
   <div id="kitWashSection">
       <div style="width: 80%; margin: 15px auto; max-width: 400px;">
           <hr style="border-color: #444; margin-bottom: 15px;">
@@ -286,6 +280,14 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   </div>
 
   <button onclick="loadUserLogs()" style="background:#455A64; color:#fff; margin-top:5px; width:80%;">Show Activity Log 🕒</button>
+
+<div id="userLogContainer" style="margin-top:10px; padding:10px; background:#2c2c2c; border-radius:8px; max-width: 400px; margin-left: auto; margin-right: auto; text-align:left; display:none;">
+    <h3 style="margin-top:0; color:#90a4ae; border-bottom: 1px solid #555; padding-bottom: 5px; display:flex; justify-content:space-between; align-items:center;">
+        User Status 
+        <span style="font-size:11px; color:#00e676; border:1px solid #00e676; padding:2px 5px; border-radius:4px;">Live Updates</span>
+    </h3>
+    <ul id="userLogList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc; max-height: 250px; overflow-y: auto; padding-right: 5px;"></ul>
+</div>
 
   <div class="chat-container">
     <h2>Group Chat</h2>
@@ -576,8 +578,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script> 
-
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
 <script>
 // -------------------- GLOBAL CONFIG --------------------
 const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; 
@@ -1207,7 +1208,6 @@ async function handleFileUpload(input, context) {
     await supabase.from(table).insert([{ username: name, content }]);
     input.value = '';
 }
-
 function toggleRadio() { const e=document.getElementById('radioPlayerSection'); e.style.display = e.style.display==='block'?'none':'block'; }
 function playRadio() { const a=document.getElementById('radioStreamPlayer'); const s=document.getElementById('radioSelect'); if(a.src!==s.value) a.src=s.value; a.play(); }
 function stopRadio() { document.getElementById('radioStreamPlayer').pause(); document.getElementById('radioPlayerSection').style.display='none'; }
@@ -1735,7 +1735,7 @@ setTimeout(function() {
     }
 }, 1000); 
 
-// -------------------- USER ACTIVITY LOGIC --------------------
+// -------------------- USER ACTIVITY LOGIC (UPDATED WITH TIME & UNIQUE) --------------------
 
 // 1. Function to save status to Supabase
 async function logUserStatus(status) {
@@ -1769,44 +1769,80 @@ function initUserTracking() {
     });
 }
 
-// 3. Fetch and display the logs
+// 3. Helper for Time Ago
+function timeAgo(dateParam) {
+    const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+    const today = new Date();
+    const seconds = Math.round((today - date) / 1000);
+    const minutes = Math.round(seconds / 60);
+    const hours = Math.round(minutes / 60);
+    const days = Math.round(hours / 24);
+
+    if (seconds < 60) return 'Just now';
+    else if (minutes < 60) return `${minutes}m ago`;
+    else if (hours < 24) return `${hours}h ago`;
+    else return `${days}d ago`;
+}
+
+// 4. MAIN LOAD FUNCTION (Unique Users + Time)
 async function loadUserLogs() {
     const container = document.getElementById('userLogContainer');
     const list = document.getElementById('userLogList');
     
-    // Toggle visibility
-    container.style.display = container.style.display === 'none' ? 'block' : 'none';
-    if (container.style.display === 'none') return;
+    // Toggle visibility with smooth scroll
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        container.style.display = 'none';
+        return; 
+    }
 
-    list.innerHTML = '<li style="text-align:center;">Loading...</li>';
+    list.innerHTML = '<li style="text-align:center;">Loading status...</li>';
 
-    // Get logs from the last 24 hours only
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    
+    // Fetch last 150 logs to ensure coverage
     const { data, error } = await supabase
         .from('user_logs')
         .select('*')
-        .gt('created_at', oneDayAgo)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(150);
 
     if (error || !data || data.length === 0) {
-        list.innerHTML = '<li style="text-align:center; color:#777;">No activity recorded today.</li>';
+        list.innerHTML = '<li style="text-align:center; color:#777;">No active users found.</li>';
         return;
     }
 
-    list.innerHTML = '';
+    // Filter to show only unique users (latest status)
+    const uniqueUsers = {};
     data.forEach(log => {
-        const time = new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        const color = log.status.includes('Online') ? '#69f0ae' : '#ff5252'; // Green for Online, Red for Offline
+        if (!uniqueUsers[log.username]) {
+            uniqueUsers[log.username] = log;
+        }
+    });
+
+    list.innerHTML = '';
+    
+    // Render List
+    Object.values(uniqueUsers).forEach(user => {
+        const isOnline = user.status.includes('Online');
+        const timeDisplay = timeAgo(user.created_at);
+        
+        // Dynamic Styles
+        const statusColor = isOnline ? '#00e676' : '#757575'; 
+        const statusText = isOnline ? 'Active' : 'Last seen';
+        const nameColor = isOnline ? '#fff' : '#aaa';
         
         list.innerHTML += `
-            <li style="padding: 8px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
-                <span>
-                    <strong style="color: #fff;">${log.username}</strong> 
-                    <span style="color: ${color}; font-size: 12px; margin-left:5px; font-weight:bold;">${log.status}</span>
-                </span>
-                <span style="color: #aaa; font-size: 11px;">${time}</span>
+            <li style="padding: 10px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 2px; border-radius: 4px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="position:relative;">
+                        <div style="width:12px; height:12px; background:${statusColor}; border-radius:50%; box-shadow: 0 0 8px ${statusColor}; border: 1px solid #333;"></div>
+                    </div>
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="color: ${nameColor}; font-weight:bold; font-size:15px;">${user.username}</span>
+                        <span style="color: #888; font-size: 11px;">${statusText} &bull; ${timeDisplay}</span>
+                    </div>
+                </div>
             </li>
         `;
     });
