@@ -264,6 +264,13 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
       <ul id="historyList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;"></ul>
   </div>
 
+
+
+  <div id="userLogContainer" style="margin-top:10px; padding:10px; background:#2c2c2c; border-radius:8px; max-width: 400px; margin-left: auto; margin-right: auto; text-align:left; display:none;">
+      <h3 style="margin-top:0; color:#90a4ae; border-bottom: 1px solid #555; padding-bottom: 5px;">User Activity (Last 24h)</h3>
+      <ul id="userLogList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;"></ul>
+  </div>
+
   <div id="kitWashSection">
       <div style="width: 80%; margin: 15px auto; max-width: 400px;">
           <hr style="border-color: #444; margin-bottom: 15px;">
@@ -277,6 +284,8 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
           <ul id="laundryList"></ul>
       </div>
   </div>
+
+  <button onclick="loadUserLogs()" style="background:#455A64; color:#fff; margin-top:5px; width:80%;">Show Activity Log 🕒</button>
 
   <div class="chat-container">
     <h2>Group Chat</h2>
@@ -1657,6 +1666,10 @@ async function checkAndRunAutoWash() {
 
     await loadSystemConfig(); loadMatchAddress(); loadPlayers(); loadBlue(); loadYellow(); loadChatMessages(); 
     checkAndRunAutoWash(); 
+    
+    // START TRACKING
+    initUserTracking();
+
     showSection('main');
 })();
 
@@ -1690,6 +1703,10 @@ function submitEnglishName() {
     updateAllNameInputs(name);
     document.getElementById('englishNameModal').style.display = 'none';
     setupRealtime(); 
+    
+    // Log online status
+    logUserStatus('Online 🟢');
+    initUserTracking();
 }
 
 function updateAllNameInputs(name) {
@@ -1718,6 +1735,82 @@ setTimeout(function() {
     }
 }, 1000); 
 
+// -------------------- USER ACTIVITY LOGIC --------------------
+
+// 1. Function to save status to Supabase
+async function logUserStatus(status) {
+    const name = localStorage.getItem('chat_username');
+    if (!name) return; 
+
+    await supabase.from('user_logs').insert([{ 
+        username: name, 
+        status: status 
+    }]);
+}
+
+// 2. Start tracking (Call this when app starts)
+function initUserTracking() {
+    const name = localStorage.getItem('chat_username');
+    
+    // Log "Online" immediately if name exists
+    if (name) {
+        logUserStatus('Online 🟢');
+    }
+
+    // Listen for tab switching or closing
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            // User minimized or closed the app
+            logUserStatus('Offline 🔴');
+        } else {
+             // User came back
+             logUserStatus('Online 🟢');
+        }
+    });
+}
+
+// 3. Fetch and display the logs
+async function loadUserLogs() {
+    const container = document.getElementById('userLogContainer');
+    const list = document.getElementById('userLogList');
+    
+    // Toggle visibility
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    if (container.style.display === 'none') return;
+
+    list.innerHTML = '<li style="text-align:center;">Loading...</li>';
+
+    // Get logs from the last 24 hours only
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const { data, error } = await supabase
+        .from('user_logs')
+        .select('*')
+        .gt('created_at', oneDayAgo)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+    if (error || !data || data.length === 0) {
+        list.innerHTML = '<li style="text-align:center; color:#777;">No activity recorded today.</li>';
+        return;
+    }
+
+    list.innerHTML = '';
+    data.forEach(log => {
+        const time = new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const color = log.status.includes('Online') ? '#69f0ae' : '#ff5252'; // Green for Online, Red for Offline
+        
+        list.innerHTML += `
+            <li style="padding: 8px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+                <span>
+                    <strong style="color: #fff;">${log.username}</strong> 
+                    <span style="color: ${color}; font-size: 12px; margin-left:5px; font-weight:bold;">${log.status}</span>
+                </span>
+                <span style="color: #aaa; font-size: 11px;">${time}</span>
+            </li>
+        `;
+    });
+}
 </script>
 
 <div id="englishNameModal" class="mini-modal-overlay" style="display:none; z-index: 9999; background: rgba(0,0,0,0.96); backdrop-filter: blur(5px);">
