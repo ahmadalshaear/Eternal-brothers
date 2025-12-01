@@ -218,7 +218,8 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 
 <audio id="musicPlayer" loop preload="auto"><source src="https://raw.githubusercontent.com/ahmadalshaear/eternal-brothers-audio/main/Eternal_Brothers%20_FC_new.mp3" type="audio/mp3"></audio>
 <audio id="radioStreamPlayer" preload="none"></audio>
-<audio id="notification-sound" preload="auto"><source src="https://www.soundjay.com/button/button-3.mp3" type="audio/mp3"></audio>
+<audio id="notification-sound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3" type="audio/mp3"></audio>
+
 
 <div id="toastContainer"></div> 
 
@@ -500,15 +501,20 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <div id="teamAddModalOverlay" class="mini-modal-overlay">
     <div class="mini-modal-box">
         <h3 style="color:#fff; margin-top:0;">Add Player to Team</h3>
-        <p style="font-size:12px; color:#ccc;">Same rules apply (PIN/Settings)</p>
-        <input type="text" id="chatTeamAddInput" placeholder="Enter Player Name">
+        <p style="font-size:12px; color:#ccc;">Select from Main List</p>
+        
+        <select id="chatTeamAddSelect" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #1e1e1e; color: #fff; border: 1px solid #555; border-radius: 8px; text-align: center; font-size: 16px;">
+            <option value="">Loading...</option>
+        </select>
+
         <div class="team-select-btns">
-            <button onclick="confirmAddToTeam('blue')" style="background:#1565c0; color:#fff; flex:1;">Blue</button>
-            <button onclick="confirmAddToTeam('yellow')" style="background:#fdd835; color:#000; flex:1;">Yellow</button>
+            <button onclick="confirmAddToTeam('blue')" style="background:#1565c0; color:#fff; flex:1; padding: 10px; border-radius: 6px; font-weight: bold;">To Blue 🔵</button>
+            <button onclick="confirmAddToTeam('yellow')" style="background:#fdd835; color:#000; flex:1; padding: 10px; border-radius: 6px; font-weight: bold;">To Yellow 🟡</button>
         </div>
-        <button onclick="closeTeamAddModal()" style="background:#555; color:#fff; margin-top:10px; width:100%;">Cancel</button>
+        <button onclick="closeTeamAddModal()" style="background:#555; color:#fff; margin-top:10px; width:100%; padding: 8px;">Cancel</button>
     </div>
 </div>
+
 
 <div id="gameCenterOverlay" class="mini-modal-overlay">
     <div class="mini-modal-box" style="max-width: 360px; background: #222; border: 2px solid #673AB7; overflow-y:auto; max-height:80vh;">
@@ -613,11 +619,48 @@ function toggleBackgroundMusic() {
     else { audio.pause(); document.getElementById('audioToggleBtn').innerHTML = 'Audio'; }
 }
 
-async function openGoogleMaps() {
-    const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
-    const savedAddress = data ? data.match_address : null;
-    if (!savedAddress || savedAddress.trim() === '') { alert("No address set."); return; }
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`, '_blank');
+// -------------------- ADDRESS LOGIC (UPDATED) --------------------
+function openGoogleMaps() {
+    // Uses the global matchAddress variable
+    const addr = matchAddress; 
+    
+    if (!addr || addr === "Address 📍" || addr === "No address set" || addr.trim() === "") {
+        alert("No address has been set by the admin yet.");
+        return;
+    }
+
+    // Populate the read-only input
+    const inputField = document.getElementById('addressDisplayInput');
+    inputField.value = addr;
+    
+    // Show the modal
+    document.getElementById('viewAddressModal').style.display = 'flex';
+}
+
+function closeAddressModal() {
+    document.getElementById('viewAddressModal').style.display = 'none';
+}
+
+function copyToClipboard() {
+    const copyText = document.getElementById("addressDisplayInput");
+    
+    // Select text for mobile and desktop
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); 
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        alert("Address Copied to Clipboard! ✅");
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+}
+
+function openMapDirectly() {
+    const addr = document.getElementById('addressDisplayInput').value;
+    // Use universal Google Maps search URL (works better on iPhone/Android)
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+    window.open(mapUrl, '_blank');
 }
 
 // -------------------- KIT WASH LOGIC --------------------
@@ -825,8 +868,24 @@ function formatPlayerTime(timestamp) { if (!timestamp) return ''; return new Dat
 async function addPlayer(){
   if(!systemConfig.allowPlayerEdit) return alert("Add disabled");
   if(!isWithinAllowedTime()){ alert("Adding players is only allowed from Wednesday 3 PM to Sunday 12 PM."); return; }
+  
   const name = document.getElementById("nameInput").value.trim();
+  
+  // --- Validation: English, Full Name ---
   if(!name) return alert("Enter name");
+  if (!/^[A-Za-z0-9\s]+$/.test(name)) return alert("English letters only allowed!");
+  if (name.split(/\s+/).length < 2) return alert("Full Name Required (First & Last Name)!");
+  
+  // --- NEW: Check if Name Already Exists (Prevent Duplicates) ---
+  // Check Main Team
+  const { data: existMain } = await supabase.from("main_team").select("id").ilike("name", name);
+  // Check Waiting List
+  const { data: existWait } = await supabase.from("waiting_list").select("id").ilike("name", name);
+
+  if ((existMain && existMain.length > 0) || (existWait && existWait.length > 0)) {
+      return alert("Name already exists! Please use a different name.");
+  }
+  // -----------------------------------------------------------
   
   let pin = "0000"; 
   if (!systemConfig.disableMainListPin) {
@@ -842,6 +901,8 @@ async function addPlayer(){
   else { sendSystemMessageToChat(name, `added to the Waiting List`); alert(`Main team is full (24). ${name} has been added to the Waiting List.`); }
   document.getElementById("nameInput").value=""; loadPlayers();
 }
+
+
 async function loadPlayers(){
   const { data: team } = await supabase.from("main_team").select("*").order("id");
   const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
@@ -1033,7 +1094,14 @@ async function loadMatchAddress() {
     matchAddress = data ? data.match_address : "Address 📍";
     document.getElementById('addressBtn').textContent = (matchAddress.length > 20 && !matchAddress.includes("set")) ? "Match Address 📍" : `${matchAddress} 📍`;
 }
-function playNotificationSound() { document.getElementById('notification-sound').play().catch(()=>{}); }
+function playNotificationSound() { 
+    const audio = document.getElementById('notification-sound');
+    if (audio) {
+        audio.currentTime = 0; // إعادة الصوت للبداية لتكراره
+        audio.play().catch(e => console.log("Audio play blocked:", e));
+    }
+}
+
 
 async function loadSystemHistory(toggle = true) {
   const historyContainer = document.getElementById('systemHistoryContainer');
@@ -1195,18 +1263,21 @@ async function loadTeamChatMessages(team) {
     data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
 }
 
-// MODIFIED SEND MESSAGE (Enforce English)
+// MODIFIED SEND MESSAGE (Enforce English + Full Name)
 async function sendMessage() {
     const n = document.getElementById('chatNameInput').value; 
     if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
+    if (n.trim().split(/\s+/).length < 2) { return alert("Full Name Required (First & Last) / الاسم الكامل مطلوب (الاسم واللقب)"); }
     const c = document.getElementById('chatMsgInput').value;
     if(!n || !c) return; localStorage.setItem('chat_username', n);
     await supabase.from('chat_messages').insert([{ username:n, content:c }]); document.getElementById('chatMsgInput').value='';
 }
-// MODIFIED TEAM MESSAGE (Enforce English)
+
+// MODIFIED TEAM MESSAGE (Enforce English + Full Name)
 async function sendTeamMessage(team) {
     const n = document.getElementById(`${team}ChatNameInput`).value; 
     if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
+    if (n.trim().split(/\s+/).length < 2) { return alert("Full Name Required (First & Last) / الاسم الكامل مطلوب (الاسم واللقب)"); }
     const c = document.getElementById(`${team}ChatMsgInput`).value;
     if(!n || !c) return; localStorage.setItem('chat_username', n);
     await supabase.from(`${team}_chat`).insert([{ username:n, content:c }]); document.getElementById(`${team}ChatMsgInput`).value='';
@@ -1348,9 +1419,72 @@ function updateKeeper() {
 }
 function drawBall(x,y,r,c){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=c; ctx.fill(); ctx.stroke(); }
 
-function openTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'flex'; document.getElementById('chatTeamAddInput').value = ""; }
-function closeTeamAddModal() { document.getElementById('teamAddModalOverlay').style.display = 'none'; }
-function confirmAddToTeam(t) { const n = document.getElementById('chatTeamAddInput').value; if(t==='blue') addBlue(n); else addYellow(n); }
+// --- Open Modal & Fetch Available Players ---
+async function openTeamAddModal() {
+    const modal = document.getElementById('teamAddModalOverlay');
+    const select = document.getElementById('chatTeamAddSelect');
+    
+    // Show modal and loading state
+    modal.style.display = 'flex';
+    select.innerHTML = '<option value="">Loading players...</option>';
+
+    // 1. Fetch Main Team and both Colored Teams data from Supabase
+    const { data: mainTeam } = await supabase.from('main_team').select('name').order('id');
+    const { data: blueTeam } = await supabase.from('blue_team').select('name');
+    const { data: yellowTeam } = await supabase.from('yellow_team').select('name');
+
+    // 2. Create a Set of players already in Blue or Yellow to filter them out
+    const takenPlayers = new Set([
+        ...(blueTeam?.map(p => p.name) || []),
+        ...(yellowTeam?.map(p => p.name) || [])
+    ]);
+
+    // 3. Clear and Populate the Dropdown with available players only
+    select.innerHTML = '';
+    let count = 0;
+
+    if (mainTeam) {
+        mainTeam.forEach(p => {
+            // Only add if NOT in Blue/Yellow already
+            if (!takenPlayers.has(p.name)) {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.innerText = p.name;
+                select.appendChild(opt);
+                count++;
+            }
+        });
+    }
+
+    // Handle empty list case (all players are assigned)
+    if (count === 0) {
+        select.innerHTML = '<option value="">No available players</option>';
+    }
+}
+
+// --- Confirm Addition (Immediate Transfer) ---
+function confirmAddToTeam(team) {
+    const select = document.getElementById('chatTeamAddSelect');
+    const name = select.value;
+
+    if (!name) return alert("Please select a player first");
+
+    // Add to the selected team immediately calling existing functions
+    if (team === 'blue') {
+        addBlue(name);
+    } else {
+        addYellow(name);
+    }
+    
+    // Close the modal after adding
+    closeTeamAddModal();
+}
+
+// --- Close Modal Function ---
+function closeTeamAddModal() { 
+    document.getElementById('teamAddModalOverlay').style.display = 'none'; 
+}
+
 
 function handleTyping(context) {
     const name = document.getElementById(context==='global'?'chatNameInput':`${context}ChatNameInput`).value;
@@ -1368,15 +1502,35 @@ function updateOnlineUsersUI(users) {
 function setupRealtime() {
   const myName = localStorage.getItem('chat_username') || 'Guest';
   
+  // 1. Global Chat
   supabase.channel('global-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { renderMessage(payload.new, 'chatMessages'); })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
+        renderMessage(payload.new, 'chatMessages'); 
+        // شغل الصوت فقط إذا لم تكن أنت المرسل (لأنك سمعته عند الضغط)
+        if (payload.new.username !== myName) playNotificationSound();
+    })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
     .subscribe();
     
   supabase.channel('system-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { const hc = document.getElementById('systemHistoryContainer'); if (hc.style.display === 'block') loadSystemHistory(false); }).subscribe();
   supabase.channel('laundry-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { const container = document.getElementById('laundryHistoryContainer'); if (container.style.display === 'block') loadLaundryHistory(false); }).subscribe();
-  supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { if(document.getElementById('blue').style.display === 'block') renderMessage(payload.new, 'blueChatMessages'); }).subscribe();
-  supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { if(document.getElementById('yellow').style.display === 'block') renderMessage(payload.new, 'yellowChatMessages'); }).subscribe();
+  
+  // 2. Blue Chat
+  supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
+      if(document.getElementById('blue').style.display === 'block') {
+          renderMessage(payload.new, 'blueChatMessages'); 
+          if (payload.new.username !== myName) playNotificationSound();
+      }
+  }).subscribe();
+
+  // 3. Yellow Chat
+  supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
+      if(document.getElementById('yellow').style.display === 'block') {
+          renderMessage(payload.new, 'yellowChatMessages'); 
+          if (payload.new.username !== myName) playNotificationSound();
+      }
+  }).subscribe();
+
   supabase.channel('teams-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue()).on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow()).subscribe();
 
   roomChannel = supabase.channel('online-room', { config: { presence: { key: myId, }, }, });
@@ -1397,6 +1551,8 @@ function setupRealtime() {
     })
     .subscribe(async (status) => { if (status === 'SUBSCRIBED') { const name = document.getElementById('chatNameInput').value || 'Guest'; await roomChannel.track({ name: name, online_at: new Date().toISOString() }); } });
 }
+
+
 
 async function checkAndRunAutoWash() {
     const now = new Date();
@@ -1444,20 +1600,28 @@ async function checkAndRunAutoWash() {
     showSection('main');
 })();
 
-// --- NEW ENGLISH NAME VALIDATION FUNCTIONS ---
+// --- NEW ENGLISH NAME VALIDATION FUNCTIONS (UPDATED) ---
 function submitEnglishName() {
     const input = document.getElementById('forcedNameInput');
     const name = input.value.trim();
     const errorMsg = document.getElementById('nameErrorMsg');
     const englishRegex = /^[A-Za-z0-9\s]+$/;
 
+    // Check if empty or too short
     if (!name || name.length < 3) {
         errorMsg.innerText = "Name is too short / الاسم قصير جداً";
         errorMsg.style.display = 'block';
         return;
     }
+    // Check if English Only
     if (!englishRegex.test(name)) {
         errorMsg.innerHTML = "Only English letters allowed! <br> مسموح فقط بالأحرف الإنجليزية";
+        errorMsg.style.display = 'block';
+        return;
+    }
+    // NEW CHECK: Must contain at least two words (First + Last)
+    if (name.split(/\s+/).length < 2) {
+        errorMsg.innerHTML = "Full Name Required (First & Last)<br>الاسم الكامل مطلوب (الاسم واللقب)";
         errorMsg.style.display = 'block';
         return;
     }
@@ -1481,8 +1645,11 @@ setTimeout(function() {
     const englishRegex = /^[A-Za-z0-9\s]+$/;
     const modal = document.getElementById('englishNameModal');
 
+    // Also check if stored name has first & last name
+    const hasFullName = storedName && storedName.trim().split(/\s+/).length >= 2;
+
     if (modal) {
-        if (!storedName || !englishRegex.test(storedName)) {
+        if (!storedName || !englishRegex.test(storedName) || !hasFullName) {
             modal.style.display = 'flex'; 
         } else {
             updateAllNameInputs(storedName);
@@ -1500,16 +1667,34 @@ setTimeout(function() {
         </h2>
         
         <p style="color:#e0e0e0; font-size: 16px; margin: 20px 0; line-height: 1.6;">
-            Please write your name
+            Please write your FULL name (English)<br>
+            <span style="font-size:14px; color:#aaa;">(First Name & Last Name)</span>
         </p>
         
-        <input type="text" id="forcedNameInput" placeholder="Enter Name..." style="width:100%; padding:12px; margin:10px 0; border-radius: 8px; border: 1px solid #555; background: #1e1e1e; color: #fff; text-align: center; font-size:16px; box-sizing: border-box;">
+        <input type="text" id="forcedNameInput" placeholder="Your Full Name" style="width:100%; padding:12px; margin:10px 0; border-radius: 8px; border: 1px solid #555; background: #1e1e1e; color: #fff; text-align: center; font-size:16px; box-sizing: border-box;">
         
         <p id="nameErrorMsg" style="color:#ff5252; display:none; font-size:13px; margin:8px 0; font-weight: bold; background: rgba(255, 82, 82, 0.1); padding: 8px; border-radius: 6px;">
             Only English letters allowed!
         </p>
         
         <button onclick="submitEnglishName()" style="background:#e53935; color:#fff; width:100%; padding:14px; font-weight:bold; margin-top: 15px; border-radius: 8px; font-size:16px; transition: 0.2s;">Confirm & Enter</button>
+    </div>
+</div>
+
+<div id="viewAddressModal" class="mini-modal-overlay" style="display:none; z-index: 3500;">
+    <div class="mini-modal-box">
+        <h3 style="color:#fff; margin-top:0;">Match Address 📍</h3>
+        <p style="color:#ccc; font-size:12px; margin-bottom:5px;">You can copy the address below or open the map:</p>
+        
+        <input type="text" id="addressDisplayInput" readonly 
+               style="width:95%; background:#111; color:#fff; border:1px solid #FF9800; padding:10px; text-align:center; user-select: text;">
+        
+        <div style="display:flex; gap:10px; margin-top:10px; justify-content: center;">
+            <button onclick="copyToClipboard()" style="background:#009688; color:#fff; flex:1; padding:10px;">Copy 📋</button>
+            <button onclick="openMapDirectly()" style="background:#1976d2; color:#fff; flex:1; padding:10px;">Open Map 🗺️</button>
+        </div>
+        
+        <button onclick="closeAddressModal()" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close</button>
     </div>
 </div>
 
