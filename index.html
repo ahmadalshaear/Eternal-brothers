@@ -243,7 +243,8 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   <h1 style="margin-top:0; font-size:28px; display:flex; align-items:center; justify-content:center; gap:8px;">
     ⚽ <span style="color:#1976d2;">Eternal</span> <span style="color:#fbc02d;">Brothers</span> ⚽
   </h1>
-  <p style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">The Game will be on Sunday at 9:40AM</p>
+<p id="gameTimeDisplay" style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">The Game will be on Sunday at 9:40AM</p>
+
 
   <div id="playerManagement">
     <h2>Add Player</h2>
@@ -470,6 +471,8 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 <h2>Match Details</h2>
                 <label for="matchAddressInput" style="font-weight: bold; display: block; margin-bottom: 5px;">Match Address (Google Maps)</label>
                 <input type="text" id="matchAddressInput" placeholder="Enter full match address or coordinates">
+                <label for="gameTimeInput" style="font-weight: bold; display: block; margin-top: 10px; margin-bottom: 5px;">Game Time Text ⏰</label>
+<input type="text" id="gameTimeInput" placeholder="Ex: Sunday at 9:00 PM" style="width: 100%; text-align: left; margin-bottom: 15px;">
                 <h2>System Options</h2>
                 <div class="setting-item"><label for="allowPlayerEdit">Allow Player Add/Edit/Delete (Main Lists)</label><input type="checkbox" id="allowPlayerEdit"></div>
                 <div class="setting-item"><label for="allowTeamEdit">Allow Player Add/Edit/Delete (Teams)</label><input type="checkbox" id="allowTeamEdit"></div>
@@ -481,17 +484,29 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 <div class="setting-item"><label for="hideLaundrySection" style="color:#ff9800;">Hide Kit Wash & Laundry History</label><input type="checkbox" id="hideLaundrySection"></div>
 
                 <div class="danger-zone">
-                    <h2>Danger Zone - Data Deletion</h2>
-                    <button class="danger-btn" onclick="clearGroupChat()">Clear Group Chat (Player Msgs)</button>
-                    <button class="danger-btn" onclick="clearSystemHistory()">Clear System History (Alerts)</button>
-                    <button class="danger-btn" onclick="clearLaundryHistory()">Clear Laundry History</button>
-                    <button class="danger-btn" onclick="clearBlueChat()">Clear Blue Team Chat</button>
-                    <button class="danger-btn" onclick="clearYellowChat()">Clear Yellow Team Chat</button>
-                    <button class="danger-btn" onclick="clearMainTeam()">Clear Main Team List</button>
-                    <button class="danger-btn" onclick="clearWaitingList()">Clear Waiting List</button>
-                    <button class="danger-btn" onclick="clearBlueTeam()">Clear Blue Team List</button>
-                    <button class="danger-btn" onclick="clearYellowTeam()">Clear Yellow Team List</button>
-                </div>
+    <h2>Danger Zone - Data Deletion</h2>
+
+    <h4 style="margin: 10px 0 5px; color: #aaa; text-align:center; border-bottom:1px solid #444; padding-bottom:5px;">📜 History Logs</h4>
+    
+    <button class="danger-btn" style="background-color: #9c27b0; color: #fff;" onclick="clearSystemHistory()">Clear System History (Alerts)</button>
+    
+    <button class="danger-btn" style="background-color: #009688; color: #fff;" onclick="clearLaundryHistory()">Clear Laundry History 🧼</button>
+
+
+    <h4 style="margin: 15px 0 5px; color: #aaa; text-align:center; border-bottom:1px solid #444; padding-bottom:5px;">💬 Clear Chats</h4>
+    
+    <button class="danger-btn" style="background-color: #d32f2f; color: #fff;" onclick="clearGroupChat()">Clear Group Chat (Global)</button>
+    <button class="danger-btn" style="background-color: #1565c0; color: #fff;" onclick="clearBlueChat()">Clear Blue Team Chat 🔵</button>
+    <button class="danger-btn" style="background-color: #fdd835; color: #000;" onclick="clearYellowChat()">Clear Yellow Team Chat 🟡</button>
+
+
+    <h4 style="margin: 15px 0 5px; color: #aaa; text-align:center; border-bottom:1px solid #444; padding-bottom:5px;">📋 Clear Lists</h4>
+    
+    <button class="danger-btn" style="background-color: #d32f2f; color: #fff;" onclick="clearMainTeam()">Clear Main Team List</button>
+    <button class="danger-btn" style="background-color: #d32f2f; color: #fff;" onclick="clearWaitingList()">Clear Waiting List</button>
+    <button class="danger-btn" style="background-color: #1565c0; color: #fff;" onclick="clearBlueTeam()">Clear Blue Team List 🔵</button>
+    <button class="danger-btn" style="background-color: #fdd835; color: #000;" onclick="clearYellowTeam()">Clear Yellow Team List 🟡</button>
+</div>
             </div> 
             <div class="settings-footer"><button id="saveSettingsBtn" onclick="saveSettings()">Save & Close</button></div>
         </div>
@@ -779,10 +794,20 @@ async function sendMessageToGroup(sender, type) {
 }
 
 async function showSettingsModal() {
-    document.getElementById('settingsPassword').value = ''; document.getElementById('passwordError').style.display = 'none'; document.getElementById('passwordSection').style.display = 'block'; document.getElementById('settingsControls').style.display = 'none'; document.getElementById('settingsModalOverlay').style.display = 'flex';
+    document.getElementById('settingsPassword').value = ''; 
+    document.getElementById('passwordError').style.display = 'none'; 
+    document.getElementById('passwordSection').style.display = 'block'; 
+    document.getElementById('settingsControls').style.display = 'none'; 
+    document.getElementById('settingsModalOverlay').style.display = 'flex';
+    
+    // جلب العنوان
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     document.getElementById('matchAddressInput').value = data ? data.match_address : '';
+    
+    // جلب وقت المباراة المحفوظ
+    document.getElementById('gameTimeInput').value = systemConfig.gameTimeText || "The Game will be on Sunday at 9:40AM";
 }
+
 function authenticateSettings() {
     if (document.getElementById('settingsPassword').value === ADMIN_PASSWORD) {
         document.getElementById('passwordSection').style.display = 'none'; document.getElementById('settingsControls').style.display = 'flex';
@@ -803,11 +828,27 @@ async function saveSettings() {
         allowChat: document.getElementById('allowChat').checked, 
         enforceTimeRestriction: document.getElementById('enforceTimeRestriction').checked,
         disableMainListPin: document.getElementById('disableMainListPin').checked,
-        hideLaundrySection: document.getElementById('hideLaundrySection').checked 
+        hideLaundrySection: document.getElementById('hideLaundrySection').checked,
+        // --- هذا السطر كان ناقصاً ---
+        gameTimeText: document.getElementById('gameTimeInput').value.trim() 
     };
+
     await supabase.from('app_config').update({ system_config: JSON.stringify(newConfig), match_address: document.getElementById('matchAddressInput').value.trim() }).eq('id', 1);
-    systemConfig = newConfig; matchAddress = document.getElementById('matchAddressInput').value.trim(); loadMatchAddress(); applyUIRestrictions(); document.getElementById('settingsModalOverlay').style.display = 'none'; alert('Settings saved!');
+    
+    systemConfig = newConfig; 
+    matchAddress = document.getElementById('matchAddressInput').value.trim(); 
+    
+    // --- تحديث النص فوراً على الشاشة ---
+    if(systemConfig.gameTimeText) {
+        document.getElementById('gameTimeDisplay').innerText = systemConfig.gameTimeText;
+    }
+
+    loadMatchAddress(); 
+    applyUIRestrictions(); 
+    document.getElementById('settingsModalOverlay').style.display = 'none'; 
+    alert('Settings saved!');
 }
+
 
 async function clearTableData(tableName, confirmMessage, friendlyName) { if (!confirm(confirmMessage)) return; await supabase.from(tableName).delete().gt('id', 0); alert(`${friendlyName} cleared.`); reloadList(tableName); }
 function clearGroupChat() { clearTableData('chat_messages', "Clear Group Chat?", "Group Chat"); }
@@ -818,7 +859,14 @@ function clearMainTeam() { clearTableData('main_team', "Clear Main Team?", "Main
 function clearWaitingList() { clearTableData('waiting_list', "Clear Waiting List?", "Waiting List"); }
 function clearBlueTeam() { clearTableData('blue_team', "Clear Blue Team?", "Blue Team"); }
 function clearYellowTeam() { clearTableData('yellow_team', "Clear Yellow Team?", "Yellow Team"); }
-function clearLaundryHistory() { clearTableData('laundry_history', "Clear Laundry History?", "Laundry History"); }
+async function clearLaundryHistory() {
+    const pin = prompt("Enter PIN (2023) to clear Laundry History:");
+    if (pin !== "2023") return alert("Incorrect PIN! ❌");
+    
+    // إذا كان الرمز صحيحاً، سيقوم بتنفيذ المسح
+    clearTableData('laundry_history', "Are you sure you want to clear Laundry History?", "Laundry History");
+}
+
 
 async function canEditCaptain(table, playerId) {
     if (table !== 'blue_team' && table !== 'yellow_team') return true;
@@ -841,9 +889,18 @@ async function verifyIndividualPin(table, id) {
 
 async function loadSystemConfig() {
     const { data } = await supabase.from('app_config').select('system_config').eq('id', 1).single(); 
-    if (data && data.system_config) systemConfig = { ...systemConfig, ...JSON.parse(data.system_config) };
+    if (data && data.system_config) {
+        systemConfig = { ...systemConfig, ...JSON.parse(data.system_config) };
+        
+        // --- هذا الجزء كان ناقصاً لعرض الوقت عند التحميل ---
+        if (systemConfig.gameTimeText) {
+            const el = document.getElementById('gameTimeDisplay');
+            if(el) el.innerText = systemConfig.gameTimeText;
+        }
+    }
     applyUIRestrictions(); 
 }
+
 function applyUIRestrictions() {
     document.getElementById('playerManagement').style.display = systemConfig.allowPlayerEdit ? 'block' : 'none';
     document.querySelectorAll('.action-btn').forEach(btn => {
@@ -1429,7 +1486,9 @@ async function openTeamAddModal() {
     select.innerHTML = '<option value="">Loading players...</option>';
 
     // 1. Fetch Main Team and both Colored Teams data from Supabase
-    const { data: mainTeam } = await supabase.from('main_team').select('name').order('id');
+    // --- التعديل تم هنا: الترتيب حسب الاسم تصاعدياً ---
+    const { data: mainTeam } = await supabase.from('main_team').select('name').order('name', { ascending: true });
+    // ------------------------------------------------
     const { data: blueTeam } = await supabase.from('blue_team').select('name');
     const { data: yellowTeam } = await supabase.from('yellow_team').select('name');
 
@@ -1461,6 +1520,7 @@ async function openTeamAddModal() {
         select.innerHTML = '<option value="">No available players</option>';
     }
 }
+
 
 // --- Confirm Addition (Immediate Transfer) ---
 function confirmAddToTeam(team) {
