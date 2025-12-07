@@ -6,7 +6,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-/* -------------------- 1. GENERAL & BODY STYLES -------------------- */
+/* Smart Team Maker Styles */
+.tm-player-card {
+    background: #333;
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    border-left: 4px solid #FFD700;
+}
+.tm-card-header {
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.tm-rows-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.tm-dual-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.tm-pos-select {
+    flex: 1;
+    background: #222;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 11px;
+}
+.tm-rate-select {
+    flex: 1.5;
+    background: #222;
+    color: #FFD700;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+.tm-label {
+    font-size: 10px;
+    color: #aaa;
+    width: 15px;
+}
+
+/* CSS موجود مسبقاً - تم الاحتفاظ به كما هو */
 body { font-family: "Cairo", sans-serif; background-color: #121212; color: #e0e0e0; margin:0; padding:10px; text-align:center; }
 .container { display:none; max-width:95%; margin:auto; background:#1e1e1ecc; padding:20px 10px; border-radius:15px; box-shadow:0 0 10px #000; }
 h1,h2,h3 { margin:10px 0; }
@@ -14,8 +65,6 @@ input[type=text] { padding:8px; width:80%; border-radius:8px; border:1px solid #
 button { padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
 .formation-controls button { margin: 5px 3px; background: #009688; color: #fff; padding: 8px 12px; font-size: 14px; }
 .formation-controls .dynamic-btn { background: #FF9800; font-weight: 700; }
-
-/* -------------------- 2. NAV CONTROLS -------------------- */
 .nav-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
 .nav-buttons-top { display: flex; flex-direction: row; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 5px; }
 .nav-buttons-bottom { display: flex; justify-content: space-between; width: 100%; max-width: 400px; gap: 5px; }
@@ -26,12 +75,9 @@ button { padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font
 #addressBtn { background:#9c27b0; color:#fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 2; }
 #arcadeBtn { background: #673AB7; color: #fff; flex: 1; }
 #kitWashBtn { background: #009688; color: #fff; flex: 1.5; }
-
 .settings-audio-group { display: flex; gap: 5px; flex: 1.5; justify-content: center; }
 #audioToggleBtn, #settingsBtn { background: #616161 !important; color: #fff !important; font-size: 14px; padding: 8px 5px !important; width: 50% !important; margin: 0 !important; border-radius: 8px; box-sizing: border-box; }
 #settingsBtn { background: #795548 !important; }
-
-/* -------------------- 3. LISTS & PLAYER INFO -------------------- */
 ul { list-style:none; padding:0; margin-top:10px; text-align:left; font-weight:bold; }
 li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; flex-direction: row; min-height: 40px; }
 #teamList li { background:#a8e6a1; color:black; }
@@ -43,19 +89,14 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .action-btn { margin-left:6px; border:none; border-radius:5px; padding:4px 8px; cursor:pointer; font-weight:bold; }
 .edit-btn { background:#4caf50; color:#fff; }
 .delete-btn { background:#e53935; color:#fff; }
-
-/* -------------------- 4. FIELD & MARKER STYLES -------------------- */
 .field { width:100%; max-width:400px; height:250px; background:#4CAF50; margin:10px auto; border:2px solid #fff; border-radius:10px; position:relative; touch-action:none; }
 .field .center-circle { position:absolute; width:50px;height:50px;border-radius:50%;border:2px solid #fff; top:50%; left:50%; transform:translate(-50%,-50%); }
 .field .penalty-box-left, .field .penalty-box-right { position:absolute;width:60px;height:120px;border:2px solid #fff; top:50%; transform:translateY(-50%); }
 .field .penalty-box-left { left:0; } .field .penalty-box-right { right:0; }
 .field .mid-line { position:absolute; width:0;height:100%;border-left:2px solid #fff; top:0; left:50%; transform:translateX(-50%); }
-
 .player-marker { width:35px; height:35px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; position:absolute; cursor:pointer; user-select:none; border: 2px solid rgba(255, 255, 255, 0.5); touch-action: none; transform: translate(-50%, -50%); z-index: 10; }
 .player-name { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 12px; color: black; white-space: nowrap; font-weight: bold; text-shadow: 0 0 2px rgba(0,0,0,0.5); }
 .player-position-label { font-size: 13px; font-weight: bold; color: white; }
-
-/* -------------------- 5. CHAT STYLES -------------------- */
 .chat-container { width: 100%; max-width: 100%; margin: 20px 0 0 0; background: #242424; border-radius: 10px; padding: 10px; box-shadow: 0 0 5px #000; text-align: left; }
 .team-chat-container { background: none; box-shadow: none; margin: 5px 0 0 0; padding: 0; }
 #onlineUsersBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; margin-bottom: 10px; background: #1a1a1a; border-radius: 8px; min-height: 25px; border-bottom: 1px solid #333; }
@@ -69,16 +110,11 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .my-message { background: #d32f2f; color: #fff; align-self: flex-end; text-align: left; border: 1px solid #d32f2f; }
 .delete-msg-btn { position: absolute; top: 5px; right: 5px; background: transparent !important; border: none; color: #ffeb3b; cursor: pointer; font-size: 16px; line-height: 1; font-weight: bold; padding: 2px 5px; }
 .delete-msg-btn:hover { color: #fff; background-color: rgba(0,0,0,0.2) !important; border-radius: 50%; }
-
-/* Custom Audio Player */
 .custom-audio-player { display: flex; align-items: center; background-color: #f5f5f5; border-radius: 12px; padding: 8px 15px; width: 100%; min-width: 240px; margin-top: 8px; box-sizing: border-box; }
 .audio-play-btn { background: none; border: none; color: #333; font-size: 20px; cursor: pointer; margin-right: 15px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
 .audio-time-display { color: #333; font-size: 14px; font-family: monospace; font-weight: bold; flex-grow: 1; text-align: left; }
-
-/* Media */
 .chat-media-content { max-width: 220px; max-height: 250px; width: auto; height: auto; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #555; object-fit: contain; }
 .chat-sticker { width: 100px; height: auto; display: block; margin-top: 5px; }
-
 .chat-input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; position: relative; }
 .chat-row-inputs { display: flex; gap: 5px; width: 100%; }
 .chat-row-tools { display: flex; gap: 5px; justify-content: flex-start; align-items: center; width: 100%; padding: 2px 0; }
@@ -92,15 +128,12 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .team-add-custom { background: #009688 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; font-size: 10px; font-weight: bold; padding: 3px 6px; min-width: 35px; }
 .team-dots { display: flex; gap: 3px; margin-top: 2px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid #fff; } .dot-b { background: #2196F3; } .dot-y { background: #FFEB3B; }
-
-/* RECORDING UI */
 .recording-overlay { display: none; width: 100%; height: 50px; background: #2c2c2c; border-radius: 10px; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; position: absolute; bottom: 0; left: 0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); }
 .recording-text { color: #ff1744; font-weight: bold; font-size: 16px; flex-grow: 1; text-align: center; animation: pulseText 1.5s infinite; }
 @keyframes pulseText { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
 .rec-action-btn { background: transparent; border: none; cursor: pointer; font-size: 20px; padding: 5px 10px; }
 .rec-send-btn { color: #FFD700; font-size: 24px; } 
 .rec-trash-btn { color: #ccc; font-size: 22px; } .rec-trash-btn:hover { color: #ff1744; }
-
 .sticker-popup { position: absolute; bottom: 60px; left: 0; right: 0; margin: auto; background: #2c2c2c; border: 1px solid #555; border-radius: 10px; width: 90%; max-width: 280px; height: 200px; display: none; flex-direction: column; z-index: 2500; box-shadow: 0 -2px 15px rgba(0,0,0,0.7); }
 .sticker-tabs { display: flex; justify-content: space-between; background: #1e1e1e; border-radius: 10px 10px 0 0; padding: 5px; }
 .sticker-tab { background: none; border: none; color: #aaa; font-size: 11px; padding: 5px; cursor: pointer; flex: 1; }
@@ -108,20 +141,25 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .sticker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 5px; overflow-y: auto; height: 100%; }
 .sticker-item { width: 100%; height: auto; cursor: pointer; border-radius: 5px; }
 .sticker-item:hover { transform: scale(1.1); }
-
-#radioPlayerSection { display: none; position: absolute; bottom: 60px; left: 0; right: 0; margin: auto; width: 90%; max-width: 300px; background: #333; border-radius: 8px; padding: 10px; border: 1px solid #9C27B0; z-index: 2600; box-shadow: 0 -2px 15px #000; }
+#radioPlayerSection { display: none; position: absolute; bottom: 60px; left: 0; right: 0; margin: auto; width: 90%; max-width: 300px; background: #333; border-radius: 8px; padding: 10px; border: 1px solid #9C27B0; z-index: 2600; box-shadow: 0 -2xx 15px #000; }
 #radioSelect { width: 100%; padding: 8px; background: #1e1e1e; color: #fff; border: 1px solid #555; border-radius: 5px; margin-bottom: 8px; }
 .radio-controls { display: flex; justify-content: space-between; gap: 5px; }
 .radio-control-btn { flex: 1; padding: 8px; background: #009688; color: #fff; border-radius: 5px; border: none; cursor: pointer; }
 .stop-btn { background: #d32f2f; }
-
-/* -------------------- 6. MODALS STYLES -------------------- */
+.tm-container { border: 1px solid #FFD700; padding: 10px; border-radius: 8px; margin-top: 15px; background: #252525; }
+.tm-header { margin-top: 0; color: #FFD700; display: flex; align-items: center; gap: 8px; font-size: 16px; }
+.tm-player-row { display: flex; justify-content: space-between; align-items: center; background: #333; margin-bottom: 5px; padding: 6px 8px; border-radius: 5px; border-left: 3px solid #777; }
+.tm-name { flex: 2; font-size: 13px; font-weight: bold; color: #e0e0e0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tm-controls { display: flex; gap: 5px; }
+.tm-select { background: #111; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 4px; font-size: 11px; cursor: pointer; }
+.tm-select:focus { border-color: #FFD700; outline: none; }
+.tm-rating { width: 45px; text-align: center; font-weight: bold; color: #FF9800; }
+.tm-pos { width: 65px; }
 .position-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .position-menu-box { background-color: #2c2c2c; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); width: 90%; max-width: 350px; text-align: center; }
 .position-menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
 .position-menu-grid button { padding: 12px 5px; font-size: 14px; background-color: #444; color: #fff; border-radius: 6px; transition: background-color 0.2s; }
 .position-menu-grid button:hover { background-color: #d32f2f; }
-
 .settings-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 10px; }
 .settings-modal-content { background-color: #1e1e1e; padding: 25px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.8); width: 95%; max-width: 450px; text-align: left; color: #fff; display: flex; flex-direction: column; max-height: 90vh; }
 .settings-modal-content h2 { text-align: center; color: #d32f2f; margin-bottom: 20px; flex-shrink: 0; }
@@ -133,19 +171,15 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .settings-options-container { overflow-y: auto; padding: 10px; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; flex-grow: 1; }
 .settings-footer { text-align: center; margin-top: 0; flex-shrink: 0; padding-top: 15px; border-top: 1px solid #333; }
 #saveSettingsBtn { background: #1976d2; color: #fff; width: 100%; padding: 12px; }
-
 .danger-zone { margin-top: 20px; padding-top: 10px; border-top: 1px solid #555; }
 .danger-zone h2 { color: #ffeb3b; text-align: center; font-size: 18px; }
 .danger-btn { background-color: #d32f2f; color: #fff; width: 100%; padding: 10px; margin-top: 8px; font-size: 14px; }
 .danger-btn:hover { background-color: #e57373; }
 #matchAddressInput { width: 100%; text-align: left; margin-top: 5px; margin-bottom: 15px; }
-
 .mini-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2500; }
 .mini-modal-box { background: #2c2c2c; padding: 20px; border-radius: 10px; width: 85%; max-width: 300px; text-align: center; border: 1px solid #555; box-shadow: 0 4px 15px #000; }
 .mini-modal-box input { width: 90% !important; margin-bottom: 15px; }
 .team-select-btns { display: flex; justify-content: space-around; gap: 10px; }
-
-/* ---- JAR VISUAL STYLES ---- */
 #washModalOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:3000; flex-direction:column; }
 .jar-container { position: relative; width: 200px; height: 250px; margin-bottom: 20px; }
 .jar { 
@@ -186,8 +220,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 }
 @keyframes popIn { 0%{transform:scale(0);} 100%{transform:scale(1);} }
 .wash-btn-group { display:flex; gap:10px; justify-content:center; }
-
-/* --- LAUNDRY HISTORY --- */
 #laundryHistoryContainer {
     margin-top: 10px;
     padding: 10px;
@@ -197,7 +229,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
     margin-left: auto;
     margin-right: auto;
     text-align: left;
-    display: none; /* Hidden by default */
+    display: none;
 }
 #laundryHistoryContainer h3 { margin-top: 0; color: #009688; display:flex; align-items:center; justify-content:space-between;}
 #laundryList { padding: 0; margin: 0; list-style: none; }
@@ -219,7 +251,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <audio id="musicPlayer" loop preload="auto"><source src="https://raw.githubusercontent.com/ahmadalshaear/eternal-brothers-audio/main/Eternal_Brothers%20_FC_new.mp3" type="audio/mp3"></audio>
 <audio id="radioStreamPlayer" preload="none"></audio>
 <audio id="notification-sound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3" type="audio/mp3"></audio>
-
 
 <div id="toastContainer"></div> 
 
@@ -245,7 +276,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   </h1>
 <p id="gameTimeDisplay" style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">The Game will be on Sunday at 9:40AM</p>
 
-
   <div id="playerManagement">
     <h2>Add Player</h2>
     <input type="text" id="nameInput" placeholder="Enter player name">
@@ -263,7 +293,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
       <h3 style="margin-top:0;">Event History</h3>
       <ul id="historyList" style="text-align:left; font-weight:normal; font-size:14px; color:#ccc;"></ul>
   </div>
-
 
   <div id="kitWashSection">
       <div style="width: 80%; margin: 15px auto; max-width: 400px;">
@@ -315,19 +344,13 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
             <button class="tool-btn radio-btn" style="margin-left:5px;" onclick="toggleRadio()" title="Radio">📻</button>
         </div>
         
-                    <div id="radioPlayerSection">
+        <div id="radioPlayerSection">
             <select id="radioSelect" onchange="changeRadioChannel()">
-                <optgroup label="Quran">
-                    <option value="https://server8.mp3quran.net/afs/001.mp3">Mishary Alafasy</option>
-                    <option value="https://server7.mp3quran.net/basit/001.mp3">Abdulbasit Abdulsamad</option>
-                </optgroup>
-                <optgroup label="News & Talk">
-                    <option value="https://live-hls-web-aja.getaj.net/AJA/01.m3u8">Al Jazeera Arabic</option>
-                </optgroup>
-                <optgroup label="Music (FM)">
-                    <option value="https://stream.rotana.net/rotana_radio/rotana_fm_ksa/playlist.m3u8">Rotana FM (KSA)</option>
-                    <option value="https://media-ice.musicradio.com/CapitalMP3">Capital FM (London Hits)</option>
-                </optgroup>
+                <option value="https://server8.mp3quran.net/afs/001.mp3">Mishary Alafasy</option>
+                <option value="https://server7.mp3quran.net/basit/001.mp3">Abdulbasit Abdulsamad</option>
+                <option value="https://live-hls-web-aja.getaj.net/AJA/01.m3u8">Al Jazeera Arabic</option>
+                <option value="https://stream.rotana.net/rotana_radio/rotana_fm_ksa/playlist.m3u8">Rotana FM (KSA)</option>
+                <option value="https://media-ice.musicradio.com/CapitalMP3">Capital FM (London Hits)</option>
             </select>
             <div class="radio-controls">
                 <button class="radio-control-btn" onclick="playRadio()">▶ Play</button>
@@ -381,7 +404,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
         <div class="chat-row-tools">
             <input type="file" id="blueChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'blue')">
             <button class="tool-btn" onclick="document.getElementById('blueChatFile').click()">📷</button>
-            <button id="recordBtnBlue" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('blue')" onmouseup="stopVoiceRecording('blue')" ontouchstart="startVoiceRecording('blue')" ontouchend="stopVoiceRecording('blue')">🎤</button>
+            <button id="recordBtnBlue" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('blue')">🎤</button>
             <button class="tool-btn sticker-btn" style="margin-left:5px;" onclick="toggleStickerMenu('blue')">☺</button>
         </div>
         <div id="stickerPopupBlue" class="sticker-popup">
@@ -428,7 +451,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
         <div class="chat-row-tools">
             <input type="file" id="yellowChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'yellow')">
             <button class="tool-btn" onclick="document.getElementById('yellowChatFile').click()">📷</button>
-            <button id="recordBtnYellow" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('yellow')" onmouseup="stopVoiceRecording('yellow')" ontouchstart="startVoiceRecording('yellow')" ontouchend="stopVoiceRecording('yellow')">🎤</button>
+            <button id="recordBtnYellow" class="tool-btn record-btn" style="margin-left:5px;" onmousedown="startVoiceRecording('yellow')">🎤</button>
             <button class="tool-btn sticker-btn" style="margin-left:5px;" onclick="toggleStickerMenu('yellow')">☺</button>
         </div>
         <div id="stickerPopupYellow" class="sticker-popup">
@@ -461,8 +484,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <div id="positionMenuOverlay" class="position-menu-overlay" style="display:none;">
     <div class="position-menu-box">
         <h3 id="positionMenuTitle">Select Position for Player Name</h3>
-        <div id="positionMenuGrid" class="position-menu-grid">
-            </div>
+        <div id="positionMenuGrid" class="position-menu-grid"></div>
         <button onclick="closePositionMenu()" style="margin-top: 15px; background: #555;">Cancel</button>
     </div>
 </div>
@@ -480,6 +502,42 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
         <div id="settingsControls" style="display:none; flex-grow: 1; display: flex; flex-direction: column; min-height: 0;">
             <div class="settings-options-container">
                 
+                <!-- SMART TEAM MAKER - MOVED TO TOP -->
+                <div class="tm-container" style="margin-top: 0;">
+                    <h3 class="tm-header">⚖️ Smart Team Maker (The Sheikh)</h3>
+                    <p style="font-size:11px; color:#aaa; margin-bottom:10px;">
+                        Assign roles & ratings, then auto-balance teams. Each player can have TWO positions.
+                    </p>
+
+                    <button onclick="loadTeamMakerUI()" style="background:#424242; color:#fff; width:100%; margin-bottom:10px; border:1px solid #777;">
+                        🔄 Load Main List Players
+                    </button>
+                    
+                    <div id="teamMakerList" style="max-height: 250px; overflow-y: auto; margin-bottom: 12px; padding-right:2px; border-top: 1px solid #444; padding-top: 5px;">
+                        <p style="text-align:center; color:#555; font-size:12px;">Click 'Load' to start...</p>
+                    </div>
+
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="generateBalancedTeams()" style="background: linear-gradient(135deg, #1e88e5, #fdd835); color: #000; font-weight:bold; flex:1; padding: 12px; border: 2px solid #fff;">
+                            ⚡ Create Balanced Teams
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MULTI-ADD MONITOR -->
+                <div style="border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 15px; background: #252525;">
+                    <h3 style="margin-top:0; color:#00e676;">🕵️ Multi-Add Monitor</h3>
+                    <p style="font-size:12px; color:#aaa;">Track who added which players.</p>
+                    
+                    <button onclick="toggleMultiAddMonitor()" style="background:#424242; color:#fff; width:100%; margin-bottom:10px; border:1px solid #777;">
+                        Toggle Monitor List
+                    </button>
+                    
+                    <div id="multiAddMonitorList" style="max-height: 200px; overflow-y: auto; display: none;">
+                        <ul id="multiAddList" style="list-style:none; padding:0; margin:0;"></ul>
+                    </div>
+                </div>
+
                 <div style="border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 15px; background: #252525;">
                     <h3 style="margin-top:0; color:#00e676;">⏳ Auto-Add Players</h3>
                     <p style="font-size:12px; color:#aaa;">Schedule players to join Main Team automatically.</p>
@@ -490,8 +548,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                         <button onclick="addScheduledPlayer()" style="background:#009688; color:#fff; font-weight:bold;">+</button>
                     </div>
 
-                    <ul id="scheduledPlayersList" style="list-style:none; padding:0; margin:0;">
-                        </ul>
+                    <ul id="scheduledPlayersList" style="list-style:none; padding:0; margin:0;"></ul>
                 </div>
                 <h2>Match Details</h2>
                 <label for="matchAddressInput" style="font-weight: bold; display: block; margin-bottom: 5px;">Match Address (Google Maps)</label>
@@ -508,6 +565,7 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
                 
                 <div class="setting-item"><label for="hideLaundrySection" style="color:#ff9800;">Hide Kit Wash & Laundry History</label><input type="checkbox" id="hideLaundrySection"></div>
 
+                
                 <div class="danger-zone">
     <h2>Danger Zone - Data Deletion</h2>
 
@@ -554,7 +612,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
         <button onclick="closeTeamAddModal()" style="background:#555; color:#fff; margin-top:10px; width:100%; padding: 8px;">Cancel</button>
     </div>
 </div>
-
 
 <div id="gameCenterOverlay" class="mini-modal-overlay">
     <div class="mini-modal-box" style="max-width: 360px; background: #222; border: 2px solid #673AB7; overflow-y:auto; max-height:80vh;">
@@ -639,6 +696,16 @@ const FORMATIONS = {
     ]
 };
 
+// متغيرات جديدة للشيخ
+let teamMakerScheduled = false;
+let autoTeamMakerLastRun = null;
+
+// متغير لتتبع الكابتن لكل فريق
+let teamCaptains = {
+    blue: null,
+    yellow: null
+};
+
 function stringToHash(str) { let hash = 0; if (str.length === 0) return hash; for (let i = 0; i < str.length; i++) { const char = str.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash |= 0; } return Math.abs(hash); }
 function getColorForUsername(username) { return nameColors[stringToHash(username.trim().toUpperCase()) % nameColors.length]; }
 
@@ -647,8 +714,18 @@ function showSection(id){
   document.getElementById(id).style.display='block';
   document.querySelectorAll('.sticker-popup').forEach(p => p.style.display = 'none');
   applyUIRestrictions();
-  if (id === 'blue') { loadTeamChatMessages('blue'); document.getElementById('blueChatNameInput').value = localStorage.getItem('chat_username') || ''; setupDraggable('blue'); } 
-  else if (id === 'yellow') { loadTeamChatMessages('yellow'); document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || ''; setupDraggable('yellow'); } 
+  if (id === 'blue') { 
+      loadTeamChatMessages('blue'); 
+      document.getElementById('blueChatNameInput').value = localStorage.getItem('chat_username') || ''; 
+      setupDraggable('blue'); 
+      updateCaptainButtons('blue');
+  } 
+  else if (id === 'yellow') { 
+      loadTeamChatMessages('yellow'); 
+      document.getElementById('yellowChatNameInput').value = localStorage.getItem('chat_username') || ''; 
+      setupDraggable('yellow'); 
+      updateCaptainButtons('yellow');
+  } 
   else if (id === 'main') { loadChatMessages(); }
 }
 
@@ -658,9 +735,8 @@ function toggleBackgroundMusic() {
     else { audio.pause(); document.getElementById('audioToggleBtn').innerHTML = 'Audio'; }
 }
 
-// -------------------- ADDRESS LOGIC (UPDATED) --------------------
+// -------------------- ADDRESS LOGIC --------------------
 function openGoogleMaps() {
-    // Uses the global matchAddress variable
     const addr = matchAddress; 
     
     if (!addr || addr === "Address 📍" || addr === "No address set" || addr.trim() === "") {
@@ -668,11 +744,9 @@ function openGoogleMaps() {
         return;
     }
 
-    // Populate the read-only input
     const inputField = document.getElementById('addressDisplayInput');
     inputField.value = addr;
     
-    // Show the modal
     document.getElementById('viewAddressModal').style.display = 'flex';
 }
 
@@ -683,11 +757,9 @@ function closeAddressModal() {
 function copyToClipboard() {
     const copyText = document.getElementById("addressDisplayInput");
     
-    // Select text for mobile and desktop
     copyText.select();
     copyText.setSelectionRange(0, 99999); 
-
-    // Copy to clipboard
+    
     navigator.clipboard.writeText(copyText.value).then(() => {
         alert("Address Copied to Clipboard! ✅");
     }).catch(err => {
@@ -697,7 +769,6 @@ function copyToClipboard() {
 
 function openMapDirectly() {
     const addr = document.getElementById('addressDisplayInput').value;
-    // Use universal Google Maps search URL (works better on iPhone/Android)
     const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
     window.open(mapUrl, '_blank');
 }
@@ -824,15 +895,13 @@ async function showSettingsModal() {
     document.getElementById('settingsControls').style.display = 'none'; 
     document.getElementById('settingsModalOverlay').style.display = 'flex';
     
-    // جلب العنوان
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     document.getElementById('matchAddressInput').value = data ? data.match_address : '';
     
-    // جلب وقت المباراة المحفوظ
     document.getElementById('gameTimeInput').value = systemConfig.gameTimeText || "The Game will be on Sunday at 9:40AM";
 
-    // Show Auto-Schedule List
     renderScheduledList();
+    loadMultiAddMonitor();
 }
 
 function authenticateSettings() {
@@ -867,7 +936,6 @@ async function saveSettings() {
     systemConfig = newConfig; 
     matchAddress = document.getElementById('matchAddressInput').value.trim(); 
     
-    // --- تحديث النص فوراً على الشاشة ---
     if(systemConfig.gameTimeText) {
         document.getElementById('gameTimeDisplay').innerText = systemConfig.gameTimeText;
     }
@@ -877,7 +945,6 @@ async function saveSettings() {
     document.getElementById('settingsModalOverlay').style.display = 'none'; 
     alert('Settings saved!');
 }
-
 
 async function clearTableData(tableName, confirmMessage, friendlyName) { if (!confirm(confirmMessage)) return; await supabase.from(tableName).delete().gt('id', 0); alert(`${friendlyName} cleared.`); reloadList(tableName); }
 function clearGroupChat() { clearTableData('chat_messages', "Clear Group Chat?", "Group Chat"); }
@@ -892,17 +959,14 @@ async function clearLaundryHistory() {
     const pin = prompt("Enter PIN (2023) to clear Laundry History:");
     if (pin !== "2023") return alert("Incorrect PIN! ❌");
     
-    // إذا كان الرمز صحيحاً، سيقوم بتنفيذ المسح
     clearTableData('laundry_history', "Are you sure you want to clear Laundry History?", "Laundry History");
 }
 
-
 async function canEditCaptain(table, playerId) {
     if (table !== 'blue_team' && table !== 'yellow_team') return true;
-    const { data: allPlayers } = await supabase.from(table).select('id, player_pin').order('id', { ascending: true });
-    if (!allPlayers || allPlayers.length === 0 || allPlayers[0].id !== playerId) return true;
-    const enteredPin = prompt(`Captain Action: Enter PIN:`);
-    return enteredPin === allPlayers[0].player_pin;
+    
+    // إلغاء نظام الكابتن الأول، أي لاعب يمكنه التحرير
+    return true;
 }
 
 async function verifyIndividualPin(table, id) {
@@ -921,7 +985,6 @@ async function loadSystemConfig() {
     if (data && data.system_config) {
         systemConfig = { ...systemConfig, ...JSON.parse(data.system_config) };
         
-        // --- هذا الجزء كان ناقصاً لعرض الوقت عند التحميل ---
         if (systemConfig.gameTimeText) {
             const el = document.getElementById('gameTimeDisplay');
             if(el) el.innerText = systemConfig.gameTimeText;
@@ -957,21 +1020,22 @@ async function addPlayer(){
   
   const name = document.getElementById("nameInput").value.trim();
   
-  // --- Validation: English, Full Name ---
+  // STRICT VALIDATION
   if(!name) return alert("Enter name");
   if (!/^[A-Za-z0-9\s]+$/.test(name)) return alert("English letters only allowed!");
-  if (name.split(/\s+/).length < 2) return alert("Full Name Required (First & Last Name)!");
   
-  // --- NEW: Check if Name Already Exists (Prevent Duplicates) ---
-  // Check Main Team
+  const nameParts = name.split(/\s+/);
+  if (nameParts.length < 2) return alert("Full Name Required (First & Last Name)!");
+  
+  const lastName = nameParts[nameParts.length - 1];
+  if (lastName.length < 3) return alert("Last Name must be at least 3 characters long!");
+  
   const { data: existMain } = await supabase.from("main_team").select("id").ilike("name", name);
-  // Check Waiting List
   const { data: existWait } = await supabase.from("waiting_list").select("id").ilike("name", name);
 
   if ((existMain && existMain.length > 0) || (existWait && existWait.length > 0)) {
       return alert("Name already exists! Please use a different name.");
   }
-  // -----------------------------------------------------------
   
   let pin = "0000"; 
   if (!systemConfig.disableMainListPin) {
@@ -983,11 +1047,18 @@ async function addPlayer(){
   const table = team.length < 24 ? "main_team" : "waiting_list";
   await supabase.from(table).insert([{ name, time: Date.now(), player_pin: pin }]);
   
+  // Log to Multi-Add Monitor
+  const deviceName = localStorage.getItem('chat_username') || 'Unknown';
+  await supabase.from('multi_add_log').insert([{ 
+      device_name: deviceName, 
+      player_name: name,
+      added_at: new Date().toISOString() 
+  }]);
+  
   if(team.length < 24) { sendSystemMessageToChat(name, `joined the Main Team`); } 
   else { sendSystemMessageToChat(name, `added to the Waiting List`); alert(`Main team is full (24). ${name} has been added to the Waiting List.`); }
   document.getElementById("nameInput").value=""; loadPlayers();
 }
-
 
 async function loadPlayers(){
   const { data: team } = await supabase.from("main_team").select("*").order("id");
@@ -1046,47 +1117,140 @@ function reloadList(table){
 
 async function addTeam(team, inputId, providedName){
   if(!systemConfig.allowTeamEdit) return;
+  
   let name = providedName || document.getElementById(inputId).value.trim();
   if(!name) return;
+  
   const table = `${team}_team`;
   const { data: curr } = await supabase.from(table).select("id");
   if(curr.length >= 12) return alert("Team Full");
-  let pin = null;
-  if (curr.length === 0) { pin = prompt(`Captain (${name}) Create PIN:`); if (!pin) return; }
+  
+  // تعديل هام: تعيين الرمز 0000 إجبارياً لضمان عدم كون اللاعب كابتن
+  let pin = "0000"; 
+  
   const pos = FORMATIONS['4-3-3'][curr.length] || { left: '50%', top: '-15%', code: 'SUB' };
-  await supabase.from(table).insert([{ name, time: Date.now(), position: JSON.stringify({left:pos.left, top:pos.top}), position_code: pos.code, player_pin: pin }]);
+  
+  // الإضافة لقاعدة البيانات
+  await supabase.from(table).insert([{ 
+      name, 
+      time: Date.now(), 
+      position: JSON.stringify({left:pos.left, top:pos.top}), 
+      position_code: pos.code, 
+      player_pin: pin // هنا نضمن أنه ليس كابتن
+  }]);
+  
   if(!providedName) document.getElementById(inputId).value="";
   if(providedName) closeTeamAddModal();
   reloadList(table);
 }
+
 async function addBlue(n){ addTeam('blue', 'blueInput', n); }
 async function addYellow(n){ addTeam('yellow', 'yellowInput', n); }
 
-async function loadTeamData(team){
-  const table = `${team}_team`;
-  const { data } = await supabase.from(table).select("*").order("id");
-  const ul=document.getElementById(`${team}List`);
-  const field=document.getElementById(`${team}Plan`);
-  ul.innerHTML=""; field.innerHTML=`<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`; 
-  if(data) data.forEach((p,i)=>{
-    const btns = systemConfig.allowTeamEdit ? `<span><button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button><button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button></span>` : '';
-    ul.innerHTML += `<li><div class="player-info"><span>${i+1}. ${p.name} ${i===0?'(C)':''}</span></div>${btns}</li>`;
-    createPlayerMarker(team, p.name, p.id, JSON.parse(p.position), p.position_code, i + 1);
-  });
-  setupDraggable(team);
+async function loadTeamData(team) {
+    const table = `${team}_team`;
+    const { data } = await supabase.from(table).select("*").order("id");
+    const ul = document.getElementById(`${team}List`);
+    const field = document.getElementById(`${team}Plan`);
+
+    ul.innerHTML = "";
+    field.innerHTML = `<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
+
+    // 1. تحديد من هو الكابتن
+    let currentCaptainId = null;
+    let currentCaptainPin = null;
+
+    if (data) {
+        // البحث عن الكابتن أولاً
+        data.forEach(p => {
+            if (p.player_pin && p.player_pin !== "0000" && p.player_pin.length === 4) {
+                currentCaptainId = p.id;
+                currentCaptainPin = p.player_pin;
+            }
+        });
+
+        // ⬇️⬇️ التعديل الجديد: إعادة ترتيب القائمة ليصبح الكابتن رقم 1 ⬇️⬇️
+        if (currentCaptainId) {
+            data.sort((a, b) => {
+                // إذا كان العنصر a هو الكابتن، ضعه في البداية (-1)
+                if (a.id === currentCaptainId) return -1;
+                // إذا كان العنصر b هو الكابتن، ضعه هو في البداية (1)
+                if (b.id === currentCaptainId) return 1;
+                // البقية يبقون كما هم (حسب الترتيب الأصلي id)
+                return 0;
+            });
+        }
+        // ⬆️⬆️ نهاية التعديل ⬆️⬆️
+    }
+    
+    window[`captainData_${team}`] = { id: currentCaptainId, pin: currentCaptainPin };
+
+    const isViewerInCaptainMode = localStorage.getItem(`captain_mode_${team}`) === 'true';
+
+    if (data) data.forEach((p, i) => {
+        let btns = '';
+
+        if (systemConfig.allowTeamEdit) {
+            if (!currentCaptainId) {
+                btns = `<span>
+                    <button class="action-btn captain-btn" onclick="toggleCaptainForPlayer('${table}', ${p.id}, '${p.name}', '${team}')" style="background:#616161; color:#fff; margin-left:5px;" title="Set as Captain">©</button>
+                    <button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button>
+                    <button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button>
+                </span>`;
+            } 
+            else {
+                if (p.id === currentCaptainId) {
+                    btns = `<span>
+                        <button class="action-btn captain-btn" onclick="toggleCaptainForPlayer('${table}', ${p.id}, '${p.name}', '${team}')" style="background:#4CAF50; color:#fff; margin-left:5px; box-shadow: 0 0 5px #fff;" title="Captain (Active)">©</button>
+                        ${isViewerInCaptainMode ? `<button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button><button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button>` : ''}
+                    </span>`;
+                } else {
+                    if (isViewerInCaptainMode) {
+                        btns = `<span>
+                            <button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button>
+                            <button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button>
+                        </span>`;
+                    }
+                }
+            }
+        }
+
+        // لاحظ هنا: i + 1 سيكون 1 للكابتن لأنه أصبح أول عنصر في المصفوفة
+        ul.innerHTML += `<li><div class="player-info"><span>${i + 1}. ${p.name}</span></div>${btns}</li>`;
+        createPlayerMarker(team, p.name, p.id, JSON.parse(p.position), p.position_code, i + 1);
+    });
+
+    setupDraggable(team);
 }
+
+
 function loadBlue(){ loadTeamData('blue'); }
 function loadYellow(){ loadTeamData('yellow'); }
 
 async function canControlPlan(team) {
-    if (!systemConfig.allowFormationEdit) { alert("Formation disabled."); return false; }
-    if (sessionStorage.getItem(`${team}_captain_unlocked`) === 'true') return true;
-    const table = `${team}_team`;
-    const { data } = await supabase.from(table).select('id, player_pin').order('id', { ascending: true }).limit(1).single();
-    if (!data || !data.player_pin) { alert("No Captain PIN."); return false; }
-    const enteredPin = prompt(`Enter Captain PIN for ${team}:`);
-    if (enteredPin === data.player_pin) { sessionStorage.setItem(`${team}_captain_unlocked`, 'true'); return true; } 
-    else { alert("Wrong PIN."); return false; }
+    if (!systemConfig.allowFormationEdit) { 
+        alert("Formation disabled."); 
+        return false; 
+    }
+    
+    // Check if captain password is set
+    const captainPassword = localStorage.getItem(`captain_password_${team}`);
+    
+    if (captainPassword) {
+        const enteredPin = prompt(`Enter Captain Password for ${team} team to control formation:`);
+        if (enteredPin === captainPassword) {
+            localStorage.setItem(`captain_mode_${team}`, 'true');
+            showToast(`© Captain mode activated for ${team} team!`);
+            setupDraggable(team);
+            return true;
+        } else {
+            alert("Incorrect password. Only captain can control formation.");
+            return false;
+        }
+    } else {
+        alert("No captain set for this team. Set a captain first.");
+        return false;
+    }
 }
 
 function getAutoPositionName(leftPct, topPct) {
@@ -1098,44 +1262,107 @@ function getAutoPositionName(leftPct, topPct) {
 }
 
 function setupDraggable(team) {
-  const fieldId = `#${team}Plan`; const table = `${team}_team`; const field = document.getElementById(`${team}Plan`);
+  const fieldId = `#${team}Plan`; 
+  const table = `${team}_team`; 
+  const field = document.getElementById(`${team}Plan`);
+  
+  // تنظيف الإعدادات السابقة
   interact(`${fieldId} .player-marker`).unset();
+  
   if (!systemConfig.allowFormationEdit) return;
+  
+  // تفعيل السحب للجميع (شكلياً)
   interact(`${fieldId} .player-marker`).draggable({
       modifiers: [ interact.modifiers.restrictRect({ restriction: field }) ],
       listeners: {
         start: async (event) => {
-            if (sessionStorage.getItem(`${team}_captain_unlocked`) !== 'true') {
-                if (!await canControlPlan(team)) { event.interaction.stop(); return; }
+            // 1. هل المستخدم قام بتفعيل وضع الكابتن سابقاً؟
+            const isUnlocked = localStorage.getItem(`captain_mode_${team}`) === 'true';
+            
+            if (isUnlocked) {
+                // الكابتن مفعل: السماح بالسحب وتجهيز الإحداثيات
+                prepareDrag(event, field);
+                return;
             }
-            const rect = field.getBoundingClientRect();
-            event.target.dataset.x = (parseFloat(event.target.style.left)/100) * rect.width;
-            event.target.dataset.y = (parseFloat(event.target.style.top)/100) * rect.height;
+
+            // 2. إذا لم يكن مفعلاً، هل يوجد كابتن أصلاً لهذا الفريق؟
+            const capData = window[`captainData_${team}`];
+            if (!capData || !capData.id) {
+                alert("⚠️ No Captain assigned yet! Please assign a captain from the list first.");
+                event.interaction.stop(); // إيقاف السحب
+                return;
+            }
+
+            // 3. طلب الرمز السري
+            const entered = prompt(`🔒 Protected Layout\nEnter Captain PIN to move players:`);
+            
+            // 4. التحقق من الرمز
+            if (entered === capData.pin || entered === ADMIN_PASSWORD) {
+                // رمز صحيح: حفظ الوضع وتفعيل السحب
+                localStorage.setItem(`captain_mode_${team}`, 'true');
+                showToast("🔓 Unlocked! Formation control active.");
+                
+                // تحديث القائمة لإظهار أزرار التعديل والحذف للكابتن
+                reloadList(table);
+                
+                // السماح بإكمال السحب الحالي
+                prepareDrag(event, field);
+            } else {
+                // رمز خاطئ
+                if (entered !== null) alert("❌ Incorrect PIN.");
+                event.interaction.stop(); // إيقاف السحب فوراً، الكرة لن تتحرك
+            }
         },
         move (event) {
-          if (sessionStorage.getItem(`${team}_captain_unlocked`) !== 'true') return;
+          // لن يتم تنفيذ هذا إلا إذا نجح الـ start ولم يتم عمل stop
           let x = (parseFloat(event.target.dataset.x) || 0) + event.dx;
           let y = (parseFloat(event.target.dataset.y) || 0) + event.dy;
-          event.target.style.left = `${x}px`; event.target.style.top = `${y}px`;
-          event.target.dataset.x = x; event.target.dataset.y = y;
+          
+          event.target.style.left = `${x}px`; 
+          event.target.style.top = `${y}px`;
+          event.target.dataset.x = x; 
+          event.target.dataset.y = y;
+          event.target.style.cursor = 'grabbing'; // تغيير المؤشر لقبضة مغلقة أثناء السحب
         },
         end: (event) => {
-          if (sessionStorage.getItem(`${team}_captain_unlocked`) !== 'true') return;
+          // عند الإفلات، حفظ الموقع
           const rect = field.getBoundingClientRect();
           let lp = (parseFloat(event.target.dataset.x) / rect.width) * 100;
           let tp = (parseFloat(event.target.dataset.y) / rect.height) * 100;
+          
           const newCode = getAutoPositionName(lp, tp);
           event.target.querySelector('.player-position-label').innerText = newCode;
-          event.target.style.left = `${lp.toFixed(2)}%`; event.target.style.top = `${tp.toFixed(2)}%`;
+          
+          event.target.style.left = `${lp.toFixed(2)}%`; 
+          event.target.style.top = `${tp.toFixed(2)}%`;
           event.target.style.transform = `translate(-50%, -50%)`;
-          supabase.from(table).update({ position: JSON.stringify({ left: `${lp.toFixed(2)}%`, top: `${tp.toFixed(2)}%` }), position_code: newCode }).eq('id', event.target.dataset.playerId).then();
+          event.target.style.cursor = 'grab'; // إعادة المؤشر ليد مفتوحة
+
+          // الحفظ في قاعدة البيانات
+          supabase.from(table).update({ 
+              position: JSON.stringify({ left: `${lp.toFixed(2)}%`, top: `${tp.toFixed(2)}%` }), 
+              position_code: newCode 
+          }).eq('id', event.target.dataset.playerId).then();
         }
       }
   });
 }
 
+// دالة مساعدة لتجهيز الإحداثيات عند بدء السحب الناجح
+function prepareDrag(event, field) {
+    const rect = field.getBoundingClientRect();
+    // تحويل النسبة المئوية (left/top) إلى بكسل لضمان سحب سلس
+    event.target.dataset.x = (parseFloat(event.target.style.left)/100) * rect.width;
+    event.target.dataset.y = (parseFloat(event.target.style.top)/100) * rect.height;
+}
+
+
 async function applyFormation(team, name) {
-    if (!await canControlPlan(team)) return;
+    const isCaptainMode = localStorage.getItem(`captain_mode_${team}`) === 'true';
+    if (!isCaptainMode) {
+        if (!await canControlPlan(team)) return;
+    }
+    
     const table = `${team}_team`; const form = FORMATIONS[name];
     const { data: players } = await supabase.from(table).select('id').order('id');
     players.slice(0, 12).map((p, i) => {
@@ -1144,23 +1371,58 @@ async function applyFormation(team, name) {
     });
     reloadList(table);
 }
+
 async function applyDynamicPlan(team) {
-    if (!await canControlPlan(team)) return;
+    const isCaptainMode = localStorage.getItem(`captain_mode_${team}`) === 'true';
+    if (!isCaptainMode) {
+        if (!await canControlPlan(team)) return;
+    }
     alert("Dynamic plan logic applied (Simulated).");
 }
 
 function createPlayerMarker(team, name, id, pos, code, num) { 
-  const m = document.createElement('div'); m.classList.add('player-marker'); m.id = `marker-${team}-${id}`; m.dataset.playerId = id; 
-  m.style.background = team==='blue'? '#1976d2' : '#fbc02d'; m.style.left = pos.left; m.style.top = pos.top;
+  const m = document.createElement('div'); 
+  m.classList.add('player-marker'); 
+  m.id = `marker-${team}-${id}`; 
+  m.dataset.playerId = id; 
+  
+  m.style.background = team==='blue'? '#1976d2' : '#fbc02d'; 
+  m.style.left = pos.left; 
+  m.style.top = pos.top;
+  
   const textColor = team === 'blue' ? '#fff' : '#000';
   const numBg = team === 'blue' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)';
+  
   m.innerHTML = `<span class="player-position-label">${code || 'SUB'}</span><div class="player-name" style="color:${textColor}; display:flex; align-items:center; gap:3px; justify-content:center;"><span style="background:${numBg}; padding:1px 4px; border-radius:4px; font-size:10px;">${num}</span>${name}</div>`;
-  m.addEventListener('click', (e) => { if (e.detail === 1) showPositionMenu(team, id, name); });
+  
+  // تعديل: المؤشر دائماً "يد" والشفافية كاملة للجميع
+  m.style.cursor = 'grab';
+  m.style.opacity = '1'; 
+
+  // إضافة مستمع للنقر (لفتح قائمة المراكز) - سيطلب الرمز أيضاً إذا لم يكن مفعلاً
+  m.addEventListener('click', (e) => { 
+      // نستخدم setTimeout لضمان عدم تعارض النقر مع السحب
+      if (e.detail === 1) {
+          const isUnlocked = localStorage.getItem(`captain_mode_${team}`) === 'true';
+          if (isUnlocked) {
+              showPositionMenu(team, id, name); 
+          } else {
+             // هذه اختيارية: إذا كنت تريد أن يطلب الرمز عند النقر أيضاً لتغيير المركز
+             // يمكننا تركها للسحب فقط حسب طلبك، أو تفعيلها هنا أيضاً
+          }
+      }
+  });
+  
   document.getElementById(`${team}Plan`).appendChild(m);
 }
 
+
 async function showPositionMenu(team, id, name) {
-    if (!await canControlPlan(team)) return;
+    const isCaptainMode = localStorage.getItem(`captain_mode_${team}`) === 'true';
+    if (!isCaptainMode) {
+        if (!await canControlPlan(team)) return;
+    }
+    
     currentPositionTarget = { team, id, name }; document.getElementById('positionMenuTitle').innerText = `Pos: ${name}`;
     const g = document.getElementById('positionMenuGrid'); g.innerHTML = ''; 
     POSITIONS_LIST.forEach(p => { const b = document.createElement('button'); b.innerText = p.code; b.onclick = () => selectPosition(p.code); g.appendChild(b); });
@@ -1178,16 +1440,15 @@ function showToast(m) { const c=document.getElementById('toastContainer'); const
 async function loadMatchAddress() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     matchAddress = data ? data.match_address : "Address 📍";
-    document.getElementById('addressBtn').textContent = (matchAddress.length > 20 && !matchAddress.includes("set")) ? "Match Address 📍" : `${matchAddress} 📍`;
+    document.getElementById('addressBtn').textContent = (matchAddress.length > 20 && !matchAddress.includes("set")) ? "Match Address ??" : `${matchAddress} 📍`;
 }
 function playNotificationSound() { 
     const audio = document.getElementById('notification-sound');
     if (audio) {
-        audio.currentTime = 0; // إعادة الصوت للبداية لتكراره
+        audio.currentTime = 0;
         audio.play().catch(e => console.log("Audio play blocked:", e));
     }
 }
-
 
 async function loadSystemHistory(toggle = true) {
   const historyContainer = document.getElementById('systemHistoryContainer');
@@ -1348,7 +1609,6 @@ async function loadTeamChatMessages(team) {
     data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
 }
 
-// MODIFIED SEND MESSAGE (Enforce English + Full Name)
 async function sendMessage() {
     const n = document.getElementById('chatNameInput').value; 
     if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
@@ -1358,7 +1618,6 @@ async function sendMessage() {
     await supabase.from('chat_messages').insert([{ username:n, content:c }]); document.getElementById('chatMsgInput').value='';
 }
 
-// MODIFIED TEAM MESSAGE (Enforce English + Full Name)
 async function sendTeamMessage(team) {
     const n = document.getElementById(`${team}ChatNameInput`).value; 
     if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
@@ -1504,35 +1763,27 @@ function updateKeeper() {
 }
 function drawBall(x,y,r,c){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=c; ctx.fill(); ctx.stroke(); }
 
-// --- Open Modal & Fetch Available Players ---
 async function openTeamAddModal() {
     const modal = document.getElementById('teamAddModalOverlay');
     const select = document.getElementById('chatTeamAddSelect');
     
-    // Show modal and loading state
     modal.style.display = 'flex';
     select.innerHTML = '<option value="">Loading players...</option>';
 
-    // 1. Fetch Main Team and both Colored Teams data from Supabase
-    // --- التعديل تم هنا: الترتيب حسب الاسم تصاعدياً ---
     const { data: mainTeam } = await supabase.from('main_team').select('name').order('name', { ascending: true });
-    // ------------------------------------------------
     const { data: blueTeam } = await supabase.from('blue_team').select('name');
     const { data: yellowTeam } = await supabase.from('yellow_team').select('name');
 
-    // 2. Create a Set of players already in Blue or Yellow to filter them out
     const takenPlayers = new Set([
         ...(blueTeam?.map(p => p.name) || []),
         ...(yellowTeam?.map(p => p.name) || [])
     ]);
 
-    // 3. Clear and Populate the Dropdown with available players only
     select.innerHTML = '';
     let count = 0;
 
     if (mainTeam) {
         mainTeam.forEach(p => {
-            // Only add if NOT in Blue/Yellow already
             if (!takenPlayers.has(p.name)) {
                 const opt = document.createElement('option');
                 opt.value = p.name;
@@ -1543,36 +1794,29 @@ async function openTeamAddModal() {
         });
     }
 
-    // Handle empty list case (all players are assigned)
     if (count === 0) {
         select.innerHTML = '<option value="">No available players</option>';
     }
 }
 
-
-// --- Confirm Addition (Immediate Transfer) ---
 function confirmAddToTeam(team) {
     const select = document.getElementById('chatTeamAddSelect');
     const name = select.value;
 
     if (!name) return alert("Please select a player first");
 
-    // Add to the selected team immediately calling existing functions
     if (team === 'blue') {
         addBlue(name);
     } else {
         addYellow(name);
     }
     
-    // Close the modal after adding
     closeTeamAddModal();
 }
 
-// --- Close Modal Function ---
 function closeTeamAddModal() { 
     document.getElementById('teamAddModalOverlay').style.display = 'none'; 
 }
-
 
 function handleTyping(context) {
     const name = document.getElementById(context==='global'?'chatNameInput':`${context}ChatNameInput`).value;
@@ -1590,11 +1834,9 @@ function updateOnlineUsersUI(users) {
 function setupRealtime() {
   const myName = localStorage.getItem('chat_username') || 'Guest';
   
-  // 1. Global Chat
   supabase.channel('global-chat-updates')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
         renderMessage(payload.new, 'chatMessages'); 
-        // شغل الصوت فقط إذا لم تكن أنت المرسل (لأنك سمعته عند الضغط)
         if (payload.new.username !== myName) playNotificationSound();
     })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
@@ -1603,7 +1845,6 @@ function setupRealtime() {
   supabase.channel('system-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { const hc = document.getElementById('systemHistoryContainer'); if (hc.style.display === 'block') loadSystemHistory(false); }).subscribe();
   supabase.channel('laundry-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { const container = document.getElementById('laundryHistoryContainer'); if (container.style.display === 'block') loadLaundryHistory(false); }).subscribe();
   
-  // 2. Blue Chat
   supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
       if(document.getElementById('blue').style.display === 'block') {
           renderMessage(payload.new, 'blueChatMessages'); 
@@ -1611,7 +1852,6 @@ function setupRealtime() {
       }
   }).subscribe();
 
-  // 3. Yellow Chat
   supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
       if(document.getElementById('yellow').style.display === 'block') {
           renderMessage(payload.new, 'yellowChatMessages'); 
@@ -1639,8 +1879,6 @@ function setupRealtime() {
     })
     .subscribe(async (status) => { if (status === 'SUBSCRIBED') { const name = document.getElementById('chatNameInput').value || 'Guest'; await roomChannel.track({ name: name, online_at: new Date().toISOString() }); } });
 }
-
-
 
 async function checkAndRunAutoWash() {
     const now = new Date();
@@ -1670,26 +1908,22 @@ async function checkAndRunAutoWash() {
     }
 }
 
-// --- NEW ENGLISH NAME VALIDATION FUNCTIONS (UPDATED) ---
 function submitEnglishName() {
     const input = document.getElementById('forcedNameInput');
     const name = input.value.trim();
     const errorMsg = document.getElementById('nameErrorMsg');
     const englishRegex = /^[A-Za-z0-9\s]+$/;
 
-    // Check if empty or too short
     if (!name || name.length < 3) {
         errorMsg.innerText = "Name is too short / الاسم قصير جداً";
         errorMsg.style.display = 'block';
         return;
     }
-    // Check if English Only
     if (!englishRegex.test(name)) {
         errorMsg.innerHTML = "Only English letters allowed! <br> مسموح فقط بالأحرف الإنجليزية";
         errorMsg.style.display = 'block';
         return;
     }
-    // NEW CHECK: Must contain at least two words (First + Last)
     if (name.split(/\s+/).length < 2) {
         errorMsg.innerHTML = "Full Name Required (First & Last)<br>الاسم الكامل مطلوب (الاسم واللقب)";
         errorMsg.style.display = 'block';
@@ -1701,7 +1935,6 @@ function submitEnglishName() {
     document.getElementById('englishNameModal').style.display = 'none';
     setupRealtime(); 
     
-    // Log online status
     logUserStatus('Online 🟢');
     initUserTracking();
 }
@@ -1713,13 +1946,11 @@ function updateAllNameInputs(name) {
     if(document.getElementById('nameInput')) document.getElementById('nameInput').value = name;
 }
 
-// CHECK NAME ON LOAD (WITH DELAY TO ENSURE HTML IS READY)
 setTimeout(function() {
     const storedName = localStorage.getItem('chat_username');
     const englishRegex = /^[A-Za-z0-9\s]+$/;
     const modal = document.getElementById('englishNameModal');
 
-    // Also check if stored name has first & last name
     const hasFullName = storedName && storedName.trim().split(/\s+/).length >= 2;
 
     if (modal) {
@@ -1732,9 +1963,6 @@ setTimeout(function() {
     }
 }, 1000); 
 
-// -------------------- USER ACTIVITY LOGIC (UPDATED WITH TIME & UNIQUE) --------------------
-
-// 1. Function to save status to Supabase
 async function logUserStatus(status) {
     const name = localStorage.getItem('chat_username');
     if (!name) return; 
@@ -1745,28 +1973,22 @@ async function logUserStatus(status) {
     }]);
 }
 
-// 2. Start tracking (Call this when app starts)
 function initUserTracking() {
     const name = localStorage.getItem('chat_username');
     
-    // Log "Online" immediately if name exists
     if (name) {
         logUserStatus('Online 🟢');
     }
 
-    // Listen for tab switching or closing
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden') {
-            // User minimized or closed the app
             logUserStatus('Offline 🔴');
         } else {
-             // User came back
              logUserStatus('Online 🟢');
         }
     });
 }
 
-// 3. Helper for Time Ago
 function timeAgo(dateParam) {
     const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
     const today = new Date();
@@ -1781,12 +2003,10 @@ function timeAgo(dateParam) {
     else return `${days}d ago`;
 }
 
-// 4. MAIN LOAD FUNCTION (Unique Users + Time)
 async function loadUserLogs() {
     const container = document.getElementById('userLogContainer');
     const list = document.getElementById('userLogList');
     
-    // Toggle visibility with smooth scroll
     if (container.style.display === 'none') {
         container.style.display = 'block';
         container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1797,7 +2017,6 @@ async function loadUserLogs() {
 
     list.innerHTML = '<li style="text-align:center;">Loading status...</li>';
 
-    // Fetch last 150 logs to ensure coverage
     const { data, error } = await supabase
         .from('user_logs')
         .select('*')
@@ -1809,7 +2028,6 @@ async function loadUserLogs() {
         return;
     }
 
-    // Filter to show only unique users (latest status)
     const uniqueUsers = {};
     data.forEach(log => {
         if (!uniqueUsers[log.username]) {
@@ -1819,12 +2037,10 @@ async function loadUserLogs() {
 
     list.innerHTML = '';
     
-    // Render List
     Object.values(uniqueUsers).forEach(user => {
         const isOnline = user.status.includes('Online');
         const timeDisplay = timeAgo(user.created_at);
         
-        // Dynamic Styles
         const statusColor = isOnline ? '#00e676' : '#757575'; 
         const statusText = isOnline ? 'Active' : 'Last seen';
         const nameColor = isOnline ? '#fff' : '#aaa';
@@ -1845,30 +2061,22 @@ async function loadUserLogs() {
     });
 }
 
-// --- LOGIC FOR AUTO-SCHEDULE ---
-
-// 1. Add player to schedule
 async function addScheduledPlayer() {
     const name = document.getElementById('autoNameInput').value.trim();
-    const time = document.getElementById('autoTimeInput').value; // Returns HH:MM
+    const time = document.getElementById('autoTimeInput').value;
 
     if (!name || !time) return alert("Please enter Name and Time!");
 
-    // Initialize list if missing
     if (!systemConfig.scheduledList) systemConfig.scheduledList = [];
     
-    // Add new task
     systemConfig.scheduledList.push({ name: name, time: time });
     
-    // Save to Supabase and update UI
     await saveConfigToSupabase();
     renderScheduledList();
     
-    // Clear inputs
     document.getElementById('autoNameInput').value = '';
 }
 
-// 2. Remove player from schedule
 async function removeScheduledPlayer(index) {
     if (!confirm("Remove this scheduled task?")) return;
     systemConfig.scheduledList.splice(index, 1);
@@ -1876,7 +2084,6 @@ async function removeScheduledPlayer(index) {
     renderScheduledList();
 }
 
-// 3. Render the list inside Settings
 function renderScheduledList() {
     const list = document.getElementById('scheduledPlayersList');
     if (!list) return;
@@ -1888,7 +2095,6 @@ function renderScheduledList() {
     }
 
     systemConfig.scheduledList.forEach((item, index) => {
-        // Convert 24h time to 12h for display
         const [h, m] = item.time.split(':');
         const d = new Date(); d.setHours(h); d.setMinutes(m);
         const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -1905,7 +2111,6 @@ function renderScheduledList() {
     });
 }
 
-// 4. Helper to save config (Updates existing config without closing modal)
 async function saveConfigToSupabase() {
     await supabase.from('app_config').update({ 
         system_config: JSON.stringify(systemConfig),
@@ -1913,7 +2118,6 @@ async function saveConfigToSupabase() {
     }).eq('id', 1);
 }
 
-// 5. Main Timer Engine (Runs every 10 seconds)
 setInterval(async () => {
     if (!systemConfig.scheduledList || systemConfig.scheduledList.length === 0) return;
 
@@ -1947,44 +2151,610 @@ setInterval(async () => {
 
 }, 10000); 
 
-// 6. Direct Add Function (Silent - No Chat Message)
 async function autoAddPlayerToMain(name) {
-    // Check for duplicates
     const { data: exist } = await supabase.from("main_team").select("id").ilike("name", name);
     if (exist && exist.length > 0) return; 
 
-    // Add to Main Team
     await supabase.from("main_team").insert([{ 
         name: name, 
         time: Date.now(), 
         player_pin: "0000" 
     }]);
 
-    // Chat notification removed as requested
     loadPlayers(); 
 }
 
-(async function init() {
-    const storedUsername = localStorage.getItem('chat_username');
-    if (storedUsername) {
-        document.getElementById('chatNameInput').value = storedUsername;
-        document.getElementById('blueChatNameInput').value = storedUsername;
-        document.getElementById('yellowChatNameInput').value = storedUsername;
-        document.getElementById('nameInput').value = storedUsername;
+// -------------------- START OF SMART TEAM MAKER (THE SHEIKH V3) --------------------
+
+// 1. خيارات التقييم
+function getRatingOptionsHTML(selectedVal) {
+    let html = '';
+    const ratings = [
+        { v: 1, t: "1 - 🐌 Disaster" },
+        { v: 2, t: "2 - 🐢 Slow" },
+        { v: 3, t: "3 - 🥱 Weak" },
+        { v: 4, t: "4 - 😐 Average" },
+        { v: 5, t: "5 - 👌 Decent" },
+        { v: 6, t: "6 - 💪 Good" },
+        { v: 7, t: "7 - 🔥 Excellent" },
+        { v: 8, t: "8 - 🚀 Rocket" },
+        { v: 9, t: "9 - ☠️ Beast" },
+        { v: 10, t: "10 - 🐐 Legend" }
+    ];
+    ratings.forEach(r => {
+        const sel = r.v === selectedVal ? 'selected' : '';
+        html += `<option value="${r.v}" ${sel}>${r.t}</option>`;
+    });
+    return html;
+}
+
+// 2. خيارات المراكز
+function getPosOptionsHTML(selectedPos) {
+    const positions = [
+        { v: "GK", t: "🧤 GK" },
+        { v: "CB", t: "🛡️ CB" }, { v: "LB", t: "🛡️ LB" }, { v: "RB", t: "🛡️ RB" },{ v: "DM", t: "🛡️ DM" },
+        { v: "CDM", t: "⚙️ CDM" }, { v: "CM", t: "⚙️ CM" }, { v: "CAM", t: "⚙️ CAM" },
+        { v: "LM", t: "⚙️ LM" }, { v: "RM", t: "⚙️ RM" },
+        { v: "LW", t: "⚔️ LW" }, { v: "RW", t: "⚔️ RW" }, { v: "ST", t: "⚔️ ST" }, { v: "CF", t: "⚔️ CF" },
+        { v: "NONE", t: "❌ None" }
+    ];
+    let html = '';
+    positions.forEach(p => {
+        const sel = p.v === selectedPos ? 'selected' : '';
+        html += `<option value="${p.v}" ${sel}>${p.t}</option>`;
+    });
+    return html;
+}
+
+// 3. تصنيف المراكز
+function getRoleCategory(pos) {
+    if (['GK'].includes(pos)) return 'GK';
+    if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos)) return 'DEF';
+    if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return 'MID';
+    if (['ST', 'CF', 'LW', 'RW'].includes(pos)) return 'FWD';
+    return 'MID';
+}
+
+// 4. دالة التحميل
+async function loadTeamMakerUI() {
+    console.log("Loading UI Started...");
+    const listDiv = document.getElementById('teamMakerList');
+    listDiv.innerHTML = '<p style="text-align:center; color:#aaa;">Loading list... ⏳</p>';
+
+    const { data: mainTeam } = await supabase.from('main_team').select('*').order('name');
+    
+    if (!mainTeam || mainTeam.length === 0) {
+        listDiv.innerHTML = '<p style="text-align:center; color:#e57373;">Main Team is empty!</p>';
+        return;
     }
 
-    document.getElementById('chatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
-    document.getElementById('blueChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('blue'); } });
-    document.getElementById('yellowChatMsgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
+    // جلب التقييمات المحفوظة
+    const { data: savedRatings } = await supabase.from('player_ratings').select('*');
+    const ratingsMap = {};
+    if (savedRatings) {
+        savedRatings.forEach(r => {
+            ratingsMap[r.player_name] = r;
+        });
+    }
 
-    await loadSystemConfig(); loadMatchAddress(); loadPlayers(); loadBlue(); loadYellow(); loadChatMessages(); 
-    checkAndRunAutoWash(); 
+    listDiv.innerHTML = '';
     
-    // START TRACKING
+    mainTeam.forEach(player => {
+        const saved = ratingsMap[player.name] || {};
+        
+        const card = document.createElement('div');
+        card.className = 'tm-player-card'; 
+        card.dataset.id = player.id;
+        card.dataset.name = player.name;
+        
+        card.innerHTML = `
+            <div class="tm-card-header">
+                <span>${player.name}</span>
+                <button onclick="savePlayerRating('${player.name}')" 
+                        style="background:#4CAF50; color:white; border:none; padding:2px 8px; border-radius:4px; font-size:10px; cursor:pointer;">
+                    💾 Save
+                </button>
+            </div>
+            <div class="tm-rows-container">
+                <div class="tm-dual-row">
+                    <span class="tm-label">1</span>
+                    <select class="tm-pos-select pos-1">${getPosOptionsHTML(saved.primary_position || 'CM')}</select>
+                    <select class="tm-rate-select rate-1">${getRatingOptionsHTML(saved.rating || 5)}</select>
+                </div>
+                <div class="tm-dual-row">
+                    <span class="tm-label">2</span>
+                    <select class="tm-pos-select pos-2">${getPosOptionsHTML(saved.secondary_position || 'NONE')}</select>
+                    <select class="tm-rate-select rate-2">${getRatingOptionsHTML(saved.rating2 || 4)}</select>
+                </div>
+            </div>
+        `;
+        listDiv.appendChild(card);
+    });
+    console.log("UI Loaded with " + mainTeam.length + " cards.");
+}
+
+// 5. دالة حفظ التقييمات بشكل دائمي
+async function savePlayerRating(playerName) {
+    const card = document.querySelector(`.tm-player-card[data-name="${playerName}"]`);
+    if (!card) return;
+    
+    const pos1 = card.querySelector('.pos-1').value;
+    const rate1 = parseInt(card.querySelector('.rate-1').value);
+    const pos2 = card.querySelector('.pos-2').value;
+    const rate2 = parseInt(card.querySelector('.rate-2').value);
+    
+    const { error } = await supabase
+        .from('player_ratings')
+        .upsert({
+            player_name: playerName,
+            rating: rate1,
+            primary_position: pos1,
+            rating2: rate2,
+            secondary_position: pos2,
+            updated_at: new Date().toISOString()
+        }, {
+            onConflict: 'player_name'
+        });
+    
+    if (error) {
+        alert("Error saving rating!");
+        console.error(error);
+    } else {
+        showToast(`Rating saved for ${playerName}! 💾`);
+    }
+}
+
+// 6. دالة الإنشاء
+// 6. دالة الإنشاء (النسخة الكاملة والمصححة)
+async function generateBalancedTeams() {
+    // 1. التحقق من القائمة
+    const listDiv = document.getElementById('teamMakerList');
+    const cards = listDiv.querySelectorAll('.tm-player-card');
+    
+    if (cards.length === 0) return alert("⚠️ القائمة فارغة! اضغط على زر 'Load Main List Players' أولاً.");
+
+    if (!confirm("⚠️ هل أنت متأكد من إعادة توزيع الفرق بنظام 'الشيخ الذكي'؟\nسيتم مسح الفرق الحالية.")) return;
+
+    showToast("⚙️ الشيخ: جاري تحليل المراكز والقوة... 🧠");
+
+    // 2. جمع بيانات اللاعبين من البطاقات
+    let allPlayers = [];
+    cards.forEach(card => {
+        const name = card.dataset.name;
+        const pos1 = card.querySelector('.pos-1').value;
+        const rate1 = parseInt(card.querySelector('.rate-1').value);
+        const pos2 = card.querySelector('.pos-2').value;
+        const rate2 = parseInt(card.querySelector('.rate-2').value);
+        
+        // حساب أفضل تقييم وتحديد الفئة
+        const bestRate = Math.max(rate1, (pos2 !== 'NONE' ? rate2 : 0));
+        
+        // تصنيف المركز (دفاع، وسط، هجوم)
+        let category = 'MID';
+        if (['GK'].includes(pos1)) category = 'GK';
+        else if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos1)) category = 'DEF';
+        else if (['ST', 'CF', 'LW', 'RW'].includes(pos1)) category = 'FWD';
+        
+        allPlayers.push({ name, pos1, rate1, pos2, rate2, bestRate, category, assignedPos: pos1 });
+    });
+
+    // 3. مصفوفات الفرق
+    let blueTeam = [];
+    let yellowTeam = [];
+
+    // 4. دالة التوزيع (توازن القوة)
+    function distribute(pool) {
+        pool.sort((a, b) => b.bestRate - a.bestRate); // الأقوى أولاً
+
+        pool.forEach(p => {
+            const blueSum = blueTeam.reduce((acc, curr) => acc + curr.bestRate, 0);
+            const yellowSum = yellowTeam.reduce((acc, curr) => acc + curr.bestRate, 0);
+
+            // الشرط: أضف للفريق الأضعف حالياً، بشرط عدم تجاوز 12 لاعب
+            if (blueTeam.length < 12 && (blueSum <= yellowSum || yellowTeam.length >= 12)) {
+                blueTeam.push(p);
+            } else if (yellowTeam.length < 12) {
+                yellowTeam.push(p);
+            }
+        });
+    }
+
+    // 5. تنفيذ التوزيع (نظام العمود الفقري)
+    distribute(allPlayers.filter(p => p.category === 'GK'));  // حراس
+    distribute(allPlayers.filter(p => p.category === 'DEF')); // دفاع
+    distribute(allPlayers.filter(p => p.category === 'FWD')); // هجوم
+    distribute(allPlayers.filter(p => p.category === 'MID')); // وسط
+
+    // ---------------------------------------------------------
+    // بداية كود الذكاء وتحديد الأماكن (الجديد)
+    // ---------------------------------------------------------
+
+    // 6. تعريف التشكيلات الذكية وإحداثياتها
+    const SMART_FORMATIONS = {
+        '4-3-3': {
+            GK: [{c:'GK', x:'6%', y:'50%'}],
+            DEF: [{c:'LB', x:'25%', y:'15%'}, {c:'CB', x:'18%', y:'38%'}, {c:'CB', x:'18%', y:'62%'}, {c:'RB', x:'25%', y:'85%'}],
+            MID: [{c:'DM', x:'40%', y:'50%'}, {c:'CM', x:'55%', y:'30%'}, {c:'CM', x:'55%', y:'70%'}],
+            FWD: [{c:'LW', x:'80%', y:'15%'}, {c:'ST', x:'85%', y:'50%'}, {c:'RW', x:'80%', y:'85%'}]
+        },
+        '4-4-2': {
+            GK: [{c:'GK', x:'6%', y:'50%'}],
+            DEF: [{c:'LB', x:'25%', y:'15%'}, {c:'CB', x:'20%', y:'38%'}, {c:'CB', x:'20%', y:'62%'}, {c:'RB', x:'25%', y:'85%'}],
+            MID: [{c:'LM', x:'50%', y:'15%'}, {c:'CM', x:'45%', y:'40%'}, {c:'CM', x:'45%', y:'60%'}, {c:'RM', x:'50%', y:'85%'}],
+            FWD: [{c:'ST', x:'80%', y:'35%'}, {c:'ST', x:'80%', y:'65%'}]
+        },
+        '3-4-3': {
+            GK: [{c:'GK', x:'6%', y:'50%'}],
+            DEF: [{c:'CB', x:'20%', y:'20%'}, {c:'CB', x:'15%', y:'50%'}, {c:'CB', x:'20%', y:'80%'}],
+            MID: [{c:'LM', x:'45%', y:'10%'}, {c:'CM', x:'40%', y:'40%'}, {c:'CM', x:'40%', y:'60%'}, {c:'RM', x:'45%', y:'90%'}],
+            FWD: [{c:'LW', x:'75%', y:'20%'}, {c:'ST', x:'82%', y:'50%'}, {c:'RW', x:'75%', y:'80%'}]
+        },
+        '3-5-2': {
+            GK: [{c:'GK', x:'6%', y:'50%'}],
+            DEF: [{c:'CB', x:'20%', y:'20%'}, {c:'CB', x:'15%', y:'50%'}, {c:'CB', x:'20%', y:'80%'}],
+            MID: [{c:'LM', x:'45%', y:'10%'}, {c:'DM', x:'40%', y:'50%'}, {c:'CM', x:'55%', y:'30%'}, {c:'CM', x:'55%', y:'70%'}, {c:'RM', x:'45%', y:'90%'}],
+            FWD: [{c:'ST', x:'80%', y:'35%'}, {c:'ST', x:'80%', y:'65%'}]
+        }
+    };
+
+    // 7. دالة الحفظ الذكية (مع منطق البحث عن المركز الصحيح)
+    async function saveTeamToDB(teamArr, tableName) {
+        // أ) إحصاء عدد اللاعبين
+        let defCount = teamArr.filter(p => p.category === 'DEF').length;
+        let midCount = teamArr.filter(p => p.category === 'MID').length;
+        let fwdCount = teamArr.filter(p => p.category === 'FWD').length;
+
+        // ب) اختيار التشكيلة
+        let chosenFormation = '4-3-3'; 
+        if (defCount >= 4) {
+            if (fwdCount >= 3) chosenFormation = '4-3-3';
+            else chosenFormation = '4-4-2';
+        } else {
+            if (midCount >= 5) chosenFormation = '3-5-2';
+            else chosenFormation = '3-4-3';
+        }
+
+        console.log(`Team: ${tableName}, Formation: ${chosenFormation} (Def:${defCount})`);
+
+        // ج) استنساخ الأماكن
+        const slots = JSON.parse(JSON.stringify(SMART_FORMATIONS[chosenFormation]));
+        const subSlot = {c:'SUB', x:'50%', y:'-15%'};
+
+        // دالة مساعدة للبحث عن الخانة المناسبة
+        // تحاول إيجاد خانة تطابق مركز اللاعب بالضبط، وإلا تأخذ أول خانة متاحة
+        function getBestSlot(slotArray, playerPos) {
+            if (!slotArray || slotArray.length === 0) return null;
+            
+            // محاولة إيجاد تطابق تام (مثلاً لاعب RB يبحث عن خانة RB)
+            let index = slotArray.findIndex(s => s.c === playerPos);
+            
+            // إذا لم يجد تطابق، يأخذ أول خانة متاحة في نفس الخط
+            if (index === -1) index = 0;
+            
+            return slotArray.splice(index, 1)[0];
+        }
+
+        // د) توزيع اللاعبين
+        const dbRecords = teamArr.map(p => {
+            let role = p.category;
+            let specificPos = p.assignedPos; // المركز المحدد للاعب (مثلاً RB)
+            let targetSlot = null;
+
+            // 1. الحارس
+            if (role === 'GK') {
+                targetSlot = getBestSlot(slots.GK, specificPos);
+            }
+            // 2. الدفاع
+            else if (role === 'DEF') {
+                targetSlot = getBestSlot(slots.DEF, specificPos);
+                
+                // إذا لم نجد خانة في الدفاع (مثلاً المدافع الخامس)، نرحّله للوسط كـ DM
+                if (!targetSlot) {
+                    const dmIndex = slots.MID.findIndex(s => s.c === 'DM' || s.c === 'CDM');
+                    if (dmIndex !== -1) {
+                        targetSlot = slots.MID.splice(dmIndex, 1)[0];
+                    } else if (slots.MID.length > 0) {
+                        targetSlot = slots.MID.shift();
+                        targetSlot.c = 'DM'; 
+                    }
+                }
+            }
+            // 3. الوسط
+            else if (role === 'MID') {
+                targetSlot = getBestSlot(slots.MID, specificPos);
+            }
+            // 4. الهجوم
+            else if (role === 'FWD') {
+                targetSlot = getBestSlot(slots.FWD, specificPos);
+            }
+
+            // 5. الملجأ الأخير (Failsafe) - إذا لم يجد مكاناً في خطه الأصلي
+            if (!targetSlot) {
+                if (slots.MID.length > 0) targetSlot = slots.MID.shift();
+                else if (slots.DEF.length > 0) targetSlot = slots.DEF.shift();
+                else if (slots.FWD.length > 0) targetSlot = slots.FWD.shift();
+                else targetSlot = subSlot;
+            }
+
+            return { 
+                name: p.name, 
+                time: Date.now(), 
+                position_code: targetSlot.c, 
+                position: JSON.stringify({ left: targetSlot.x, top: targetSlot.y }), 
+                player_pin: "0000" 
+            };
+        });
+
+        if (dbRecords.length > 0) { 
+            await supabase.from(tableName).insert(dbRecords); 
+        }
+    }
+
+
+    // 8. التنفيذ: مسح القديم وحفظ الجديد
+    try {
+        await supabase.from('blue_team').delete().gt('id', 0);
+        await supabase.from('yellow_team').delete().gt('id', 0);
+
+        await saveTeamToDB(blueTeam, 'blue_team');
+        await saveTeamToDB(yellowTeam, 'yellow_team');
+
+        // إغلاق النافذة وتحديث العرض
+        document.getElementById('settingsModalOverlay').style.display = 'none';
+        
+        // تأخير بسيط لضمان اكتمال الحفظ
+        setTimeout(() => {
+            loadBlue();
+            loadYellow();
+            showToast("✅ تم توزيع الفرق بنجاح (Smart Sheikh)!");
+            
+            // إشعار في الشات
+            supabase.from('chat_messages').insert([{
+                username: 'الشيخ 🤖',
+                content: '✅ تم إنشاء تشكيلة ذكية جديدة!'
+            }]);
+        }, 800);
+
+    } catch (error) {
+        console.error(error);
+        alert("حدث خطأ أثناء حفظ الفرق.");
+    }
+}
+
+
+// 7. دالة جدولة العمل التلقائي للشيخ (كل سبت 8:55 مساءً)
+async function autoTeamMakerSchedule() {
+    const now = new Date();
+    const day = now.getDay(); // 0 = الأحد، 6 = السبت
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    
+    // التحقق إذا كان الوقت هو السبت 8:55 مساءً
+    if (day === 6 && hour === 20 && minute === 55) {
+        // التحقق من أن الشيخ لم يعمل اليوم
+        const today = new Date().toDateString();
+        if (autoTeamMakerLastRun !== today) {
+            autoTeamMakerLastRun = today;
+            
+            console.log("🔄 الشيخ: بدء إنشاء الفرق المتوازنة تلقائياً...");
+            showToast("🔄 الشيخ: إنشاء الفرق المتوازنة تلقائياً...");
+            
+            // تشغيل الشيخ
+            await generateBalancedTeams();
+            
+            console.log("✅ الشيخ: اكتمل إنشاء الفرق المتوازنة");
+        }
+    }
+}
+
+// 8. تشغيل الشيخ تلقائياً كل دقيقة للتحقق من الوقت
+setInterval(autoTeamMakerSchedule, 60000); // التحقق كل دقيقة
+
+// -------------------- MULTI-ADD MONITOR LOGIC --------------------
+async function loadMultiAddMonitor() {
+    const list = document.getElementById('multiAddList');
+    if (!list) return;
+    
+    list.innerHTML = '<li style="color:#aaa; text-align:center;">Loading...</li>';
+    
+    const { data, error } = await supabase
+        .from('multi_add_log')
+        .select('*')
+        .order('added_at', { ascending: false })
+        .limit(50);
+    
+    if (error || !data || data.length === 0) {
+        list.innerHTML = '<li style="color:#aaa; text-align:center;">No records found.</li>';
+        return;
+    }
+    
+    list.innerHTML = '';
+    
+    data.forEach((record, index) => {
+        const date = new Date(record.added_at);
+        const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const dateStr = date.toLocaleDateString();
+        
+        list.innerHTML += `
+            <li style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px 10px; margin-bottom:5px; border-radius:5px; border-left: 3px solid #00e676;">
+                <div style="display:flex; flex-direction:column; flex:1;">
+                    <span style="color:#fff; font-weight:bold; font-size:12px;">${record.device_name}</span>
+                    <span style="color:#FF9800; font-size:11px;">Added: ${record.player_name}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                    <span style="color:#aaa; font-size:10px;">${dateStr}</span>
+                    <span style="color:#aaa; font-size:10px;">${timeStr}</span>
+                </div>
+                <button onclick="deleteMultiAddRecord(${record.id})" style="background:#d32f2f; color:#fff; border:none; border-radius:4px; padding:2px 6px; font-size:10px; margin-left:5px; cursor:pointer;">✕</button>
+            </li>
+        `;
+    });
+}
+
+async function deleteMultiAddRecord(id) {
+    if (!confirm("Delete this record?")) return;
+    
+    const { error } = await supabase.from('multi_add_log').delete().eq('id', id);
+    
+    if (error) {
+        alert("Error deleting record.");
+    } else {
+        loadMultiAddMonitor();
+    }
+}
+
+function toggleMultiAddMonitor() {
+    const container = document.getElementById('multiAddMonitorList');
+    if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'block';
+        loadMultiAddMonitor();
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+// -------------------- CAPTAIN FOR PLAYER LOGIC --------------------
+async function toggleCaptainForPlayer(table, playerId, playerName, team) {
+    const captainData = window[`captainData_${team}`];
+    
+    // 1. إذا كان هذا اللاعب هو الكابتن بالفعل (إلغاء الكابتن)
+    if (captainData && captainData.id === playerId) {
+        const enteredPin = prompt(`Enter Captain PIN to remove captaincy from ${playerName}:`);
+        
+        // التحقق من الرمز المخزن
+        if (enteredPin !== captainData.pin && enteredPin !== ADMIN_PASSWORD) {
+            return alert("Incorrect PIN! Cannot remove captaincy.");
+        }
+
+        if (confirm(`Remove captaincy from ${playerName}?`)) {
+            await supabase.from(table).update({ player_pin: "0000" }).eq('id', playerId);
+            localStorage.removeItem(`captain_mode_${team}`); // تسجيل خروج من وضع الكابتن
+            showToast(`Captaincy removed from ${playerName}.`);
+            reloadList(table);
+        }
+        return;
+    }
+
+    // 2. تعيين كابتن جديد (فقط إذا لم يكن هناك كابتن آخر)
+    if (captainData && captainData.id) {
+        return alert("There is already a captain for this team. Remove them first.");
+    }
+
+    const pin = prompt(`Set a 4-digit PIN for Captain ${playerName}:`);
+
+    if (!pin || pin.length !== 4 || isNaN(pin)) {
+        alert("PIN must be exactly 4 digits!");
+        return;
+    }
+
+    // حفظ الكابتن الجديد
+    await supabase.from(table).update({ player_pin: pin }).eq('id', playerId);
+
+    // تفعيل وضع الكابتن محلياً فوراً
+    localStorage.setItem(`captain_mode_${team}`, 'true');
+    
+    showToast(`© ${playerName} is now the Captain!`);
+    reloadList(table);
+    
+    await supabase.from('system_history').insert([{
+        content: `${playerName} is now captain of ${team} team`,
+        username: 'System'
+    }]);
+}
+
+
+// Helper function to extract player ID from buttons
+function extractPlayerIdFromButtons(buttonsContainer) {
+    // Look for delete button onclick attribute
+    const deleteBtn = buttonsContainer.querySelector('.delete-btn');
+    if (deleteBtn && deleteBtn.getAttribute('onclick')) {
+        const onclickStr = deleteBtn.getAttribute('onclick');
+        const match = onclickStr.match(/deletePlayer\('[^']+',(\d+)\)/);
+        if (match) return match[1];
+    }
+    
+    // Look for edit button onclick attribute
+    const editBtn = buttonsContainer.querySelector('.edit-btn');
+    if (editBtn && editBtn.getAttribute('onclick')) {
+        const onclickStr = editBtn.getAttribute('onclick');
+        const match = onclickStr.match(/editPlayer\('[^']+',(\d+),'[^']+'\)/);
+        if (match) return match[1];
+    }
+    
+    return null;
+}
+
+// Function to move captain to position 1 in database
+async function moveCaptainToPosition1(table, captainId) {
+    // Get all players
+    const { data: allPlayers } = await supabase
+        .from(table)
+        .select('*')
+        .order('id');
+    
+    if (!allPlayers || allPlayers.length === 0) return;
+    
+    // Find captain
+    const captainIndex = allPlayers.findIndex(p => p.id === captainId);
+    if (captainIndex === -1) return;
+    
+    // If captain is not at position 0, reorder
+    if (captainIndex !== 0) {
+        // We can't directly reorder IDs in Supabase, so we'll update the time to force ordering
+        await supabase
+            .from(table)
+            .update({ time: Date.now() - 10000 }) // Set very old time to appear first
+            .eq('id', captainId);
+    }
+}
+
+// Helper function to get player name by ID
+async function getPlayerNameById(table, playerId) {
+    const { data } = await supabase
+        .from(table)
+        .select('name')
+        .eq('id', playerId)
+        .single();
+    
+    return data ? data.name : 'Unknown';
+}
+
+// -------------------- INITIALIZATION --------------------
+(async function init() {
+    // هذا السطر يضمن قفل الخطة دائماً عند تحديث الصفحة
+    localStorage.removeItem('captain_mode_blue');
+    localStorage.removeItem('captain_mode_yellow');
+
+    const storedUsername = localStorage.getItem('chat_username');
+    if (storedUsername) {
+        if(document.getElementById('chatNameInput')) document.getElementById('chatNameInput').value = storedUsername;
+        if(document.getElementById('blueChatNameInput')) document.getElementById('blueChatNameInput').value = storedUsername;
+        if(document.getElementById('yellowChatNameInput')) document.getElementById('yellowChatNameInput').value = storedUsername;
+        if(document.getElementById('nameInput')) document.getElementById('nameInput').value = storedUsername;
+    }
+
+    const chatMsgInput = document.getElementById('chatMsgInput');
+    if (chatMsgInput) chatMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
+
+    const blueMsgInput = document.getElementById('blueChatMsgInput');
+    if (blueMsgInput) blueMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('blue'); } });
+    
+    const yellowMsgInput = document.getElementById('yellowChatMsgInput');
+    if (yellowMsgInput) yellowMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
+
+    await loadSystemConfig(); 
+    loadMatchAddress(); 
+    loadPlayers(); 
+    loadBlue(); 
+    loadYellow(); 
+    loadChatMessages(); 
+    
+    checkAndRunAutoWash(); 
     initUserTracking();
 
     showSection('main');
 })();
+
 </script>
 
 <div id="englishNameModal" class="mini-modal-overlay" style="display:none; z-index: 9999; background: rgba(0,0,0,0.96); backdrop-filter: blur(5px);">
