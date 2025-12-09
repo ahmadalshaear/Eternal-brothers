@@ -1028,7 +1028,7 @@ async function addPlayer(){
   if (nameParts.length < 2) return alert("Full Name Required (First & Last Name)!");
   
   const lastName = nameParts[nameParts.length - 1];
-  if (lastName.length < 3) return alert("Last Name must be at least 3 characters long!");
+  if (lastName.length < 3) return alert("Please enter both First Name and Last Name!");
   
   const { data: existMain } = await supabase.from("main_team").select("id").ilike("name", name);
   const { data: existWait } = await supabase.from("waiting_list").select("id").ilike("name", name);
@@ -1440,7 +1440,7 @@ function showToast(m) { const c=document.getElementById('toastContainer'); const
 async function loadMatchAddress() {
     const { data } = await supabase.from('app_config').select('match_address').eq('id', 1).single(); 
     matchAddress = data ? data.match_address : "Address 📍";
-    document.getElementById('addressBtn').textContent = (matchAddress.length > 20 && !matchAddress.includes("set")) ? "Match Address ??" : `${matchAddress} 📍`;
+    document.getElementById('addressBtn').textContent = (matchAddress.length > 20 && !matchAddress.includes("set")) ? "Match Address 📍" : `${matchAddress} 📍`;
 }
 function playNotificationSound() { 
     const audio = document.getElementById('notification-sound');
@@ -1914,22 +1914,42 @@ function submitEnglishName() {
     const errorMsg = document.getElementById('nameErrorMsg');
     const englishRegex = /^[A-Za-z0-9\s]+$/;
 
-    if (!name || name.length < 3) {
-        errorMsg.innerText = "Name is too short / الاسم قصير جداً";
-        errorMsg.style.display = 'block';
-        return;
-    }
-    if (!englishRegex.test(name)) {
-        errorMsg.innerHTML = "Only English letters allowed! <br> مسموح فقط بالأحرف الإنجليزية";
-        errorMsg.style.display = 'block';
-        return;
-    }
-    if (name.split(/\s+/).length < 2) {
-        errorMsg.innerHTML = "Full Name Required (First & Last)<br>الاسم الكامل مطلوب (الاسم واللقب)";
+    // 1. Check if empty
+    if (!name) {
+        errorMsg.innerText = "Name is required!";
         errorMsg.style.display = 'block';
         return;
     }
 
+    // 2. Check for English letters only
+    if (!englishRegex.test(name)) {
+        errorMsg.innerHTML = "Only English letters allowed!";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    // Split name
+    const nameParts = name.split(/\s+/);
+
+    // 3. Check for at least 2 words
+    if (nameParts.length < 2) {
+        errorMsg.innerHTML = "Full Name Required (First & Last Name)";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    // 4. Check length (Logic: 4 chars, Message: Generic)
+    const firstName = nameParts[0];
+    const lastName = nameParts[nameParts.length - 1];
+
+    if (firstName.length < 4 || lastName.length < 4) {
+        // الرسالة هنا عامة ولا تذكر رقم 4 كما طلبت
+        errorMsg.innerHTML = "Please enter a valid Full Name (First & Last Name)";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    // Success
     localStorage.setItem('chat_username', name);
     updateAllNameInputs(name);
     document.getElementById('englishNameModal').style.display = 'none';
@@ -2192,7 +2212,7 @@ function getRatingOptionsHTML(selectedVal) {
 function getPosOptionsHTML(selectedPos) {
     const positions = [
         { v: "GK", t: "🧤 GK" },
-        { v: "CB", t: "🛡️ CB" }, { v: "LB", t: "🛡️ LB" }, { v: "RB", t: "🛡️ RB" },{ v: "DM", t: "🛡️ DM" },
+        { v: "CB", t: "🛡️ CB" }, { v: "LB", t: "🛡️ LB" }, { v: "RB", t: "🛡️ RB" },
         { v: "CDM", t: "⚙️ CDM" }, { v: "CM", t: "⚙️ CM" }, { v: "CAM", t: "⚙️ CAM" },
         { v: "LM", t: "⚙️ LM" }, { v: "RM", t: "⚙️ RM" },
         { v: "LW", t: "⚔️ LW" }, { v: "RW", t: "⚔️ RW" }, { v: "ST", t: "⚔️ ST" }, { v: "CF", t: "⚔️ CF" },
@@ -2305,7 +2325,6 @@ async function savePlayerRating(playerName) {
 }
 
 // 6. دالة الإنشاء
-// 6. دالة الإنشاء (النسخة الكاملة والمصححة)
 async function generateBalancedTeams() {
     // 1. التحقق من القائمة
     const listDiv = document.getElementById('teamMakerList');
@@ -2313,11 +2332,19 @@ async function generateBalancedTeams() {
     
     if (cards.length === 0) return alert("⚠️ القائمة فارغة! اضغط على زر 'Load Main List Players' أولاً.");
 
-    if (!confirm("⚠️ هل أنت متأكد من إعادة توزيع الفرق بنظام 'الشيخ الذكي'؟\nسيتم مسح الفرق الحالية.")) return;
+    if (!confirm("⚠️ هل أنت متأكد من إعادة توزيع الفرق بنظام 'العمود الفقري' (Spine System)؟\nسيتم مسح الفرق الحالية.")) return;
 
     showToast("⚙️ الشيخ: جاري تحليل المراكز والقوة... 🧠");
 
-    // 2. جمع بيانات اللاعبين من البطاقات
+    // 2. دالة مساعدة لتصنيف المراكز
+    function getRoleCategory(pos) {
+        if (['GK'].includes(pos)) return 'GK';
+        if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos)) return 'DEF';
+        if (['ST', 'CF', 'LW', 'RW'].includes(pos)) return 'FWD';
+        return 'MID'; // يشمل CM, CDM, CAM, LM, RM
+    }
+
+    // 3. جمع بيانات اللاعبين من البطاقات
     let allPlayers = [];
     cards.forEach(card => {
         const name = card.dataset.name;
@@ -2328,23 +2355,19 @@ async function generateBalancedTeams() {
         
         // حساب أفضل تقييم وتحديد الفئة
         const bestRate = Math.max(rate1, (pos2 !== 'NONE' ? rate2 : 0));
-        
-        // تصنيف المركز (دفاع، وسط، هجوم)
-        let category = 'MID';
-        if (['GK'].includes(pos1)) category = 'GK';
-        else if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos1)) category = 'DEF';
-        else if (['ST', 'CF', 'LW', 'RW'].includes(pos1)) category = 'FWD';
+        const category = getRoleCategory(pos1);
         
         allPlayers.push({ name, pos1, rate1, pos2, rate2, bestRate, category, assignedPos: pos1 });
     });
 
-    // 3. مصفوفات الفرق
+    // 4. مصفوفات الفرق
     let blueTeam = [];
     let yellowTeam = [];
 
-    // 4. دالة التوزيع (توازن القوة)
+    // 5. دالة التوزيع الذكي (توازن القوة والعدد)
     function distribute(pool) {
-        pool.sort((a, b) => b.bestRate - a.bestRate); // الأقوى أولاً
+        // ترتيب اللاعبين من الأقوى للأضعف
+        pool.sort((a, b) => b.bestRate - a.bestRate);
 
         pool.forEach(p => {
             const blueSum = blueTeam.reduce((acc, curr) => acc + curr.bestRate, 0);
@@ -2359,128 +2382,81 @@ async function generateBalancedTeams() {
         });
     }
 
-    // 5. تنفيذ التوزيع (نظام العمود الفقري)
-    distribute(allPlayers.filter(p => p.category === 'GK'));  // حراس
-    distribute(allPlayers.filter(p => p.category === 'DEF')); // دفاع
-    distribute(allPlayers.filter(p => p.category === 'FWD')); // هجوم
-    distribute(allPlayers.filter(p => p.category === 'MID')); // وسط
+    // 6. تنفيذ التوزيع بنظام العمود الفقري (الترتيب هنا هو سر الذكاء)
+    
+    // أولاً: توزيع الحراس (لضمان حارس لكل فريق إن وجدوا)
+    distribute(allPlayers.filter(p => p.category === 'GK'));
 
-    // ---------------------------------------------------------
-    // بداية كود الذكاء وتحديد الأماكن (الجديد)
-    // ---------------------------------------------------------
+    // ثانياً: توزيع خط الدفاع (لضمان توازن القوة الدفاعية)
+    distribute(allPlayers.filter(p => p.category === 'DEF'));
 
-    // 6. تعريف التشكيلات الذكية وإحداثياتها
-    const SMART_FORMATIONS = {
-        '4-3-3': {
-            GK: [{c:'GK', x:'6%', y:'50%'}],
-            DEF: [{c:'LB', x:'25%', y:'15%'}, {c:'CB', x:'18%', y:'38%'}, {c:'CB', x:'18%', y:'62%'}, {c:'RB', x:'25%', y:'85%'}],
-            MID: [{c:'DM', x:'40%', y:'50%'}, {c:'CM', x:'55%', y:'30%'}, {c:'CM', x:'55%', y:'70%'}],
-            FWD: [{c:'LW', x:'80%', y:'15%'}, {c:'ST', x:'85%', y:'50%'}, {c:'RW', x:'80%', y:'85%'}]
-        },
-        '4-4-2': {
-            GK: [{c:'GK', x:'6%', y:'50%'}],
-            DEF: [{c:'LB', x:'25%', y:'15%'}, {c:'CB', x:'20%', y:'38%'}, {c:'CB', x:'20%', y:'62%'}, {c:'RB', x:'25%', y:'85%'}],
-            MID: [{c:'LM', x:'50%', y:'15%'}, {c:'CM', x:'45%', y:'40%'}, {c:'CM', x:'45%', y:'60%'}, {c:'RM', x:'50%', y:'85%'}],
-            FWD: [{c:'ST', x:'80%', y:'35%'}, {c:'ST', x:'80%', y:'65%'}]
-        },
-        '3-4-3': {
-            GK: [{c:'GK', x:'6%', y:'50%'}],
-            DEF: [{c:'CB', x:'20%', y:'20%'}, {c:'CB', x:'15%', y:'50%'}, {c:'CB', x:'20%', y:'80%'}],
-            MID: [{c:'LM', x:'45%', y:'10%'}, {c:'CM', x:'40%', y:'40%'}, {c:'CM', x:'40%', y:'60%'}, {c:'RM', x:'45%', y:'90%'}],
-            FWD: [{c:'LW', x:'75%', y:'20%'}, {c:'ST', x:'82%', y:'50%'}, {c:'RW', x:'75%', y:'80%'}]
-        },
-        '3-5-2': {
-            GK: [{c:'GK', x:'6%', y:'50%'}],
-            DEF: [{c:'CB', x:'20%', y:'20%'}, {c:'CB', x:'15%', y:'50%'}, {c:'CB', x:'20%', y:'80%'}],
-            MID: [{c:'LM', x:'45%', y:'10%'}, {c:'DM', x:'40%', y:'50%'}, {c:'CM', x:'55%', y:'30%'}, {c:'CM', x:'55%', y:'70%'}, {c:'RM', x:'45%', y:'90%'}],
-            FWD: [{c:'ST', x:'80%', y:'35%'}, {c:'ST', x:'80%', y:'65%'}]
-        }
+    // ثالثاً: توزيع خط الهجوم (لضمان توازن القوة الهجومية)
+    distribute(allPlayers.filter(p => p.category === 'FWD'));
+
+    // رابعاً: توزيع خط الوسط واللاعبين المتبقين
+    distribute(allPlayers.filter(p => p.category === 'MID'));
+
+    // 7. الخريطة البصرية (Visual Map) لتحديد مواقع اللاعبين في الملعب
+    const visualMap = {
+        'GK':  {c:'GK', x:'6%', y:'50%'},
+        'CB':  {c:'CB', x:'18%', y:'50%'}, 
+        'LB':  {c:'LB', x:'25%', y:'15%'}, 
+        'RB':  {c:'RB', x:'25%', y:'85%'},
+        'CDM': {c:'DM', x:'40%', y:'50%'}, 
+        'CM':  {c:'CM', x:'45%', y:'50%'}, 
+        'CAM': {c:'CAM', x:'55%', y:'50%'},
+        'LM':  {c:'LM', x:'50%', y:'15%'}, 
+        'RM':  {c:'RM', x:'50%', y:'85%'},
+        'LW':  {c:'LW', x:'80%', y:'15%'}, 
+        'RW':  {c:'RW', x:'80%', y:'85%'}, 
+        'ST':  {c:'ST', x:'80%', y:'50%'}, 
+        'CF':  {c:'CF', x:'75%', y:'50%'},
+        // مواقع احتياطية عامة إذا تكرر المركز
+        'DEF_GENERIC': [{c:'CB', x:'18%', y:'38%'}, {c:'CB', x:'18%', y:'62%'}, {c:'LB', x:'25%', y:'20%'}],
+        'MID_GENERIC': [{c:'CM', x:'45%', y:'30%'}, {c:'CM', x:'45%', y:'70%'}, {c:'DM', x:'40%', y:'60%'}],
+        'FWD_GENERIC': [{c:'ST', x:'80%', y:'35%'}, {c:'ST', x:'80%', y:'65%'}, {c:'CF', x:'75%', y:'50%'}],
+        'SUB': {c:'SUB', x:'50%', y:'-15%'}
     };
 
-    // 7. دالة الحفظ الذكية (مع منطق البحث عن المركز الصحيح)
+    // 8. دالة الحفظ في قاعدة البيانات
     async function saveTeamToDB(teamArr, tableName) {
-        // أ) إحصاء عدد اللاعبين
-        let defCount = teamArr.filter(p => p.category === 'DEF').length;
-        let midCount = teamArr.filter(p => p.category === 'MID').length;
-        let fwdCount = teamArr.filter(p => p.category === 'FWD').length;
+        let catCounts = { DEF: 0, MID: 0, FWD: 0 }; // عداد لتوزيع الأماكن المكررة
 
-        // ب) اختيار التشكيلة
-        let chosenFormation = '4-3-3'; 
-        if (defCount >= 4) {
-            if (fwdCount >= 3) chosenFormation = '4-3-3';
-            else chosenFormation = '4-4-2';
-        } else {
-            if (midCount >= 5) chosenFormation = '3-5-2';
-            else chosenFormation = '3-4-3';
-        }
-
-        console.log(`Team: ${tableName}, Formation: ${chosenFormation} (Def:${defCount})`);
-
-        // ج) استنساخ الأماكن
-        const slots = JSON.parse(JSON.stringify(SMART_FORMATIONS[chosenFormation]));
-        const subSlot = {c:'SUB', x:'50%', y:'-15%'};
-
-        // دالة مساعدة للبحث عن الخانة المناسبة
-        // تحاول إيجاد خانة تطابق مركز اللاعب بالضبط، وإلا تأخذ أول خانة متاحة
-        function getBestSlot(slotArray, playerPos) {
-            if (!slotArray || slotArray.length === 0) return null;
-            
-            // محاولة إيجاد تطابق تام (مثلاً لاعب RB يبحث عن خانة RB)
-            let index = slotArray.findIndex(s => s.c === playerPos);
-            
-            // إذا لم يجد تطابق، يأخذ أول خانة متاحة في نفس الخط
-            if (index === -1) index = 0;
-            
-            return slotArray.splice(index, 1)[0];
-        }
-
-        // د) توزيع اللاعبين
         const dbRecords = teamArr.map(p => {
-            let role = p.category;
-            let specificPos = p.assignedPos; // المركز المحدد للاعب (مثلاً RB)
-            let targetSlot = null;
+            let role = p.assignedPos;
+            let coords, code;
 
-            // 1. الحارس
-            if (role === 'GK') {
-                targetSlot = getBestSlot(slots.GK, specificPos);
+            // محاولة العثور على موقع محدد
+            if (role === 'GK') { 
+                coords = visualMap['GK']; 
+                code = 'GK'; 
             }
-            // 2. الدفاع
-            else if (role === 'DEF') {
-                targetSlot = getBestSlot(slots.DEF, specificPos);
+            else if (role !== 'NONE' && visualMap[role] && !['CB','CM','ST'].includes(role)) { 
+                // المراكز الفريدة (LM, RM, CAM...)
+                coords = visualMap[role]; 
+                code = coords.c; 
+            }
+            else {
+                // المراكز المتكررة (CB, CM, ST) أو غير المحددة -> نستخدم القوائم العامة
+                let cat = getRoleCategory(role);
+                if (cat === 'GK') cat = 'DEF'; // fallback
                 
-                // إذا لم نجد خانة في الدفاع (مثلاً المدافع الخامس)، نرحّله للوسط كـ DM
-                if (!targetSlot) {
-                    const dmIndex = slots.MID.findIndex(s => s.c === 'DM' || s.c === 'CDM');
-                    if (dmIndex !== -1) {
-                        targetSlot = slots.MID.splice(dmIndex, 1)[0];
-                    } else if (slots.MID.length > 0) {
-                        targetSlot = slots.MID.shift();
-                        targetSlot.c = 'DM'; 
-                    }
-                }
+                let listName = cat + '_GENERIC';
+                let list = visualMap[listName] || visualMap['MID_GENERIC'];
+                
+                // تدوير الأماكن المتاحة
+                let index = catCounts[cat] % list.length;
+                coords = list[index];
+                code = coords.c;
+                catCounts[cat]++;
             }
-            // 3. الوسط
-            else if (role === 'MID') {
-                targetSlot = getBestSlot(slots.MID, specificPos);
-            }
-            // 4. الهجوم
-            else if (role === 'FWD') {
-                targetSlot = getBestSlot(slots.FWD, specificPos);
-            }
-
-            // 5. الملجأ الأخير (Failsafe) - إذا لم يجد مكاناً في خطه الأصلي
-            if (!targetSlot) {
-                if (slots.MID.length > 0) targetSlot = slots.MID.shift();
-                else if (slots.DEF.length > 0) targetSlot = slots.DEF.shift();
-                else if (slots.FWD.length > 0) targetSlot = slots.FWD.shift();
-                else targetSlot = subSlot;
-            }
-
+            
+            // تجهيز السجل لقاعدة البيانات (ملاحظة: player_pin يتم تعيينه 0000 لضمان عدم وجود كابتن عشوائي)
             return { 
                 name: p.name, 
                 time: Date.now(), 
-                position_code: targetSlot.c, 
-                position: JSON.stringify({ left: targetSlot.x, top: targetSlot.y }), 
+                position_code: code, 
+                position: JSON.stringify({left: coords.x || coords.left, top: coords.y || coords.top}), 
                 player_pin: "0000" 
             };
         });
@@ -2490,8 +2466,7 @@ async function generateBalancedTeams() {
         }
     }
 
-
-    // 8. التنفيذ: مسح القديم وحفظ الجديد
+    // 9. التنفيذ: مسح القديم وحفظ الجديد
     try {
         await supabase.from('blue_team').delete().gt('id', 0);
         await supabase.from('yellow_team').delete().gt('id', 0);
@@ -2506,12 +2481,12 @@ async function generateBalancedTeams() {
         setTimeout(() => {
             loadBlue();
             loadYellow();
-            showToast("✅ تم توزيع الفرق بنجاح (Smart Sheikh)!");
+            showToast("✅ تم توزيع الفرق بنجاح (Spine System)!");
             
             // إشعار في الشات
             supabase.from('chat_messages').insert([{
                 username: 'الشيخ 🤖',
-                content: '✅ تم إنشاء تشكيلة ذكية جديدة!'
+                content: '✅ تم إنشاء تشكيلة ذكية جديدة (نظام العمود الفقري)!'
             }]);
         }, 800);
 
@@ -2520,7 +2495,6 @@ async function generateBalancedTeams() {
         alert("حدث خطأ أثناء حفظ الفرق.");
     }
 }
-
 
 // 7. دالة جدولة العمل التلقائي للشيخ (كل سبت 8:55 مساءً)
 async function autoTeamMakerSchedule() {
