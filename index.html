@@ -651,10 +651,44 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
 <script>
-// -------------------- GLOBAL CONFIG --------------------
-const supabaseUrl = "https://wihhlvgkjglphjzhivdn.supabase.co"; 
-const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Mjk0MzA5NiwiZXhwIjoyMDc4NTE5MDk2fQ.qVT2CKqMKRW1Y1qEox9_cl4JvuLY659_UQxVDMBWBFA"; 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseServiceKey);
+// 1. إعداد اتصال Supabase (تعديل لتجنب الخطأ)
+const supabaseUrl = 'https://wihhlvgkjglphjzhivdn.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpaGhsdmdramdscGhqemhpdmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDMwOTYsImV4cCI6MjA3ODUxOTA5Nn0.0uG2yhtSzNiGfn3f1ZjB0p33lMh75Et28aMgMGznWlQ';
+
+// التأكد من تهيئة العميل مرة واحدة فقط
+if (!window.supabaseClient) {
+    window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    window.supabaseClient = true;
+}
+
+
+
+// 2. تعريف دالة أزرار الكابتن
+function updateCaptainButtons(team) {
+    const isCaptainMode = localStorage.getItem(`captain_mode_${team}`) === 'true';
+    const dynamicBtn = document.getElementById(`${team}DynamicBtn`);
+    if (dynamicBtn) {
+        const canEdit = isCaptainMode || (typeof systemConfig !== 'undefined' && systemConfig.allowFormationEdit);
+        dynamicBtn.style.display = canEdit ? 'inline-block' : 'none';
+        
+        const formationBtns = document.querySelectorAll(`#${team} .formation-btn`);
+        formationBtns.forEach(btn => btn.style.display = canEdit ? 'inline-block' : 'none');
+    }
+}
+
+
+// 2. تعريف دالة أزرار الكابتن
+function updateCaptainButtons(team) {
+    const isCaptainMode = localStorage.getItem(`captain_mode_${team}`) === 'true';
+    const dynamicBtn = document.getElementById(`${team}DynamicBtn`);
+    if (dynamicBtn) {
+        const canEdit = isCaptainMode || (typeof systemConfig !== 'undefined' && systemConfig.allowFormationEdit);
+        dynamicBtn.style.display = canEdit ? 'inline-block' : 'none';
+        
+        const formationBtns = document.querySelectorAll(`#${team} .formation-btn`);
+        formationBtns.forEach(btn => btn.style.display = canEdit ? 'inline-block' : 'none');
+    }
+}
 
 // Declare globals BEFORE usage in functions
 let currentPositionTarget = { team: null, playerId: null, playerName: null };
@@ -1107,47 +1141,77 @@ async function refillMainTeam(){
     sendSystemMessageToChat(f.name, `moved to the Main Team`);
   }
 }
-function reloadList(table){
-  if(table.includes("main") || table.includes("waiting")) loadPlayers();
-  else if(table==="blue_team") loadBlue(); else if(table==="yellow_team") loadYellow();
-  else if(table.includes("chat")) { if(table.includes("blue")) loadTeamChatMessages('blue'); else if(table.includes("yellow")) loadTeamChatMessages('yellow'); else loadChatMessages(); }
-  else if(table.includes("system_history")) loadSystemHistory(false);
-  else if(table.includes("laundry_history")) loadLaundryHistory(false);
+function reloadList(table) {
+  if (table.includes("main") || table.includes("waiting")) {
+    loadPlayers();
+  } else if (table === "blue_team") {
+    loadBlue();
+  } else if (table === "yellow_team") {
+    loadYellow();
+  } else if (table.includes("chat")) {
+    if (table.includes("blue")) loadTeamChatMessages('blue');
+    else if (table.includes("yellow")) loadTeamChatMessages('yellow');
+    else loadChatMessages();
+  } else if (table.includes("system_history")) {
+    loadSystemHistory(false);
+  } else if (table.includes("laundry_history")) {
+    loadLaundryHistory(false);
+  }
 }
+async function addTeam(team, inputId, providedName) {
+  if (!systemConfig.allowTeamEdit) return;
 
-async function addTeam(team, inputId, providedName){
-  if(!systemConfig.allowTeamEdit) return;
-  
   let name = providedName || document.getElementById(inputId).value.trim();
-  if(!name) return;
-  
+  if (!name) return;
+
   const table = `${team}_team`;
-  const { data: curr } = await supabase.from(table).select("id");
-  if(curr.length >= 12) return alert("Team Full");
-  
-  // تعديل هام: تعيين الرمز 0000 إجبارياً لضمان عدم كون اللاعب كابتن
-  let pin = "0000"; 
-  
-  const pos = FORMATIONS['4-3-3'][curr.length] || { left: '50%', top: '-15%', code: 'SUB' };
-  
-  // الإضافة لقاعدة البيانات
-  await supabase.from(table).insert([{ 
-      name, 
-      time: Date.now(), 
-      position: JSON.stringify({left:pos.left, top:pos.top}), 
-      position_code: pos.code, 
-      player_pin: pin // هنا نضمن أنه ليس كابتن
-  }]);
-  
-  if(!providedName) document.getElementById(inputId).value="";
-  if(providedName) closeTeamAddModal();
-  reloadList(table);
+
+  try {
+    const { data: curr, error: countError } = await supabase.from(table).select("id");
+    if (countError) throw countError;
+
+    if (curr && curr.length >= 12) {
+      alert("Team is full (Max 12 players)");
+      return;
+    }
+
+    const currentCount = curr ? curr.length : 0;
+    const pos = FORMATIONS['4-3-3'][currentCount] || { left: '50%', top: '-15%', code: 'SUB' };
+
+    // Fixing the insert format with correct Array wrapping []
+    const { error: insertError } = await supabase.from(table).insert([
+      {
+        name: name,
+        time: Date.now(),
+        position: JSON.stringify({ left: pos.left, top: pos.top }),
+        position_code: pos.code,
+        player_pin: "0000"
+      }
+    ]);
+
+    if (insertError) throw insertError;
+
+    if (!providedName) {
+      const inputField = document.getElementById(inputId);
+      if (inputField) inputField.value = "";
+    }
+    if (providedName) closeTeamAddModal();
+
+    reloadList(table);
+    showToast(`Successfully added: ${name}`);
+
+  } catch (err) {
+    console.error("Critical Database Error:", err);
+    alert("Save failed! Please check your internet or Supabase SQL.");
+  }
 }
 
-async function addBlue(n){ addTeam('blue', 'blueInput', n); }
-async function addYellow(n){ addTeam('yellow', 'yellowInput', n); }
+async function addBlue(n) { await addTeam('blue', 'blueInput', n); }
+async function addYellow(n) { await addTeam('yellow', 'yellowInput', n); }
 
 async function loadTeamData(team) {
+
+
     const table = `${team}_team`;
     const { data } = await supabase.from(table).select("*").order("id");
     const ul = document.getElementById(`${team}List`);
@@ -1602,12 +1666,24 @@ function renderMessage(m, id) {
 
 async function deleteSingleMessage(table, id) { if(!confirm("Delete?")) return; await supabase.from(table).delete().eq('id', id); reloadList(table); }
 
-async function loadChatMessages() { const { data } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); document.getElementById('chatMessages').innerHTML=''; data.forEach(m=>renderMessage(m,'chatMessages')); }
+async function loadChatMessages() { 
+    const { data } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); 
+    document.getElementById('chatMessages').innerHTML=''; 
+    // التعديل: إضافة (data || []) لمنع الخطأ إذا كانت البيانات فارغة
+    if (data) {
+        data.forEach(m=>renderMessage(m,'chatMessages')); 
+    }
+}
+
 async function loadTeamChatMessages(team) { 
     const { data } = await supabase.from(`${team}_chat`).select('*').order('created_at', {ascending:true}).limit(50); 
     document.getElementById(`${team}ChatMessages`).innerHTML=''; 
-    data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
+    // التعديل: التحقق من وجود data
+    if (data) {
+        data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
+    }
 }
+
 
 async function sendMessage() {
     const n = document.getElementById('chatNameInput').value; 
@@ -2693,9 +2769,11 @@ async function getPlayerNameById(table, playerId) {
     return data ? data.name : 'Unknown';
 }
 
-// -------------------- INITIALIZATION --------------------
 (async function init() {
-    // هذا السطر يضمن قفل الخطة دائماً عند تحديث الصفحة
+    // 1. إظهار الشاشة الرئيسية فوراً (الحل للشاشة السوداء)
+    showSection('main');
+
+    // 2. تنظيف الإعدادات القديمة
     localStorage.removeItem('captain_mode_blue');
     localStorage.removeItem('captain_mode_yellow');
 
@@ -2707,6 +2785,7 @@ async function getPlayerNameById(table, playerId) {
         if(document.getElementById('nameInput')) document.getElementById('nameInput').value = storedUsername;
     }
 
+    // تفعيل زر Enter للشات
     const chatMsgInput = document.getElementById('chatMsgInput');
     if (chatMsgInput) chatMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
 
@@ -2716,17 +2795,20 @@ async function getPlayerNameById(table, playerId) {
     const yellowMsgInput = document.getElementById('yellowChatMsgInput');
     if (yellowMsgInput) yellowMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
 
-    await loadSystemConfig(); 
-    loadMatchAddress(); 
-    loadPlayers(); 
-    loadBlue(); 
-    loadYellow(); 
-    loadChatMessages(); 
-    
-    checkAndRunAutoWash(); 
-    initUserTracking();
-
-    showSection('main');
+    // 3. تحميل البيانات في الخلفية (حتى لو تأخرت، الشاشة تعمل)
+    try {
+        await loadSystemConfig(); 
+        loadMatchAddress(); 
+        loadPlayers(); 
+        loadBlue(); 
+        loadYellow(); 
+        loadChatMessages(); 
+        
+        checkAndRunAutoWash(); 
+        initUserTracking();
+    } catch (error) {
+        console.error("Error loading data:", error);
+    }
 })();
 
 </script>
