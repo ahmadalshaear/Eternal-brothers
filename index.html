@@ -276,6 +276,112 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
   </h1>
 <p id="gameTimeDisplay" style="margin:5px 0; font-weight:bold; color:#fb8c00; font-size:16px;">The Game will be on Sunday at 9:40AM</p>
 
+<div id="weather-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%); border-radius: 12px; margin: 15px auto; max-width: 95%; border: 1px solid #FFD700; box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-family: 'Cairo', sans-serif; color: #fff; overflow: hidden; transition: all 0.3s ease;">
+    
+    <div onclick="toggleWeatherCard()" style="padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 215, 0, 0.05);">
+        <div style="text-align: left;">
+            <h3 id="weather-title" style="margin: 0; color: #FFD700; font-size: 16px;">🌤️ Match Day Weather</h3>
+            <span id="match-date" style="font-size: 10px; color: #00e676;">Meadow Heights</span>
+        </div>
+        <span id="toggle-icon" style="font-size: 12px; color: #FFD700;">[ Click to Hide ]</span>
+    </div>
+
+    <div id="weather-content" style="max-height: 500px; overflow: hidden; transition: max-height 0.4s ease-out; padding: 0 12px 12px 12px;">
+        <div id="weather-details" style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(255,215,0,0.1); padding-top: 10px;">
+            <p style="text-align:center; font-size:11px; color:#aaa;">Loading Sunday Forecast... 🛰️</p>
+        </div>
+
+        <div id="weather-footer" style="margin-top: 12px; background: rgba(211, 47, 47, 0.1); padding: 8px; border-radius: 8px; font-size: 10px; text-align: left; display:none; border: 1px dashed #d32f2f;">
+            <div id="alert-msg" style="color: #e57373; font-weight: bold; margin-bottom: 3px;"></div>
+            <div id="wind-info" style="color: #ccc;"></div>
+            <p style="margin: 4px 0 0 0; color: #ffeb3b; font-weight: bold; text-align: center;">⚠️ Caution: Lightning & Slippery Pitch!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle Function
+function toggleWeatherCard() {
+    const content = document.getElementById('weather-content');
+    const icon = document.getElementById('toggle-icon');
+    if (content.style.maxHeight === "0px") {
+        content.style.maxHeight = "500px";
+        icon.innerText = "[ Click to Hide ]";
+    } else {
+        content.style.maxHeight = "0px";
+        icon.innerText = "[ Click to View ]";
+    }
+}
+
+async function getSundayWeather() {
+    const lat = -37.64, lon = 144.92; // Meadow Heights
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&timezone=Australia%2FSydney&forecast_days=7`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const now = new Date();
+        const nextSunday = new Date();
+        nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7);
+        const dateStr = nextSunday.toISOString().split('T')[0];
+
+        document.getElementById('match-date').innerText = "Meadow Heights • " + nextSunday.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+
+        const hourly = data.hourly;
+        // Schedule: 9:40 AM to 1:00 PM
+        const slots = [
+            { h: "09:00", label: "09:40 AM Gathering" },
+            { h: "10:00", label: "10:30 AM Kick-off" },
+            { h: "11:00", label: "11:00 AM In Game" },
+            { h: "12:00", label: "12:00 PM Mid Game" },
+            { h: "13:00", label: "01:00 PM Full Time" }
+        ];
+
+        let html = "";
+        let highRain = 0;
+        let windSpeed = 0;
+        let isStormy = false;
+
+        slots.forEach(slot => {
+            const idx = hourly.time.findIndex(t => t.includes(`${dateStr}T${slot.h}`));
+            if (idx !== -1) {
+                const temp = Math.round(hourly.temperature_2m[idx]);
+                const prob = hourly.precipitation_probability[idx];
+                const code = hourly.weathercode[idx];
+                if (prob > highRain) highRain = prob;
+                if (code >= 95) isStormy = true;
+                windSpeed = hourly.windspeed_10m[idx];
+
+                let icon = "☀️";
+                if(code >= 1 && code <= 3) icon = "⛅";
+                if(code >= 51 && code <= 67) icon = "🌧️";
+                if(code >= 80 && code <= 82) icon = "🌦️";
+                if(code >= 95) icon = "⛈️";
+
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); padding: 6px 10px; border-radius: 6px; border-left: ${slot.h === "10:00" ? '2px solid #03A9F4' : 'none'};">
+                        <span style="font-weight: bold; width: 130px; font-size: 11px; color: #ddd;">${slot.label}</span>
+                        <span style="font-weight: bold; font-size: 13px;">${temp}°C <span style="font-size: 14px; margin-left: 3px;">${icon}</span></span>
+                    </div>`;
+            }
+        });
+
+        document.getElementById('weather-details').innerHTML = html;
+        // Data for Sunday Dec 21: Max rain ~60%, Thunderstorms expected
+        document.getElementById('alert-msg').innerText = isStormy ? "🚨 Scattered Thunderstorms Predicted!" : `💧 Rain Chance: ${highRain}%`;
+        // SE Wind 15-25 km/h
+        document.getElementById('wind-info').innerText = `🌬️ Wind: SE ${Math.round(windSpeed)} km/h`;
+        document.getElementById('weather-footer').style.display = "block";
+
+    } catch (e) {
+        document.getElementById('weather-details').innerHTML = "<p style='font-size:11px;'>Weather update unavailable.</p>";
+    }
+}
+getSundayWeather();
+</script>
+
+
   <div id="playerManagement">
     <h2>Add Player</h2>
     <input type="text" id="nameInput" placeholder="Enter player name">
@@ -2853,3 +2959,4 @@ async function getPlayerNameById(table, playerId) {
 
 </body>
 </html>
+
