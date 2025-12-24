@@ -324,14 +324,20 @@ async function updateWeatherPro() {
     document.getElementById('weather-date-label').innerHTML = `<span style="color:#FFD700">${nextSunday.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short' })}</span>`;
 
     try {
-        // الربط مع Google/Open-Meteo لملبورن
         const url = `https://api.open-meteo.com/v1/forecast?latitude=-37.64&longitude=144.92&hourly=temperature_2m,apparent_temperature,precipitation_probability,weathercode,windspeed_10m&timezone=Australia%2FMelbourne&start_date=${apiDate}&end_date=${apiDate}`;
         const response = await fetch(url);
         const data = await response.json();
 
         if (data && data.hourly) {
-            const hours = [9, 10, 12, 13]; 
-            const labels = { 9: "Gathering (9:40)", 10: "Kick-off (10:30)", 12: "Mid-Game", 13: "Finish (1:00)" };
+            // إضافة الساعة 11 إلى المصفوفة هنا
+            const hours = [9, 10, 11, 12, 13]; 
+            const labels = { 
+                9: "Gathering (9:40)", 
+                10: "Kick-off (10:30)", 
+                11: "In-Game", // تسمية مضافة للساعة 11
+                12: "Mid-Game", 
+                13: "Finish (1:00)" 
+            };
             let html = "";
 
             hours.forEach(h => {
@@ -344,7 +350,7 @@ async function updateWeatherPro() {
                 html += `
                 <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; border-left: 4px solid #FFD700; display:flex; justify-content:space-between; align-items:center;">
                     <div style="width: 100px;">
-                        <div style="color: #FFD700; font-weight: bold; font-size: 13px;">${h > 12 ? (h-12)+':00 PM' : h+':00 AM'}</div>
+                        <div style="color: #FFD700; font-weight: bold; font-size: 13px;">${h > 12 ? (h-12)+':00 PM' : (h === 12 ? '12:00 PM' : h+':00 AM')}</div>
                         <div style="color: #eee; font-size: 10px;">${labels[h]}</div>
                     </div>
                     <div style="flex-grow:1; display:flex; justify-content:center; gap:12px;">
@@ -366,6 +372,7 @@ async function updateWeatherPro() {
         detailsDiv.innerHTML = "<div style='color:red;'>Update Failed</div>";
     }
 }
+
 window.addEventListener('load', updateWeatherPro);
 </script>
 
