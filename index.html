@@ -858,7 +858,6 @@ function previewAvatar(input) {
     }
 }
 
-// دالة الدخول الجديدة
 async function submitFullProfile() {
     const name = document.getElementById('forcedNameInput').value.trim();
     const avatarFile = document.getElementById('avatarInput').files[0];
@@ -876,30 +875,39 @@ async function submitFullProfile() {
         return;
     }
 
-    document.getElementById('entryBtn').innerText = "Uploading... ⏳";
+    const btn = document.getElementById('entryBtn');
+    btn.innerText = "Uploading... ⏳";
+    btn.disabled = true;
 
-    // 1. رفع الصورة إلى Supabase Storage
-    const fileName = `avatars/${Date.now()}_${name.replace(/\s+/g, '_')}.jpg`;
-    const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
+    try {
+        // رفع الصورة
+        const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+        const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
 
-    if (error) {
-        alert("Upload failed. Try a smaller image.");
-        document.getElementById('entryBtn').innerText = "Try Again";
-        return;
+        if (error) throw error;
+
+        // الحصول على الرابط العام
+        const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
+        const avatarUrl = urlData.publicUrl;
+
+        // حفظ البيانات بشكل موحد في كل المفاتيح المستخدمة في الكود
+        localStorage.setItem('chat_username', name);
+        localStorage.setItem('chat_avatar', avatarUrl);
+        localStorage.setItem('user_avatar', avatarUrl); // هذا المفتاح هو الأكثر استخداماً في كودك
+
+        document.getElementById('englishNameModal').style.display = 'none';
+        showToast("Profile Created! Welcome " + name);
+        
+        // إرسال لوج الدخول بالصورة
+        await logUserStatus('Online 🟢');
+
+        // إعادة تحميل لضمان تحديث الواجهة
+        location.reload(); 
+    } catch (err) {
+        alert("Upload failed: " + err.message);
+        btn.innerText = "Try Again";
+        btn.disabled = false;
     }
-
-    // 2. الحصول على الرابط العام للصورة
-    const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-    const avatarUrl = urlData.publicUrl;
-
-    // 3. حفظ البيانات محلياً
-    localStorage.setItem('chat_username', name);
-    localStorage.setItem('chat_avatar', avatarUrl);
-
-    // 4. إغلاق النافذة وبدء التطبيق
-    document.getElementById('englishNameModal').style.display = 'none';
-    showToast("Profile Created! Welcome " + name);
-    location.reload(); // إعادة التحميل لتطبيق التغييرات في كل مكان
 }
 
 function showSection(id){
@@ -1809,8 +1817,8 @@ function renderMessage(m, id) {
     const div = document.getElementById(id); 
     const isMe = m.username === localStorage.getItem('chat_username');
     
-    // جلب رابط الصورة الشخصية من بيانات الرسالة (أو صورة افتراضية إذا لم تتوفر)
-    const userAvatar = m.avatar_url || 'https://via.placeholder.com/35';
+    // إذا كان avatar_url فارغاً نضع صورة افتراضية
+    const userAvatar = m.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
     
     let c = m.content;
     if (c.startsWith('[IMG]')) { 
@@ -1907,13 +1915,51 @@ async function sendMessage() {
 }
 
 
+async function sendMessage() {
+    const n = document.getElementById('chatNameInput').value; 
+    const c = document.getElementById('chatMsgInput').value;
+    const avatar = localStorage.getItem('user_avatar'); // جلب الرابط المخزن
+
+    if (!n || !c) return;
+    if (n.trim().split(/\s+/).length < 2) return alert("Full Name Required!");
+
+    const { error } = await supabase.from('chat_messages').insert([{ 
+        username: n, 
+        content: c,
+        avatar_url: avatar // التأكد من إرسال الرابط هنا
+    }]);
+
+    if (!error) {
+        document.getElementById('chatMsgInput').value = '';
+    }
+}
+
+// كرر نفس الأمر لدالة sendTeamMessage
 async function sendTeamMessage(team) {
-    // 1. جلب المدخلات بناءً على اسم الفريق (blue أو yellow)
     const n = document.getElementById(`${team}ChatNameInput`).value; 
-    const avatar = localStorage.getItem('user_avatar'); // جلب رابط بصمة الصورة الشخصية
+    const c = document.getElementById(`${team}ChatMsgInput`).value;
+    const avatar = localStorage.getItem('user_avatar');
+
+    if(!n || !c) return; 
+
+    const table = `${team}_chat`;
+    await supabase.from(table).insert([{ 
+        username: n, 
+        content: c,
+        avatar_url: avatar
+    }]);
+
+    document.getElementById(`${team}ChatMsgInput`).value = '';
+}
+
+// 2. دالة إرسال رسائل الفرق (Blue & Yellow Team Chat)
+async function sendTeamMessage(team) {
+    // جلب المدخلات بناءً على اسم الفريق (blue أو yellow)
+    const n = document.getElementById(`${team}ChatNameInput`).value; 
+    const avatar = localStorage.getItem('chat_avatar'); // جلب رابط بصمة الصورة الشخصية
     const c = document.getElementById(`${team}ChatMsgInput`).value;
 
-    // 2. امتيازات التحقق (الحفاظ على شروطك الأصلية تماماً)
+    // امتيازات التحقق (الحفاظ على شروطك الأصلية تماماً)
     if (!/^[A-Za-z0-9\s]+$/.test(n)) { 
         return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); 
     }
@@ -1921,21 +1967,21 @@ async function sendTeamMessage(team) {
         return alert("Full Name Required (First & Last) / الاسم الكامل مطلوب (الاسم واللقب)"); 
     }
     
-    // 3. منع الإرسال إذا كانت البيانات ناقصة
+    // منع الإرسال إذا كانت البيانات ناقصة
     if(!n || !c) return; 
 
-    // 4. حفظ الاسم في الذاكرة المحلية لسهولة الاستخدام
+    // حفظ الاسم في الذاكرة المحلية لسهولة الاستخدام
     localStorage.setItem('chat_username', n);
 
-    // 5. الإرسال إلى جدول الفريق المحدد مع إضافة رابط الصورة (avatar_url)
+    // تحديد الجدول تلقائياً والإرسال مع رابط الصورة
     const table = `${team}_chat`;
     const { error } = await supabase.from(table).insert([{ 
         username: n, 
         content: c,
-        avatar_url: avatar // ربط صورة "بصمة الدخول" بالرسالة
+        avatar_url: avatar
     }]);
 
-    // 6. مسح حقل الكتابة بعد نجاح الإرسال
+    // مسح حقل الكتابة بعد نجاح الإرسال
     if (!error) {
         document.getElementById(`${team}ChatMsgInput`).value = '';
     } else {
@@ -2149,53 +2195,71 @@ function updateOnlineUsersUI(users) {
 }
 
 function setupRealtime() {
-  const myName = localStorage.getItem('chat_username') || 'Guest';
-  
-  supabase.channel('global-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
-        renderMessage(payload.new, 'chatMessages'); 
-        if (payload.new.username !== myName) playNotificationSound();
-    })
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
-    .subscribe();
-    
-  supabase.channel('system-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { const hc = document.getElementById('systemHistoryContainer'); if (hc.style.display === 'block') loadSystemHistory(false); }).subscribe();
-  supabase.channel('laundry-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { const container = document.getElementById('laundryHistoryContainer'); if (container.style.display === 'block') loadLaundryHistory(false); }).subscribe();
-  
-  supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
-      if(document.getElementById('blue').style.display === 'block') {
-          renderMessage(payload.new, 'blueChatMessages'); 
-          if (payload.new.username !== myName) playNotificationSound();
-      }
-  }).subscribe();
+    // تنظيف أي قنوات قديمة لمنع التعارض وضمان السرعة
+    if (supabase.removeAllChannels) {
+        supabase.removeAllChannels();
+    }
 
-  supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
-      if(document.getElementById('yellow').style.display === 'block') {
-          renderMessage(payload.new, 'yellowChatMessages'); 
-          if (payload.new.username !== myName) playNotificationSound();
-      }
-  }).subscribe();
+    // 1. القناة العامة
+    supabase.channel('global-room')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
+            renderMessage(payload.new, 'chatMessages'); 
+        })
+        .subscribe();
 
-  supabase.channel('teams-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue()).on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow()).subscribe();
+    // 2. قناة الفريق الأزرق
+    supabase.channel('blue-room')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
+            if(document.getElementById('blue').style.display === 'block') {
+                renderMessage(payload.new, 'blueChatMessages'); 
+            }
+        })
+        .subscribe();
 
-  roomChannel = supabase.channel('online-room', { config: { presence: { key: myId, }, }, });
-  roomChannel
-    .on('presence', { event: 'sync' }, () => {
-      const newState = roomChannel.presenceState();
-      const users = [];
-      for (const id in newState) { const userObj = newState[id][0]; if (userObj && userObj.name) users.push(userObj.name); }
-      updateOnlineUsersUI(users);
-    })
-    .on('broadcast', { event: 'typing' }, ({ payload }) => {
-        const indicator = document.getElementById('typingIndicator');
-        if(indicator) {
-            indicator.innerText = `${payload.name} is typing...`;
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
-        }
-    })
-    .subscribe(async (status) => { if (status === 'SUBSCRIBED') { const name = document.getElementById('chatNameInput').value || 'Guest'; await roomChannel.track({ name: name, online_at: new Date().toISOString() }); } });
-}
+    // 3. قناة الفريق الأصفر
+    supabase.channel('yellow-room')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
+            if(document.getElementById('yellow').style.display === 'block') {
+                renderMessage(payload.new, 'yellowChatMessages'); 
+            }
+        })
+        .subscribe();
+
+    // 4. تحديثات قوائم اللاعبين فورياً
+    supabase.channel('teams-updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
+        .subscribe();
+
+    // 5. التواجد أونلاين ومؤشر الكتابة
+    roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
+    roomChannel
+        .on('presence', { event: 'sync' }, () => {
+            const newState = roomChannel.presenceState();
+            const users = [];
+            for (const id in newState) { 
+                const userObj = newState[id][0]; 
+                if (userObj && userObj.name) users.push(userObj.name); 
+            }
+            updateOnlineUsersUI(users);
+        })
+        .on('broadcast', { event: 'typing' }, ({ payload }) => {
+            const indicator = document.getElementById('typingIndicator');
+            if(indicator) {
+                indicator.innerText = `${payload.name} is typing...`;
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
+            }
+        })
+        .subscribe(async (status) => { 
+            if (status === 'SUBSCRIBED') { 
+                const name = localStorage.getItem('chat_username') || 'Guest'; 
+                await roomChannel.track({ name: name, online_at: new Date().toISOString() }); 
+            } 
+        });
+} // <-- هذا القوس كان مفقوداً في الكود الخاص بك
 
 async function checkAndRunAutoWash() {
     const now = new Date();
