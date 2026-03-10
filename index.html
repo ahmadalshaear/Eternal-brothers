@@ -162,9 +162,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 .player-position-label { font-size: 13px; font-weight: bold; color: white; }
 .chat-container { width: 100%; max-width: 100%; margin: 20px 0 0 0; background: #242424; border-radius: 10px; padding: 10px; box-shadow: 0 0 5px #000; text-align: left; }
 .team-chat-container { background: none; box-shadow: none; margin: 5px 0 0 0; padding: 0; }
-#onlineUsersBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; margin-bottom: 10px; background: #1a1a1a; border-radius: 8px; min-height: 25px; border-bottom: 1px solid #333; }
-.online-user-pill { background: #333; border-radius: 15px; padding: 4px 10px; font-size: 12px; display: flex; align-items: center; color: #fff; border: 1px solid #555; font-weight: bold; }
-.online-dot { width: 8px; height: 8px; background-color: #00e676; border-radius: 50%; margin-left: 6px; box-shadow: 0 0 6px #00e676; animation: blink 2s infinite; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
 #typingIndicator { font-size: 12px; color: #00e676; height: 18px; margin-top: 5px; margin-bottom: 5px; font-style: italic; padding-left: 5px; font-weight: bold; text-align: right; }
 .chat-messages { height: 250px; overflow-y: auto; margin-bottom: 5px; padding: 5px; background: #1e1e1e; border-radius: 5px; display: flex; flex-direction: column; text-align: left; }
@@ -2320,42 +2317,6 @@ function handleTyping(context) {
     roomChannel.send({ type: 'broadcast', event: 'typing', payload: { name: name } });
 }
 
-async function updateOnlineUsersUI(onlineNames) {
-    const bar = document.getElementById('onlineUsersBar');
-    if (!bar) return;
-
-    if (!onlineNames || onlineNames.length === 0) {
-        bar.innerHTML = '<span style="color:#555; font-size:12px; margin:auto;">Waiting for brothers... ⚽</span>';
-        return;
-    }
-
-    // جلب بيانات الصور من جدول user_logs لضمان عرض الصورة الحقيقية لكل شخص أونلاين
-    const { data: logs, error } = await supabase
-        .from('user_logs')
-        .select('username, avatar_url');
-
-    const avatarMap = {};
-    if (logs) {
-        logs.forEach(l => avatarMap[l.username] = l.avatar_url);
-    }
-
-    // إزالة التكرار من الأسماء المتصلة
-    const uniqueOnlineUsers = [...new Set(onlineNames)];
-
-    bar.innerHTML = uniqueOnlineUsers.map(name => {
-        const img = avatarMap[name] || 'https://www.w3schools.com/howto/img_avatar.png'; // صورة افتراضية إذا لم يرفع صورة
-        return `
-            <div class="online-avatar-container" title="${name}">
-                <img src="${img}" class="online-avatar-img">
-                <div class="online-status-dot"></div>
-                <span class="online-user-name">${name.split(' ')[0]}</span> 
-            </div>
-        `;
-    }).join('');
-}
-
-
-
 
 // دالة إظهار الاسم عند النقر
 function toggleOnlineName(event, name) {
@@ -2376,7 +2337,7 @@ function setupRealtime() {
     const myName = localStorage.getItem('chat_username') || 'Guest';
     const myAvatar = localStorage.getItem('user_avatar') || '';
 
-    // قناة تحديث سجل المستخدمين
+    // --- 1. قناة تحديث سجل المستخدمين (User Stats) ---
     supabase.channel('user-logs-updates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'user_logs' }, () => {
             if (document.getElementById('userLogContainer').style.display === 'block') {
@@ -2385,7 +2346,19 @@ function setupRealtime() {
         })
         .subscribe();
 
-    // 1. قناة تحديثات الدردشة
+    // --- 2. قناة التحديثات اللحظية لجدول user_presence (المهمة لطلبك) ---
+    supabase.channel('presence-table-sync')
+        .on('postgres_changes', { 
+            event: '*', 
+            schema: 'public', 
+            table: 'user_presence' 
+        }, () => {
+            // تحديث شريط الحالات فور حدوث أي تغيير في الجدول (دخول أو خروج)
+            updateOnlineBarFromTable();
+        })
+        .subscribe();
+
+    // --- 3. قناة تحديثات الدردشة (العام والفرق) ---
     supabase.channel('chat-updates')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
             renderMessage(payload.new, 'chatMessages'); 
@@ -2406,7 +2379,7 @@ function setupRealtime() {
         })
         .subscribe();
 
-    // 2. قناة تحديثات الجداول
+    // --- 4. قناة تحديثات الجداول (اللاعبين، التاريخ، الغسيل) ---
     supabase.channel('table-updates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
@@ -2420,47 +2393,18 @@ function setupRealtime() {
         })
         .subscribe();
 
-    // 3. قناة التواجد (تمت إضافة الربط مع الجدول)
-    roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
+    // --- 5. قناة التواجد اللحظية (Presence) لضمان الحذف الفوري عند الإغلاق ---
+    roomChannel = supabase.channel('online-room', { config: { presence: { key: myName } } });
     
     roomChannel.on('presence', { event: 'sync' }, () => {
-        const newState = roomChannel.presenceState();
-        const onlineUsers = [];
-        
-        for (const id in newState) { 
-            const userObj = newState[id][0]; 
-            // نأخذ الاسم من المستشعر اللحظي
-            if (userObj && userObj.name) onlineUsers.push(userObj.name); 
-        }
-        
-        // --- التعديل هنا: استدعاء الدالة الجديدة التي ترسلها الأسماء اللحظية ---
-        refreshOnlineUsersUI(onlineUsers); 
-
-        // تحديث سجل النشاط (Activity Log) ليبقى يعمل كما هو
-        const logItems = document.querySelectorAll('#userLogList li');
-        logItems.forEach(item => {
-            const nameElement = item.querySelector('span[style*="font-weight:bold"]');
-            if (nameElement) {
-                const userName = nameElement.innerText.trim();
-                const dot = item.querySelector('div[style*="border-radius:50%"]:not(img)');
-                const img = item.querySelector('img');
-                const statusText = item.querySelector('span[style*="font-size: 10px"]');
-
-                if (onlineUsers.includes(userName)) {
-                    if (dot) dot.style.background = '#00e676';
-                    if (img) img.style.borderColor = '#00e676';
-                    if (statusText) { statusText.innerText = 'Online Now'; statusText.style.color = '#00e676'; }
-                } else {
-                    if (dot) dot.style.background = '#757575';
-                    if (img) img.style.borderColor = '#757575';
-                }
-            }
-        });
+        // تحديث الواجهة بناءً على المتصلين حالياً
+        updateOnlineBarFromTable();
     })
     .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-            // --- إضافة هامة: إرسال الاسم للمستشعر وتحديث الجدول فوراً ---
-            await roomChannel.track({ name: myName, avatar: myAvatar });
+            await roomChannel.track({ avatar: myAvatar });
+            
+            // تسجيل الدخول في الجدول
             await supabase.from('user_presence').upsert([{ 
                 username: myName, 
                 avatar_url: myAvatar,
@@ -2469,18 +2413,69 @@ function setupRealtime() {
             }], { onConflict: 'username' });
         }
     });
+
+    // تحميل الشريط لأول مرة
+    updateOnlineBarFromTable();
 }
 
-// --- إضافة هامة خارج الدالة: تحديث الجدول عند إغلاق المتصفح ---
+// --- دالة رسم شريط الحالات بناءً على المتصلين فقط في الجدول ---
+async function updateOnlineBarFromTable() {
+    const bar = document.getElementById('onlineUsersBar');
+    if (!bar) return;
+
+    // جلب المستخدمين الذين حالتهم Online فقط من التيبل
+    const { data: onlineUsers, error } = await supabase
+        .from('user_presence')
+        .select('username, avatar_url')
+        .eq('is_online', true);
+
+    if (error || !onlineUsers || onlineUsers.length === 0) {
+        bar.innerHTML = '<span style="color:#555; font-size:11px; margin:auto;">No brothers online ⚽</span>';
+        return;
+    }
+
+    // رسم الأفاتارات للأشخاص المتصلين
+    bar.innerHTML = onlineUsers.map(user => `
+        <div class="online-avatar-container" title="${user.username}" style="margin-right:12px;">
+            <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" 
+                 class="online-avatar-img" 
+                 style="border: 2px solid #00e676; width:40px; height:40px; border-radius:50%; object-fit:cover;">
+            <div class="online-status-dot" style="position:absolute; bottom:18px; right:2px; width:10px; height:10px; background:#00e676; border-radius:50%; border:2px solid #1a1a1a;"></div>
+            <span class="online-user-name" style="font-size:10px; color:#fff; display:block; text-align:center;">${user.username.split(' ')[0]}</span> 
+        </div>
+    `).join('');
+}
+
+// --- معالج الخروج الفوري عند إغلاق المتصفح ---
 window.addEventListener('beforeunload', async () => {
     const myName = localStorage.getItem('chat_username');
     if (myName) {
-        // إخبار قاعدة البيانات أن المستخدم خرج فعلياً
-        await supabase.from('user_presence')
-            .update({ is_online: false, last_seen: new Date().toISOString() })
-            .eq('username', myName);
+        // تحديث الحالة إلى Offline فوراً في الجدول
+        await supabase.from('user_presence').update({ 
+            is_online: false, 
+            last_seen: new Date().toISOString() 
+        }).eq('username', myName);
     }
 });
+
+
+// --- إضافة هامة خارج الدالة: تحديث الجدول عند إغلاق المتصفح ---
+window.addEventListener('beforeunload', () => {
+    // إرسال إشارة الخروج لقاعدة البيانات قبل إغلاق الصفحة مباشرة
+    logUserPresence(false);
+});
+
+async function logUserPresence(isOnline) {
+    const name = localStorage.getItem('chat_username');
+    if (!name) return;
+
+    await supabase.from('user_presence').upsert([{ 
+        username: name, 
+        is_online: isOnline,
+        last_seen: new Date().toISOString()
+    }], { onConflict: 'username' });
+}
+
 
 async function checkAndRunAutoWash() {
     const now = new Date();
@@ -3514,6 +3509,8 @@ async function loadChatMessages() {
     }
 })();
 
+
+// 1. الدالة الموحدة لتحديث حالة التواجد في جدول user_presence
 async function updateMyPresence(status) {
     const name = localStorage.getItem('chat_username');
     const avatar = localStorage.getItem('user_avatar');
@@ -3527,65 +3524,86 @@ async function updateMyPresence(status) {
             last_seen: new Date().toISOString()
         }], { onConflict: 'username' });
         
-        // استدعاء تحديث الواجهة فوراً بعد تغيير حالتك
-        if (typeof refreshOnlineUsers === 'function') refreshOnlineUsers();
+        console.log(`Presence set to: ${status ? 'Online' : 'Offline'}`);
     } catch (e) {
-        console.error("Error updating presence:", e);
+        console.error("Error updating presence table:", e);
     }
 }
 
-// 1. دالة تحديث حالة التواجد في الجدول
-async function updateMyPresence(status) {
+// 2. دالة رسم كرات المتصلين (تعيد بناء الشريط بالكامل بناءً على البث اللحظي)
+function renderOnlineBarUI(onlineUsers) {
+    const bar = document.getElementById('onlineUsersBar');
+    if (!bar) return;
+
+    if (onlineUsers.length === 0) {
+        bar.innerHTML = '<span style="color:#555; font-size:12px; margin:auto;">No brothers online ⚽</span>';
+        return;
+    }
+
+    // بناء الأفاتار للموجودين حالياً فقط، أي شخص يخرج سيختفي فوراً من هذه المصفوفة
+    bar.innerHTML = onlineUsers.map(user => `
+        <div class="online-avatar-container" id="avatar-${user.name.replace(/\s+/g, '-')}" title="${user.name}">
+            <img src="${user.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" class="online-avatar-img">
+            <div class="online-status-dot"></div>
+            <span class="online-user-name">${user.name.split(' ')[0]}</span> 
+        </div>
+    `).join('');
+}
+
+// 3. تحديث مؤشرات سجل النشاط (User Status)
+function updateStatsIndicators(onlineNames) {
+    const logItems = document.querySelectorAll('#userLogList li');
+    logItems.forEach(item => {
+        const nameElement = item.querySelector('span[style*="font-weight:bold"]');
+        if (nameElement) {
+            const userName = nameElement.innerText.trim();
+            const dot = item.querySelector('div[style*="border-radius:50%"]:not(img)');
+            const img = item.querySelector('img');
+            const statusText = item.querySelector('span[style*="font-size: 10px"]');
+
+            if (onlineNames.includes(userName)) {
+                if (dot) dot.style.background = '#00e676';
+                if (img) img.style.borderColor = '#00e676';
+                if (statusText) { 
+                    statusText.innerText = 'Online Now'; 
+                    statusText.style.color = '#00e676'; 
+                }
+            } else {
+                if (dot) dot.style.background = '#757575';
+                if (img) img.style.borderColor = '#757575';
+            }
+        }
+    });
+}
+
+// 4. تفعيل المغادرة الفورية عند إغلاق التبويب أو المتصفح
+window.addEventListener('beforeunload', () => {
+    updateMyPresence(false);
+});
+
+// دالة تحديث التيبل
+async function setPresenceStatus(isOnline) {
     const name = localStorage.getItem('chat_username');
     const avatar = localStorage.getItem('user_avatar');
     if (!name) return;
 
-    try {
-        await supabase.from('user_presence').upsert([{ 
-            username: name, 
-            avatar_url: avatar,
-            is_online: status,
-            last_seen: new Date().toISOString()
-        }], { onConflict: 'username' });
-        
-        // تحديث القائمة فوراً بعد تغيير حالتك
-        refreshOnlineUsers();
-    } catch (e) {
-        console.error("Presence error:", e);
-    }
+    await supabase.from('user_presence').upsert([{ 
+        username: name, 
+        avatar_url: avatar,
+        is_online: isOnline,
+        last_seen: new Date().toISOString()
+    }], { onConflict: 'username' });
 }
 
-// 2. دالة جلب وعرض المتصلين في شريط الشات
-async function refreshOnlineUsers() {
-    try {
-        const { data, error } = await supabase
-            .from('user_presence')
-            .select('*')
-            .eq('is_online', true);
+// عند إغلاق الصفحة، اجعل الحالة false فوراً في التيبل
+window.addEventListener('beforeunload', () => {
+    // نستخدم sendBeacon أو استدعاء سريع لضمان التنفيذ قبل الإغلاق
+    setPresenceStatus(false);
+});
 
-        const bar = document.getElementById('onlineUsersBar');
-        if (!bar || error) return;
-
-        bar.innerHTML = data.map(user => `
-            <div class="online-avatar-container" title="${user.username}">
-                <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" class="online-avatar-img">
-                <div class="online-status-dot"></div>
-                <span class="online-user-name">${user.username.split(' ')[0]}</span> 
-            </div>
-        `).join('');
-    } catch (e) {
-        console.error("Refresh error:", e);
-    }
-}
-
-window.addEventListener('beforeunload', async () => {
-    const myName = localStorage.getItem('chat_username');
-    if (myName) {
-        // تحديث جدول قاعدة البيانات بأن المستخدم غادر
-        await supabase.from('user_presence')
-            .update({ is_online: false, last_seen: new Date().toISOString() })
-            .eq('username', myName);
-    }
+// عند فتح الصفحة، اجعل الحالة true
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => setPresenceStatus(true), 1500);
 });
 
 
