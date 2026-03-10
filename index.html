@@ -572,6 +572,9 @@ setInterval(() => {
 }
 
 window.addEventListener('load', updateWeatherPro);
+window.addEventListener('beforeunload', () => {
+    updateMyPresence(false);
+});
 </script>
 
 
@@ -2057,20 +2060,19 @@ async function sendMessage() {
 
     if (!n || !c) return;
     
-    // حفظ الاسم لضمان استمرارية الهوية
     localStorage.setItem('chat_username', n);
 
-    const { data, error } = await supabase.from('chat_messages').insert([{ 
+    // نكتفي بالإرسال لقاعدة البيانات فقط
+    const { error } = await supabase.from('chat_messages').insert([{ 
         username: n, 
         content: c,
         avatar_url: avatar,
         created_at: new Date().toISOString()
-    }]).select();
+    }]);
 
     if (!error) {
         document.getElementById('chatMsgInput').value = '';
-        // إذا لم يعمل الـ Realtime فوراً، هذه السطر يضمن ظهور رسالتك عندك
-        if(data) renderMessage(data[0], 'chatMessages');
+        // تم حذف renderMessage من هنا لأن setupRealtime سيتكفل بعرضها فور وصولها
     } else {
         console.error("إخفاق في الإرسال:", error);
     }
@@ -3415,13 +3417,35 @@ async function logUserStatus(status) {
     }
 }
 
+async function logUserPresence(status) {
+    const name = localStorage.getItem('chat_username');
+    const avatar = localStorage.getItem('user_avatar'); 
+    
+    if (!name) return;
+
+    try {
+        // تحديث حالة الاتصال في الجدول الخاص
+        await supabase.from('user_presence').upsert([{ 
+            username: name, 
+            avatar_url: avatar,
+            is_online: (status === 'Online 🟢'),
+            last_seen: new Date().toISOString()
+        }], { onConflict: 'username' });
+        
+    } catch (e) { 
+        console.error("Presence log error", e); 
+    }
+}
 
 
 function initUserTracking() {
-    logUserStatus('Online 🟢');
-    window.addEventListener('beforeunload', () => logUserStatus('Offline ⚪'));
-    setInterval(() => logUserStatus('Online 🟢'), 300000);
+    updateMyPresence(true); // تحديث جدول user_presence
+    logUserStatus('Online 🟢'); // تحديث اللوج القديم (إذا كنت لا تزال تريده)
+
+    // تحديث الحالة كل 5 دقائق لضمان بقاء المستخدم "نشط"
+    setInterval(() => updateMyPresence(true), 300000);
 }
+
 
 // دالة تحميل الرسائل الأساسية التي كانت تظهر كخطأ أحمر
 async function loadChatMessages() { 
@@ -3479,6 +3503,71 @@ async function loadChatMessages() {
         console.error("Error during initialization:", error);
     }
 })();
+
+async function updateMyPresence(status) {
+    const name = localStorage.getItem('chat_username');
+    const avatar = localStorage.getItem('user_avatar');
+    if (!name) return;
+
+    try {
+        await supabase.from('user_presence').upsert([{ 
+            username: name, 
+            avatar_url: avatar,
+            is_online: status,
+            last_seen: new Date().toISOString()
+        }], { onConflict: 'username' });
+        
+        // استدعاء تحديث الواجهة فوراً بعد تغيير حالتك
+        if (typeof refreshOnlineUsers === 'function') refreshOnlineUsers();
+    } catch (e) {
+        console.error("Error updating presence:", e);
+    }
+}
+
+// 1. دالة تحديث حالة التواجد في الجدول
+async function updateMyPresence(status) {
+    const name = localStorage.getItem('chat_username');
+    const avatar = localStorage.getItem('user_avatar');
+    if (!name) return;
+
+    try {
+        await supabase.from('user_presence').upsert([{ 
+            username: name, 
+            avatar_url: avatar,
+            is_online: status,
+            last_seen: new Date().toISOString()
+        }], { onConflict: 'username' });
+        
+        // تحديث القائمة فوراً بعد تغيير حالتك
+        refreshOnlineUsers();
+    } catch (e) {
+        console.error("Presence error:", e);
+    }
+}
+
+// 2. دالة جلب وعرض المتصلين في شريط الشات
+async function refreshOnlineUsers() {
+    try {
+        const { data, error } = await supabase
+            .from('user_presence')
+            .select('*')
+            .eq('is_online', true);
+
+        const bar = document.getElementById('onlineUsersBar');
+        if (!bar || error) return;
+
+        bar.innerHTML = data.map(user => `
+            <div class="online-avatar-container" title="${user.username}">
+                <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" class="online-avatar-img">
+                <div class="online-status-dot"></div>
+                <span class="online-user-name">${user.username.split(' ')[0]}</span> 
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error("Refresh error:", e);
+    }
+}
+
 
 </script>
 </body>
