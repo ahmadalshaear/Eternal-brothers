@@ -295,6 +295,10 @@ function previewAvatar(input) {
         reader.onload = function(e) {
             document.getElementById('userAvatarPreview').src = e.target.result;
         }
+        // أضف هذه الأسطر قبل reload في دالة submitFullProfile
+await logUserStatus('Online 🟢');
+setupRealtime(); 
+
         reader.readAsDataURL(input.files[0]);
     }
 }
@@ -356,27 +360,32 @@ async function submitFullProfile() {
     }
 }
 
-// 3. فحص الهوية عند تشغيل التطبيق (الأمان)
+// دالة التحقق عند تشغيل التطبيق (الأمان والربط)
 function checkUserIdentity() {
     const storedName = localStorage.getItem('chat_username');
     const storedAvatar = localStorage.getItem('user_avatar');
     const modal = document.getElementById('englishNameModal');
 
-    // إذا لم يكن هناك اسم كامل أو لا توجد صورة (بصمة)، اجبره على التسجيل
-    if (!storedName || storedName.split(/\s+/).length < 2 || !storedAvatar) {
-        if (modal) {
-            modal.style.display = 'flex';
-            if (storedName) document.getElementById('forcedNameInput').value = storedName;
-            if (storedAvatar) document.getElementById('userAvatarPreview').src = storedAvatar;
-        }
-    } else {
-        // إذا كان كل شيء جاهز، ابدأ تتبع الحالة
+    // إذا كان الاسم والصورة موجودين، ابدأ التتبع فوراً
+    if (storedName && storedName.split(/\s+/).length >= 2 && storedAvatar) {
+        if (modal) modal.style.display = 'none';
+        
+        // تشغيل الربط الفوري وتحديث الحالة
+        setupRealtime(); 
         initUserTracking();
+        logUserStatus('Online 🟢');
+        
+        // تحديث الحقول بالاسم المخزن
+        updateAllNameInputs(storedName);
+    } else {
+        // إذا نقص شيء، اظهر النافذة الإجبارية
+        if (modal) modal.style.display = 'flex';
     }
 }
 
-// تشغيل الفحص بعد ثانية من تحميل الصفحة
+// تشغيل الفحص بعد ثانية من تحميل الصفحة لضمان جاهزية Supabase
 setTimeout(checkUserIdentity, 1000);
+
 </script>
 
 
@@ -2383,17 +2392,20 @@ function setupRealtime() {
                 typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
             }
         })
-        .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                const currentName = document.getElementById('chatNameInput').value || myName;
-                // إرسال الاسم والصورة للسيرفر ليراها الآخرون
-                await roomChannel.track({ 
-                    name: currentName, 
-                    avatar: myAvatar,
-                    online_at: new Date().toISOString() 
-                });
-            }
-        });
+            subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            // سحب البيانات من الذاكرة لضمان الدقة
+            const currentName = localStorage.getItem('chat_username') || 'Guest';
+            const currentAvatar = localStorage.getItem('user_avatar') || '';
+            
+            // إرسال الاسم والصورة للسيرفر ليراها الآخرون
+            await roomChannel.track({ 
+                name: currentName, 
+                avatar: currentAvatar,
+                online_at: new Date().toISOString() 
+            });
+        }
+    });
 }
 
 async function checkAndRunAutoWash() {
@@ -3316,17 +3328,20 @@ async function getPlayerNameById(table, playerId) {
 
 async function logUserStatus(status) {
     const name = localStorage.getItem('chat_username');
-    const avatar = localStorage.getItem('user_avatar');
+    const avatar = localStorage.getItem('user_avatar'); // جلب الصورة من الذاكرة
+    
     if (!name) return;
+
     try {
-        // تحديث حالة المستخدم في قاعدة البيانات
         await supabase.from('user_logs').upsert([{ 
             username: name, 
             status: status, 
-            avatar_url: avatar,
+            avatar_url: avatar, // حفظ الصورة في السجل
             created_at: new Date().toISOString()
         }], { onConflict: 'username' });
-    } catch (e) { console.log("Status log error"); }
+    } catch (e) { 
+        console.log("Status log error", e); 
+    }
 }
 
 function initUserTracking() {
