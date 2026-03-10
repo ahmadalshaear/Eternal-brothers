@@ -6,6 +6,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+
+#onlineUsersBar {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    padding: 10px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow-x: auto; /* للسماح بالتمرير إذا كان العدد كبيراً */
+    border-bottom: 2px solid #333;
+    min-height: 70px;
+    align-items: center;
+}
+
+.online-avatar-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.online-avatar-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #00e676; /* الحواف الخضراء */
+    box-shadow: 0 0 8px rgba(0, 230, 118, 0.5);
+}
+
+.online-status-dot {
+    position: absolute;
+    bottom: 18px; /* فوق الاسم قليلاً */
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: #00e676;
+    border-radius: 50%;
+    border: 2px solid #1a1a1a;
+}
+
+.online-user-name {
+    font-size: 10px;
+    color: #fff;
+    margin-top: 4px;
+    font-weight: bold;
+    max-width: 55px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
 .online-name-tooltip {
     animation: fadeIn 0.2s ease;
 }
@@ -2267,53 +2322,40 @@ function handleTyping(context) {
     roomChannel.send({ type: 'broadcast', event: 'typing', payload: { name: name } });
 }
 
-async function updateOnlineUsersUI(users) {
+async function updateOnlineUsersUI(onlineNames) {
     const bar = document.getElementById('onlineUsersBar');
     if (!bar) return;
 
-    // تنسيق المربع الأسود ليظهر كحاوية احترافية للصور
-    bar.style.cssText = `
-        display: flex !important;
-        flex-direction: row;
-        align-items: center;
-        gap: 15px;
-        padding: 10px 15px;
-        min-height: 80px;
-        background: #1a1a1a;
-        border-radius: 12px;
-        overflow-x: auto;
-        border-bottom: 2px solid #333;
-        margin-bottom: 15px;
-        justify-content: flex-start;
-    `;
-
-    if (!users || users.length === 0) {
+    if (!onlineNames || onlineNames.length === 0) {
         bar.innerHTML = '<span style="color:#555; font-size:12px; margin:auto;">Waiting for brothers... ⚽</span>';
         return;
     }
 
-    // جلب الصور من السيرفر (user_logs)
-    const { data: logs } = await supabase.from('user_logs').select('username, avatar_url');
-    const userMap = {};
-    if (logs) logs.forEach(l => userMap[l.username] = l.avatar_url);
+    // جلب بيانات الصور من جدول user_logs لضمان عرض الصورة الحقيقية لكل شخص أونلاين
+    const { data: logs, error } = await supabase
+        .from('user_logs')
+        .select('username, avatar_url');
 
-    const uniqueUsers = [...new Set(users)];
-    
-    bar.innerHTML = uniqueUsers.map(u => {
-        const avatar = userMap[u] || 'https://www.w3schools.com/howto/img_avatar.png';
+    const avatarMap = {};
+    if (logs) {
+        logs.forEach(l => avatarMap[l.username] = l.avatar_url);
+    }
+
+    // إزالة التكرار من الأسماء المتصلة
+    const uniqueOnlineUsers = [...new Set(onlineNames)];
+
+    bar.innerHTML = uniqueOnlineUsers.map(name => {
+        const img = avatarMap[name] || 'https://www.w3schools.com/howto/img_avatar.png'; // صورة افتراضية إذا لم يرفع صورة
         return `
-            <div class="online-user-wrapper" style="position:relative; cursor:pointer; flex-shrink:0;" onclick="toggleOnlineName(event, '${u}')">
-                <div class="online-name-tooltip" style="display:none; position:absolute; top:-35px; left:50%; transform:translateX(-50%); background:#d32f2f; color:#fff; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:bold; white-space:nowrap; z-index:1000; box-shadow:0 2px 5px #000;">
-                    ${u}
-                </div>
-                <div style="position:relative; width:50px; height:50px;">
-                    <img src="${avatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid #00e676; box-shadow: 0 0 10px rgba(0,230,118,0.4);">
-                    <div style="position:absolute; bottom:2px; right:2px; width:12px; height:12px; background:#00e676; border-radius:50%; border:2px solid #1a1a1a;"></div>
-                </div>
+            <div class="online-avatar-container" title="${name}">
+                <img src="${img}" class="online-avatar-img">
+                <div class="online-status-dot"></div>
+                <span class="online-user-name">${name.split(' ')[0]}</span> 
             </div>
         `;
     }).join('');
 }
+
 
 
 
@@ -2335,6 +2377,14 @@ document.addEventListener('click', () => {
 function setupRealtime() {
     const myName = localStorage.getItem('chat_username') || 'Guest';
     const myAvatar = localStorage.getItem('user_avatar') || '';
+
+supabase.channel('user-logs-updates')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'user_logs' }, () => {
+        if (document.getElementById('userLogContainer').style.display === 'block') {
+            loadUserLogs(); // تحديث القائمة فوراً عند حدوث تغيير في الداتابيز
+        }
+    })
+    .subscribe();
 
     // 1. قناة تحديثات الدردشة (العامة، الأزرق، الأصفر)
     supabase.channel('chat-updates')
@@ -2374,40 +2424,67 @@ function setupRealtime() {
     // 3. قناة التواجد والنشاط (Online Users & Typing)
     roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
     
-    roomChannel
-        .on('presence', { event: 'sync' }, () => {
-            const newState = roomChannel.presenceState();
-            const users = [];
-            for (const id in newState) { 
-                const userObj = newState[id][0]; 
-                if (userObj && userObj.name) users.push(userObj.name); 
-            }
-            updateOnlineUsersUI(users);
-        })
-        .on('broadcast', { event: 'typing' }, ({ payload }) => {
-            const indicator = document.getElementById('typingIndicator');
-            if(indicator) {
-                indicator.innerText = `${payload.name} is typing...`;
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
-            }
-        })
-            subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-            // سحب البيانات من الذاكرة لضمان الدقة
-            const currentName = localStorage.getItem('chat_username') || 'Guest';
-            const currentAvatar = localStorage.getItem('user_avatar') || '';
-            
-            // إرسال الاسم والصورة للسيرفر ليراها الآخرون
-            await roomChannel.track({ 
-                name: currentName, 
-                avatar: currentAvatar,
-                online_at: new Date().toISOString() 
+    // داخل دالة setupRealtime تأكد من وجود هذا الجزء:
+roomChannel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+        const myName = localStorage.getItem('chat_username');
+        const myAvatar = localStorage.getItem('user_avatar');
+        
+        if(myName) {
+            await roomChannel.track({
+                name: myName,
+                avatar: myAvatar,
+                online_at: new Date().toISOString()
             });
         }
-    });
-}
+    }
+});
 
+    
+    // داخل دالة setupRealtime
+roomChannel.on('presence', { event: 'sync' }, () => {
+    const newState = roomChannel.presenceState();
+    const onlineUsers = [];
+    
+    // استخراج أسماء المتصلين حالياً فقط
+    for (const id in newState) { 
+        const userObj = newState[id][0]; 
+        if (userObj && userObj.name) onlineUsers.push(userObj.name); 
+    }
+    
+    // 1. تحديث شريط الصور العلوي
+    updateOnlineUsersUI(onlineUsers);
+
+    // 2. تحديث الدوائر في القائمة الكبيرة (Activity Log) إذا كانت مفتوحة
+    const logItems = document.querySelectorAll('#userLogList li');
+    logItems.forEach(item => {
+        const nameElement = item.querySelector('span[style*="font-weight:bold"]');
+        if (nameElement) {
+            const userName = nameElement.innerText.trim();
+            const dot = item.querySelector('div[style*="border-radius:50%"]:not(img)');
+            const img = item.querySelector('img');
+            const statusText = item.querySelector('span[style*="font-size: 10px"]');
+
+            if (onlineUsers.includes(userName)) {
+                // تحويل الحالة إلى "متصل الآن" بلون أخضر فوري
+                if (dot) dot.style.background = '#00e676';
+                if (dot) dot.style.boxShadow = '0 0 5px #00e676';
+                if (img) img.style.borderColor = '#00e676';
+                if (statusText) {
+                    statusText.innerText = 'Online Now';
+                    statusText.style.color = '#00e676';
+                }
+            } else {
+                // تحويل الحالة إلى "أوفلاين"
+                if (dot) dot.style.background = '#757575';
+                if (dot) dot.style.boxShadow = 'none';
+                if (img) img.style.borderColor = '#757575';
+                // نترك نص "آخر ظهور" كما هو ليعرف المستخدم متى غادر
+            }
+        }
+    });
+});
+}
 async function checkAndRunAutoWash() {
     const now = new Date();
     if (now.getDay() !== 6 || now.getHours() < 21) return; 
@@ -2646,64 +2723,70 @@ async function loadUserLogs() {
     const container = document.getElementById('userLogContainer');
     const list = document.getElementById('userLogList');
     
-    if (container.style.display === 'none') {
+    if (container.style.display === 'none' || container.style.display === '') {
         container.style.display = 'block';
-        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
         container.style.display = 'none';
         return; 
     }
 
-    list.innerHTML = '<li style="text-align:center;">Loading status...</li>';
+    list.innerHTML = '<li style="text-align:center; color:#aaa; padding:10px;">Reading Brothers Identity... ⚽</li>';
+    try {
+        // جلب البيانات من السيرفر
+        const { data, error } = await supabase
+            .from('user_logs')
+            .select('username, status, avatar_url, created_at')
+            .order('created_at', { ascending: false });
 
-    const { data, error } = await supabase
-        .from('user_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(150);
-
-    if (error || !data || data.length === 0) {
-        list.innerHTML = '<li style="text-align:center; color:#777;">No active users found.</li>';
-        return;
-    }
-
-    const uniqueUsers = {};
-    data.forEach(log => {
-        if (!uniqueUsers[log.username]) {
-            uniqueUsers[log.username] = log;
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            list.innerHTML = '<li style="text-align:center; color:#777; padding:10px;">No brothers found.</li>';
+            return;
         }
-    });
 
-    list.innerHTML = '';
-    
-    Object.values(uniqueUsers).forEach(user => {
-        const isOnline = user.status.includes('Online');
-        const timeDisplay = timeAgo(user.created_at);
+        // --- الخطوة السحرية: جعل كل اسم يظهر مرة واحدة فقط ---
+        const uniqueUsers = {};
+        data.forEach(log => {
+            // إذا لم يكن الاسم موجوداً في القائمة المؤقتة، أضفه (بما أننا رتبنا حسب الأحدث، سيأخذ آخر حالة له)
+            if (!uniqueUsers[log.username]) {
+                uniqueUsers[log.username] = log;
+            }
+        });
         
-        const statusColor = isOnline ? '#00e676' : '#757575'; 
-        const statusText = isOnline ? 'Active' : 'Last seen';
-        const nameColor = isOnline ? '#fff' : '#aaa';
-        
-        // جلب الصورة الشخصية من قاعدة البيانات أو وضع صورة افتراضية
-        const userAvatar = user.avatar_url || 'https://via.placeholder.com/45';
+        const onlineState = roomChannel.presenceState();
+        const onlineNames = Object.values(onlineState).map(u => u[0].name);
+        let finalHtml = '';
+        // تحويل الكائن إلى مصفوفة للمرور عليها
+        Object.values(uniqueUsers).forEach(user => {
+            const lastSeen = new Date(user.created_at);
+            // متصل إذا كان آخر نشاط خلال 10 دقائق
+            const isOnline = (new Date() - lastSeen) < 600000; 
+            
+            const statusColor = isOnline ? '#00e676' : '#757575'; 
+            const statusText = isOnline ? 'Online Now' : 'Last seen: ' + timeAgo(user.created_at);
+            const userAvatar = user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
 
-        list.innerHTML += `
-            <li style="padding: 10px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 5px; border-radius: 12px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="position:relative; width: 48px; height: 48px;">
+            finalHtml += `
+                <li style="padding: 10px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); margin-bottom: 5px; border-radius: 10px;">
+                    <div style="position:relative; width: 42px; height: 42px; flex-shrink:0;">
                         <img src="${userAvatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border: 2px solid ${statusColor};">
-                        <div style="position:absolute; bottom:2px; right:2px; width:12px; height:12px; background:${statusColor}; border-radius:50%; border: 2px solid #2c2c2c; box-shadow: 0 0 5px ${statusColor};"></div>
+                        <div style="position:absolute; bottom:0; right:0; width:11px; height:11px; background:${statusColor}; border-radius:50%; border: 2px solid #2c2c2c; box-shadow: 0 0 5px ${statusColor};"></div>
                     </div>
-                    
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="color: ${nameColor}; font-weight:bold; font-size:15px;">${user.username}</span>
-                        <span style="color: #888; font-size: 11px;">${statusText} • ${timeDisplay}</span>
+                    <div style="display:flex; flex-direction:column; overflow:hidden;">
+                        <span style="color: #fff; font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${user.username}</span>
+                        <span style="color: ${isOnline ? '#00e676' : '#aaa'}; font-size: 10px;">${statusText}</span>
                     </div>
-                </div>
-            </li>
-        `;
-    });
-}
+                </li>
+            `;
+        });
+        list.innerHTML = finalHtml;
+    } catch (e) {
+        console.error("Logs error:", e);
+        list.innerHTML = '<li style="color:#ff5252; text-align:center; padding:10px;">Error reading logs.</li>';
+    }
+} 
+
+
 
 
 async function addScheduledPlayer() {
@@ -3328,21 +3411,26 @@ async function getPlayerNameById(table, playerId) {
 
 async function logUserStatus(status) {
     const name = localStorage.getItem('chat_username');
-    const avatar = localStorage.getItem('user_avatar'); // جلب الصورة من الذاكرة
+    const avatar = localStorage.getItem('user_avatar'); 
     
     if (!name) return;
 
     try {
+        // نحدث الحالة في السيرفر فقط
         await supabase.from('user_logs').upsert([{ 
             username: name, 
             status: status, 
-            avatar_url: avatar, // حفظ الصورة في السجل
+            avatar_url: avatar, 
             created_at: new Date().toISOString()
         }], { onConflict: 'username' });
+        
+        console.log("Status updated: " + status);
     } catch (e) { 
         console.log("Status log error", e); 
     }
 }
+
+
 
 function initUserTracking() {
     logUserStatus('Online 🟢');
