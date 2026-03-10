@@ -753,8 +753,9 @@ window.addEventListener('load', updateWeatherPro);
         <button onclick="closeGameCenter()" id="closeGameBtn" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close Arcade</button>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
 <script>
 // 1. إعداد اتصال Supabase (تعديل لتجنب الخطأ)
 const supabaseUrl = 'https://wihhlvgkjglphjzhivdn.supabase.co';
@@ -2101,79 +2102,53 @@ function updateOnlineUsersUI(users) {
 }
 
 function setupRealtime() {
-    // تنظيف أي قنوات قديمة لمنع التعارض وضمان السرعة
-    if (supabase.removeAllChannels) {
-        supabase.removeAllChannels();
-    }
+  const myName = localStorage.getItem('chat_username') || 'Guest';
+  
+  supabase.channel('global-chat-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
+        renderMessage(payload.new, 'chatMessages'); 
+        if (payload.new.username !== myName) playNotificationSound();
+    })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
+    .subscribe();
+    
+  supabase.channel('system-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { const hc = document.getElementById('systemHistoryContainer'); if (hc.style.display === 'block') loadSystemHistory(false); }).subscribe();
+  supabase.channel('laundry-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { const container = document.getElementById('laundryHistoryContainer'); if (container.style.display === 'block') loadLaundryHistory(false); }).subscribe();
+  
+  supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
+      if(document.getElementById('blue').style.display === 'block') {
+          renderMessage(payload.new, 'blueChatMessages'); 
+          if (payload.new.username !== myName) playNotificationSound();
+      }
+  }).subscribe();
 
-    // 1. القناة العامة
-    function setupRealtime() {
-    // تنظيف أي قنوات قديمة
-    supabase.removeAllChannels();
+  supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
+      if(document.getElementById('yellow').style.display === 'block') {
+          renderMessage(payload.new, 'yellowChatMessages'); 
+          if (payload.new.username !== myName) playNotificationSound();
+      }
+  }).subscribe();
 
-    // القناة العامة
-    supabase.channel('public_chat')
-        .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'chat_messages' 
-        }, payload => {
-            console.log("رسالة جديدة وصلت:", payload.new);
-            renderMessage(payload.new, 'chatMessages');
-        })
-        .subscribe();
+  supabase.channel('teams-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue()).on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow()).subscribe();
 
-    // قناة الفريق الأزرق
-    supabase.channel('blue_chat_room')
-        .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'blue_chat' 
-        }, payload => {
-            renderMessage(payload.new, 'blueChatMessages');
-        })
-        .subscribe();
-
-    // قناة الفريق الأصفر
-    supabase.channel('yellow_chat_room')
-        .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'yellow_chat' 
-        }, payload => {
-            renderMessage(payload.new, 'yellowChatMessages');
-        })
-        .subscribe();
+  roomChannel = supabase.channel('online-room', { config: { presence: { key: myId, }, }, });
+  roomChannel
+    .on('presence', { event: 'sync' }, () => {
+      const newState = roomChannel.presenceState();
+      const users = [];
+      for (const id in newState) { const userObj = newState[id][0]; if (userObj && userObj.name) users.push(userObj.name); }
+      updateOnlineUsersUI(users);
+    })
+    .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        const indicator = document.getElementById('typingIndicator');
+        if(indicator) {
+            indicator.innerText = `${payload.name} is typing...`;
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
+        }
+    })
+    .subscribe(async (status) => { if (status === 'SUBSCRIBED') { const name = document.getElementById('chatNameInput').value || 'Guest'; await roomChannel.track({ name: name, online_at: new Date().toISOString() }); } });
 }
-
-    // 5. التواجد أونلاين ومؤشر الكتابة
-    roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
-    roomChannel
-        .on('presence', { event: 'sync' }, () => {
-            const newState = roomChannel.presenceState();
-            const users = [];
-            for (const id in newState) { 
-                const userObj = newState[id][0]; 
-                if (userObj && userObj.name) users.push(userObj.name); 
-            }
-            updateOnlineUsersUI(users);
-        })
-        .on('broadcast', { event: 'typing' }, ({ payload }) => {
-            const indicator = document.getElementById('typingIndicator');
-            if(indicator) {
-                indicator.innerText = `${payload.name} is typing...`;
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
-            }
-        })
-        .subscribe(async (status) => { 
-            if (status === 'SUBSCRIBED') { 
-                const name = localStorage.getItem('chat_username') || 'Guest'; 
-                await roomChannel.track({ name: name, online_at: new Date().toISOString() }); 
-            } 
-        });
-} // <-- هذا القوس كان مفقوداً في الكود الخاص بك
-
 async function checkAndRunAutoWash() {
     const now = new Date();
     if (now.getDay() !== 6 || now.getHours() < 21) return; 
