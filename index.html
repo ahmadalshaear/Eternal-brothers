@@ -1847,123 +1847,54 @@ function renderMessage(m, id) {
     div.scrollTop = div.scrollHeight;
 }
 
-// 2. تحديث دالة الإرسال لضمان إرسال "البصمة"
+// دالة إرسال الشات العام الموحدة والمحسنة
 async function sendMessage() {
     const n = document.getElementById('chatNameInput').value.trim(); 
     const c = document.getElementById('chatMsgInput').value.trim();
-    const avatar = localStorage.getItem('user_avatar') || ''; // جلب الصورة المخزنة
+    const avatar = localStorage.getItem('user_avatar') || ''; 
 
     if (!n || !c) return;
-
-    const { error } = await supabase.from('chat_messages').insert([{ 
-        username: n, 
-        content: c,
-        avatar_url: avatar 
-    }]);
-
-    if (!error) {
-        document.getElementById('chatMsgInput').value = '';
-    } else {
-        console.error("Error sending message:", error);
-        alert("Failed to send. Check Supabase connection.");
-    }
-}
-
-async function deleteSingleMessage(table, id) { if(!confirm("Delete?")) return; await supabase.from(table).delete().eq('id', id); reloadList(table); }
-
-async function loadChatMessages() { 
-    const { data } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); 
-    document.getElementById('chatMessages').innerHTML=''; 
-    // التعديل: إضافة (data || []) لمنع الخطأ إذا كانت البيانات فارغة
-    if (data) {
-        data.forEach(m=>renderMessage(m,'chatMessages')); 
-    }
-}
-
-async function loadTeamChatMessages(team) { 
-    const { data } = await supabase.from(`${team}_chat`).select('*').order('created_at', {ascending:true}).limit(50); 
-    document.getElementById(`${team}ChatMessages`).innerHTML=''; 
-    // التعديل: التحقق من وجود data
-    if (data) {
-        data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
-    }
-}
-
-
-async function sendMessage() {
-    const n = document.getElementById('chatNameInput').value; 
-    const c = document.getElementById('chatMsgInput').value;
-    const avatar = localStorage.getItem('user_avatar'); // جلب الرابط المخزن
-
-    if (!n || !c) return;
-    if (n.trim().split(/\s+/).length < 2) return alert("Full Name Required!");
-
-    const { error } = await supabase.from('chat_messages').insert([{ 
-        username: n, 
-        content: c,
-        avatar_url: avatar // التأكد من إرسال الرابط هنا
-    }]);
-
-    if (!error) {
-        document.getElementById('chatMsgInput').value = '';
-    }
-}
-
-// كرر نفس الأمر لدالة sendTeamMessage
-async function sendTeamMessage(team) {
-    const n = document.getElementById(`${team}ChatNameInput`).value; 
-    const c = document.getElementById(`${team}ChatMsgInput`).value;
-    const avatar = localStorage.getItem('user_avatar');
-
-    if(!n || !c) return; 
-
-    const table = `${team}_chat`;
-    await supabase.from(table).insert([{ 
-        username: n, 
-        content: c,
-        avatar_url: avatar
-    }]);
-
-    document.getElementById(`${team}ChatMsgInput`).value = '';
-}
-
-// 2. دالة إرسال رسائل الفرق (Blue & Yellow Team Chat)
-async function sendTeamMessage(team) {
-    // جلب المدخلات بناءً على اسم الفريق (blue أو yellow)
-    const n = document.getElementById(`${team}ChatNameInput`).value; 
-    const avatar = localStorage.getItem('chat_avatar'); // جلب رابط بصمة الصورة الشخصية
-    const c = document.getElementById(`${team}ChatMsgInput`).value;
-
-    // امتيازات التحقق (الحفاظ على شروطك الأصلية تماماً)
-    if (!/^[A-Za-z0-9\s]+$/.test(n)) { 
-        return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); 
-    }
-    if (n.trim().split(/\s+/).length < 2) { 
-        return alert("Full Name Required (First & Last) / الاسم الكامل مطلوب (الاسم واللقب)"); 
-    }
     
-    // منع الإرسال إذا كانت البيانات ناقصة
-    if(!n || !c) return; 
-
-    // حفظ الاسم في الذاكرة المحلية لسهولة الاستخدام
+    // حفظ الاسم لضمان استمرارية الهوية
     localStorage.setItem('chat_username', n);
 
-    // تحديد الجدول تلقائياً والإرسال مع رابط الصورة
-    const table = `${team}_chat`;
-    const { error } = await supabase.from(table).insert([{ 
+    const { data, error } = await supabase.from('chat_messages').insert([{ 
         username: n, 
         content: c,
-        avatar_url: avatar
-    }]);
+        avatar_url: avatar,
+        created_at: new Date().toISOString()
+    }]).select();
 
-    // مسح حقل الكتابة بعد نجاح الإرسال
     if (!error) {
-        document.getElementById(`${team}ChatMsgInput`).value = '';
+        document.getElementById('chatMsgInput').value = '';
+        // إذا لم يعمل الـ Realtime فوراً، هذه السطر يضمن ظهور رسالتك عندك
+        if(data) renderMessage(data[0], 'chatMessages');
     } else {
-        console.error("Team Chat Error:", error);
+        console.error("إخفاق في الإرسال:", error);
     }
 }
 
+// دالة إرسال شات الفرق الموحدة
+async function sendTeamMessage(team) {
+    const n = document.getElementById(`${team}ChatNameInput`).value.trim(); 
+    const c = document.getElementById(`${team}ChatMsgInput`).value.trim();
+    const avatar = localStorage.getItem('user_avatar') || '';
+
+    if(!n || !c) return; 
+
+    const table = `${team}_chat`;
+    const { data, error } = await supabase.from(table).insert([{ 
+        username: n, 
+        content: c,
+        avatar_url: avatar,
+        created_at: new Date().toISOString()
+    }]).select();
+
+    if (!error) {
+        document.getElementById(`${team}ChatMsgInput`).value = '';
+        if(data) renderMessage(data[0], `${team}ChatMessages`);
+    }
+}
 
 let gameInterval, gameActive = false, currentScore = 0, currentGameType = '';
 const canvas = document.getElementById('gameCanvas');
@@ -2176,37 +2107,44 @@ function setupRealtime() {
     }
 
     // 1. القناة العامة
-    supabase.channel('global-room')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
-            renderMessage(payload.new, 'chatMessages'); 
+    function setupRealtime() {
+    // تنظيف أي قنوات قديمة
+    supabase.removeAllChannels();
+
+    // القناة العامة
+    supabase.channel('public_chat')
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'chat_messages' 
+        }, payload => {
+            console.log("رسالة جديدة وصلت:", payload.new);
+            renderMessage(payload.new, 'chatMessages');
         })
         .subscribe();
 
-    // 2. قناة الفريق الأزرق
-    supabase.channel('blue-room')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
-            if(document.getElementById('blue').style.display === 'block') {
-                renderMessage(payload.new, 'blueChatMessages'); 
-            }
+    // قناة الفريق الأزرق
+    supabase.channel('blue_chat_room')
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'blue_chat' 
+        }, payload => {
+            renderMessage(payload.new, 'blueChatMessages');
         })
         .subscribe();
 
-    // 3. قناة الفريق الأصفر
-    supabase.channel('yellow-room')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
-            if(document.getElementById('yellow').style.display === 'block') {
-                renderMessage(payload.new, 'yellowChatMessages'); 
-            }
+    // قناة الفريق الأصفر
+    supabase.channel('yellow_chat_room')
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'yellow_chat' 
+        }, payload => {
+            renderMessage(payload.new, 'yellowChatMessages');
         })
         .subscribe();
-
-    // 4. تحديثات قوائم اللاعبين فورياً
-    supabase.channel('teams-updates')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
-        .subscribe();
+}
 
     // 5. التواجد أونلاين ومؤشر الكتابة
     roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
@@ -3146,70 +3084,92 @@ async function getPlayerNameById(table, playerId) {
     return data ? data.name : 'Unknown';
 }
 
+// --- 1. تعريف الدوال المفقودة التي ظهرت في صور الـ Console ---
+
+// --- الجزء المصلح والنهائي (ضعه مكان الجزء القديم) ---
+
+// --- 1. دوال تتبع نشاط المستخدم وحالته ---
+
+// --- 1. تعريف الدوال المفقودة لضمان عدم ظهور أخطاء ReferenceError ---
+
+async function logUserStatus(status) {
+    const name = localStorage.getItem('chat_username');
+    const avatar = localStorage.getItem('user_avatar');
+    if (!name) return;
+    try {
+        // تحديث حالة المستخدم في قاعدة البيانات
+        await supabase.from('user_logs').upsert([{ 
+            username: name, 
+            status: status, 
+            avatar_url: avatar,
+            created_at: new Date().toISOString()
+        }], { onConflict: 'username' });
+    } catch (e) { console.log("Status log error"); }
+}
+
+function initUserTracking() {
+    logUserStatus('Online 🟢');
+    window.addEventListener('beforeunload', () => logUserStatus('Offline ⚪'));
+    setInterval(() => logUserStatus('Online 🟢'), 300000);
+}
+
+// دالة تحميل الرسائل الأساسية التي كانت تظهر كخطأ أحمر
+async function loadChatMessages() { 
+    try {
+        const { data, error } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); 
+        const chatDiv = document.getElementById('chatMessages');
+        if (chatDiv) {
+            chatDiv.innerHTML = ''; 
+            if (data) data.forEach(m => renderMessage(m, 'chatMessages')); 
+        }
+    } catch (e) { console.error("Load messages error:", e); }
+}
+
+// --- 2. دالة تشغيل التطبيق (التي تجمع كل شيء) ---
+
 (async function init() {
-    // 1. إظهار الشاشة الرئيسية فوراً (الحل للشاشة السوداء)
+    // إظهار الواجهة فوراً
     showSection('main');
 
-    // 2. تنظيف الإعدادات القديمة
-    localStorage.removeItem('captain_mode_blue');
-    localStorage.removeItem('captain_mode_yellow');
-
+    // استرجاع الاسم المسجل
     const storedUsername = localStorage.getItem('chat_username');
     if (storedUsername) {
-        if(document.getElementById('chatNameInput')) document.getElementById('chatNameInput').value = storedUsername;
-        if(document.getElementById('blueChatNameInput')) document.getElementById('blueChatNameInput').value = storedUsername;
-        if(document.getElementById('yellowChatNameInput')) document.getElementById('yellowChatNameInput').value = storedUsername;
-        if(document.getElementById('nameInput')) document.getElementById('nameInput').value = storedUsername;
+        ['chatNameInput', 'blueChatNameInput', 'yellowChatNameInput', 'nameInput'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = storedUsername;
+        });
     }
 
-    // تفعيل زر Enter للشات
-    const chatMsgInput = document.getElementById('chatMsgInput');
-    if (chatMsgInput) chatMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
+    // تفعيل أزرار الـ Enter للإرسال
+    const bindEnter = (id, fn) => {
+        document.getElementById(id)?.addEventListener('keypress', (e) => { if (e.key === 'Enter') fn(); });
+    };
+    bindEnter('chatMsgInput', sendMessage);
+    bindEnter('blueChatMsgInput', () => sendTeamMessage('blue'));
+    bindEnter('yellowChatMsgInput', () => sendTeamMessage('yellow'));
 
-    const blueMsgInput = document.getElementById('blueChatMsgInput');
-    if (blueMsgInput) blueMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('blue'); } });
-    
-    const yellowMsgInput = document.getElementById('yellowChatMsgInput');
-    if (yellowMsgInput) yellowMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
-
-    // 3. تحميل البيانات في الخلفية (حتى لو تأخرت، الشاشة تعمل)
+    // تحميل البيانات من السيرفر بالترتيب الصحيح
     try {
         await loadSystemConfig(); 
         loadMatchAddress(); 
         loadPlayers(); 
         loadBlue(); 
         loadYellow(); 
-        loadChatMessages(); 
+        
+        // الآن الدالة معرفة ولن يظهر خطأ "is not defined"
+        await loadChatMessages(); 
         
         checkAndRunAutoWash(); 
         initUserTracking();
+        
+        // تشغيل استقبال الرسائل الفوري
+        if (typeof setupRealtime === 'function') setupRealtime();
+        
     } catch (error) {
-        console.error("Error loading data:", error);
+        console.error("Error during initialization:", error);
     }
 })();
 
 </script>
-
-<div id="englishNameModal" class="mini-modal-overlay" style="display:none; z-index: 9999; background: rgba(0,0,0,0.96); backdrop-filter: blur(8px);">
-    <div class="mini-modal-box" style="border: 1px solid #444; max-width: 340px;">
-        <h2 style="color:#FFD700; margin-top:0;">Eternal Profile ⚽</h2>
-        
-        <div style="position: relative; width: 110px; height: 110px; margin: 0 auto 20px;">
-            <img id="userAvatarPreview" src="https://via.placeholder.com/110" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid #FFD700; background:#333;">
-            <label for="avatarInput" style="position:absolute; bottom:5px; right:5px; background:#FFD700; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#000; box-shadow: 0 2px 10px #000;">
-                📷
-            </label>
-            <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)">
-        </div>
-
-        <input type="text" id="forcedNameInput" placeholder="Full English Name" style="width:100%; padding:12px; margin-bottom:10px; border-radius: 8px; border: 1px solid #555; background: #1e1e1e; color: #fff; text-align: center; font-size:16px;">
-        
-        <p id="nameErrorMsg" style="color:#ff5252; display:none; font-size:13px; margin:8px 0; font-weight: bold;"></p>
-        
-        <button id="entryBtn" onclick="submitFullProfile()" style="background:#4CAF50; color:#fff; width:100%; padding:14px; font-weight:bold; border-radius: 8px; font-size:16px;">Create Profile & Enter</button>
-    </div>
-</div>
-
-
 </body>
 </html>
