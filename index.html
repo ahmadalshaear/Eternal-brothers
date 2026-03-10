@@ -6,6 +6,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+.online-name-tooltip {
+    animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, 5px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
 /* Smart Team Maker Styles */
 .tm-player-card {
     background: #333;
@@ -1819,9 +1827,9 @@ function renderMessage(m, id) {
     const div = document.getElementById(id); 
     if (!div) return;
 
-    const isMe = m.username === localStorage.getItem('chat_username');
+    const currentUsername = localStorage.getItem('chat_username');
+    const isMe = m.username === currentUsername;
     
-    // حل مشكلة الصورة المفقودة: إذا لم توجد صورة نضع صورة افتراضية فوراً
     const userAvatar = m.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
     
     let c = m.content || "";
@@ -1834,19 +1842,24 @@ function renderMessage(m, id) {
 
     const timeSpan = new Date(m.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
 
+    // إضافة زر X فقط إذا كانت الرسالة لي
+    const deleteBtn = isMe ? `<button class="delete-msg-btn" onclick="deleteMyMessage('${id.includes('blue') ? 'blue_chat' : (id.includes('yellow') ? 'yellow_chat' : 'chat_messages')}', ${m.id}, '${id}')" title="Delete Message">×</button>` : '';
+
     const messageWrapper = `
-    <div class="msg-row" style="display:flex; align-items:flex-end; gap:8px; margin-bottom:15px; flex-direction:${isMe ? 'row-reverse' : 'row'}; clear:both;">
+    <div id="msg-container-${m.id}" class="msg-row" style="display:flex; align-items:flex-end; gap:8px; margin-bottom:15px; flex-direction:${isMe ? 'row-reverse' : 'row'}; clear:both; position:relative;">
         <img src="${userAvatar}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #444;">
-        <div class="message ${isMe ? 'my-message' : ''}" style="position:relative; max-width:75%;">
-            <div style="font-size:11px; color:${isMe ? '#ffeb3b' : getColorForUsername(m.username)}; font-weight:bold; margin-bottom:4px;">${m.username}</div>
+        <div class="message ${isMe ? 'my-message' : ''}" style="position:relative; max-width:75%; padding-top: 10px;">
+            ${deleteBtn}
+            <div style="font-size:11px; color:${isMe ? '#ffeb3b' : getColorForUsername(m.username)}; font-weight:bold; margin-bottom:4px; padding-right:15px;">${m.username}</div>
             <div style="word-break: break-word;">${c}</div>
-            <div style="font-size:9px; color:#888; text-align:right; margin-top:4px;">${timeSpan}</div>
+            <div style="font-size:9px; color:${isMe ? 'rgba(255,255,255,0.6)' : '#888'}; text-align:right; margin-top:4px;">${timeSpan}</div>
         </div>
     </div>`;
 
     div.innerHTML += messageWrapper;
     div.scrollTop = div.scrollHeight;
 }
+
 
 // دالة إرسال الشات العام الموحدة والمحسنة
 async function sendMessage() {
@@ -1874,6 +1887,33 @@ async function sendMessage() {
         console.error("إخفاق في الإرسال:", error);
     }
 }
+
+async function deleteMyMessage(table, messageId, containerId) {
+    if (!confirm("Are you sure you want to delete your message?")) return;
+
+    try {
+        // الحذف من Supabase
+        const { error } = await supabase
+            .from(table)
+            .delete()
+            .eq('id', messageId);
+
+        if (error) throw error;
+
+        // إخفاء الرسالة من الواجهة فوراً
+        const msgEl = document.getElementById(`msg-container-${messageId}`);
+        if (msgEl) {
+            msgEl.style.opacity = '0';
+            setTimeout(() => msgEl.remove(), 300);
+        }
+        
+        showToast("Message deleted. 🗑️");
+    } catch (err) {
+        console.error("Delete error:", err);
+        alert("Could not delete message. You can only delete your own messages.");
+    }
+}
+
 
 // دالة إرسال شات الفرق الموحدة
 async function sendTeamMessage(team) {
@@ -2094,61 +2134,144 @@ function handleTyping(context) {
     roomChannel.send({ type: 'broadcast', event: 'typing', payload: { name: name } });
 }
 
-function updateOnlineUsersUI(users) {
+async function updateOnlineUsersUI(users) {
     const bar = document.getElementById('onlineUsersBar');
-    if(!bar) return;
+    if (!bar) return;
+
+    // تنسيق المربع الأسود ليظهر كحاوية احترافية للصور
+    bar.style.cssText = `
+        display: flex !important;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 15px;
+        min-height: 80px;
+        background: #1a1a1a;
+        border-radius: 12px;
+        overflow-x: auto;
+        border-bottom: 2px solid #333;
+        margin-bottom: 15px;
+        justify-content: flex-start;
+    `;
+
+    if (!users || users.length === 0) {
+        bar.innerHTML = '<span style="color:#555; font-size:12px; margin:auto;">Waiting for brothers... ⚽</span>';
+        return;
+    }
+
+    // جلب الصور من السيرفر (user_logs)
+    const { data: logs } = await supabase.from('user_logs').select('username, avatar_url');
+    const userMap = {};
+    if (logs) logs.forEach(l => userMap[l.username] = l.avatar_url);
+
     const uniqueUsers = [...new Set(users)];
-    bar.innerHTML = uniqueUsers.map(u => `<div class="online-user-pill">${u} <div class="online-dot"></div></div>`).join('');
+    
+    bar.innerHTML = uniqueUsers.map(u => {
+        const avatar = userMap[u] || 'https://www.w3schools.com/howto/img_avatar.png';
+        return `
+            <div class="online-user-wrapper" style="position:relative; cursor:pointer; flex-shrink:0;" onclick="toggleOnlineName(event, '${u}')">
+                <div class="online-name-tooltip" style="display:none; position:absolute; top:-35px; left:50%; transform:translateX(-50%); background:#d32f2f; color:#fff; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:bold; white-space:nowrap; z-index:1000; box-shadow:0 2px 5px #000;">
+                    ${u}
+                </div>
+                <div style="position:relative; width:50px; height:50px;">
+                    <img src="${avatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid #00e676; box-shadow: 0 0 10px rgba(0,230,118,0.4);">
+                    <div style="position:absolute; bottom:2px; right:2px; width:12px; height:12px; background:#00e676; border-radius:50%; border:2px solid #1a1a1a;"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
+
+
+
+// دالة إظهار الاسم عند النقر
+function toggleOnlineName(event, name) {
+    event.stopPropagation();
+    // إخفاء كل الأسماء المفتوحة أولاً
+    document.querySelectorAll('.online-name-tooltip').forEach(t => t.style.display = 'none');
+    // إظهار الاسم المختار
+    const tooltip = event.currentTarget.querySelector('.online-name-tooltip');
+    tooltip.style.display = 'block';
+}
+
+// إغلاق الأسماء عند النقر في أي مكان آخر
+document.addEventListener('click', () => {
+    document.querySelectorAll('.online-name-tooltip').forEach(t => t.style.display = 'none');
+});
 
 function setupRealtime() {
-  const myName = localStorage.getItem('chat_username') || 'Guest';
-  
-  supabase.channel('global-chat-updates')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
-        renderMessage(payload.new, 'chatMessages'); 
-        if (payload.new.username !== myName) playNotificationSound();
-    })
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
-    .subscribe();
+    const myName = localStorage.getItem('chat_username') || 'Guest';
+    const myAvatar = localStorage.getItem('user_avatar') || '';
+
+    // 1. قناة تحديثات الدردشة (العامة، الأزرق، الأصفر)
+    supabase.channel('chat-updates')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
+            renderMessage(payload.new, 'chatMessages'); 
+            if (payload.new.username !== myName) playNotificationSound();
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => loadChatMessages())
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
+            if(document.getElementById('blue').style.display === 'block') {
+                renderMessage(payload.new, 'blueChatMessages'); 
+                if (payload.new.username !== myName) playNotificationSound();
+            }
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
+            if(document.getElementById('yellow').style.display === 'block') {
+                renderMessage(payload.new, 'yellowChatMessages'); 
+                if (payload.new.username !== myName) playNotificationSound();
+            }
+        })
+        .subscribe();
+
+    // 2. قناة تحديثات الجداول (اللاعبين، القوائم، السجلات)
+    supabase.channel('table-updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { 
+            if (document.getElementById('systemHistoryContainer').style.display === 'block') loadSystemHistory(false); 
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { 
+            if (document.getElementById('laundryHistoryContainer').style.display === 'block') loadLaundryHistory(false); 
+        })
+        .subscribe();
+
+    // 3. قناة التواجد والنشاط (Online Users & Typing)
+    roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
     
-  supabase.channel('system-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { const hc = document.getElementById('systemHistoryContainer'); if (hc.style.display === 'block') loadSystemHistory(false); }).subscribe();
-  supabase.channel('laundry-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { const container = document.getElementById('laundryHistoryContainer'); if (container.style.display === 'block') loadLaundryHistory(false); }).subscribe();
-  
-  supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
-      if(document.getElementById('blue').style.display === 'block') {
-          renderMessage(payload.new, 'blueChatMessages'); 
-          if (payload.new.username !== myName) playNotificationSound();
-      }
-  }).subscribe();
-
-  supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
-      if(document.getElementById('yellow').style.display === 'block') {
-          renderMessage(payload.new, 'yellowChatMessages'); 
-          if (payload.new.username !== myName) playNotificationSound();
-      }
-  }).subscribe();
-
-  supabase.channel('teams-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue()).on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow()).subscribe();
-
-  roomChannel = supabase.channel('online-room', { config: { presence: { key: myId, }, }, });
-  roomChannel
-    .on('presence', { event: 'sync' }, () => {
-      const newState = roomChannel.presenceState();
-      const users = [];
-      for (const id in newState) { const userObj = newState[id][0]; if (userObj && userObj.name) users.push(userObj.name); }
-      updateOnlineUsersUI(users);
-    })
-    .on('broadcast', { event: 'typing' }, ({ payload }) => {
-        const indicator = document.getElementById('typingIndicator');
-        if(indicator) {
-            indicator.innerText = `${payload.name} is typing...`;
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
-        }
-    })
-    .subscribe(async (status) => { if (status === 'SUBSCRIBED') { const name = document.getElementById('chatNameInput').value || 'Guest'; await roomChannel.track({ name: name, online_at: new Date().toISOString() }); } });
+    roomChannel
+        .on('presence', { event: 'sync' }, () => {
+            const newState = roomChannel.presenceState();
+            const users = [];
+            for (const id in newState) { 
+                const userObj = newState[id][0]; 
+                if (userObj && userObj.name) users.push(userObj.name); 
+            }
+            updateOnlineUsersUI(users);
+        })
+        .on('broadcast', { event: 'typing' }, ({ payload }) => {
+            const indicator = document.getElementById('typingIndicator');
+            if(indicator) {
+                indicator.innerText = `${payload.name} is typing...`;
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
+            }
+        })
+        .subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+                const currentName = document.getElementById('chatNameInput').value || myName;
+                // إرسال الاسم والصورة للسيرفر ليراها الآخرون
+                await roomChannel.track({ 
+                    name: currentName, 
+                    avatar: myAvatar,
+                    online_at: new Date().toISOString() 
+                });
+            }
+        });
 }
+
 async function checkAndRunAutoWash() {
     const now = new Date();
     if (now.getDay() !== 6 || now.getHours() < 21) return; 
