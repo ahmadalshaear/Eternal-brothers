@@ -1813,49 +1813,60 @@ function updateAudioTime(uniqueId) {
 function resetAudio(uniqueId) { const btn = document.getElementById('btn-' + uniqueId); if (btn) btn.innerText = '▶'; }
 function formatTime(seconds) { if (isNaN(seconds)) return "0:00"; const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60); return `${m}:${s < 10 ? '0' : ''}${s}`; }
 
+// 1. تحديث دالة عرض الرسائل لتجنب الاختفاء
 function renderMessage(m, id) {
     const div = document.getElementById(id); 
+    if (!div) return;
+
     const isMe = m.username === localStorage.getItem('chat_username');
     
-    // إذا كان avatar_url فارغاً نضع صورة افتراضية
+    // حل مشكلة الصورة المفقودة: إذا لم توجد صورة نضع صورة افتراضية فوراً
     const userAvatar = m.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
     
-    let c = m.content;
+    let c = m.content || "";
     if (c.startsWith('[IMG]')) { 
         c = `<img src="${c.substring(5)}" class="chat-media-content" onclick="window.open(this.src)">`; 
-    } 
-    else if (c.startsWith('[VID]')) { 
-        c = `<video src="${c.substring(5)}" controls class="chat-media-content"></video>`; 
-    } 
-    else if (c.startsWith('[AUDIO]')) {
+    } else if (c.startsWith('[AUDIO]')) {
         const uniqueId = 'audio-' + Math.random().toString(36).substr(2, 9);
-        const src = c.substring(7);
-        c = `<div class="custom-audio-player"><button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button><span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span><audio id="${uniqueId}" src="${src}" ontimeupdate="updateAudioTime('${uniqueId}')" onloadedmetadata="updateAudioTime('${uniqueId}')" onended="resetAudio('${uniqueId}')" style="display:none;"></audio></div>`;
+        c = `<div class="custom-audio-player"><button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button><span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span><audio id="${uniqueId}" src="${c.substring(7)}" ontimeupdate="updateAudioTime('${uniqueId}')" style="display:none;"></audio></div>`;
     }
 
-    let delBtn = '';
-    const table = id.includes('blue') ? 'blue_chat' : (id.includes('yellow') ? 'yellow_chat' : 'chat_messages');
-    if (isMe) delBtn = `<button class="delete-msg-btn" title="Delete" style="position:absolute; top:2px; right:5px;" onclick="deleteSingleMessage('${table}', ${m.id})">✕</button>`;
-    
     const timeSpan = new Date(m.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
 
-    // التصميم الجديد: حاوية تشمل الصورة والرسالة بترتيب Messenger
     const messageWrapper = `
     <div class="msg-row" style="display:flex; align-items:flex-end; gap:8px; margin-bottom:15px; flex-direction:${isMe ? 'row-reverse' : 'row'}; clear:both;">
-        <img src="${userAvatar}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #444; flex-shrink:0;">
-        
-        <div class="message ${isMe ? 'my-message' : ''}" style="position:relative; margin:0; max-width:75%; border-color:${isMe ? '#d32f2f' : getColorForUsername(m.username)}">
-            <div style="font-size:11px; color:${isMe ? '#ffeb3b' : getColorForUsername(m.username)}; font-weight:bold; margin-bottom:4px;">
-                ${m.username}
-            </div>
+        <img src="${userAvatar}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #444;">
+        <div class="message ${isMe ? 'my-message' : ''}" style="position:relative; max-width:75%;">
+            <div style="font-size:11px; color:${isMe ? '#ffeb3b' : getColorForUsername(m.username)}; font-weight:bold; margin-bottom:4px;">${m.username}</div>
             <div style="word-break: break-word;">${c}</div>
             <div style="font-size:9px; color:#888; text-align:right; margin-top:4px;">${timeSpan}</div>
-            ${delBtn}
         </div>
     </div>`;
 
     div.innerHTML += messageWrapper;
     div.scrollTop = div.scrollHeight;
+}
+
+// 2. تحديث دالة الإرسال لضمان إرسال "البصمة"
+async function sendMessage() {
+    const n = document.getElementById('chatNameInput').value.trim(); 
+    const c = document.getElementById('chatMsgInput').value.trim();
+    const avatar = localStorage.getItem('user_avatar') || ''; // جلب الصورة المخزنة
+
+    if (!n || !c) return;
+
+    const { error } = await supabase.from('chat_messages').insert([{ 
+        username: n, 
+        content: c,
+        avatar_url: avatar 
+    }]);
+
+    if (!error) {
+        document.getElementById('chatMsgInput').value = '';
+    } else {
+        console.error("Error sending message:", error);
+        alert("Failed to send. Check Supabase connection.");
+    }
 }
 
 async function deleteSingleMessage(table, id) { if(!confirm("Delete?")) return; await supabase.from(table).delete().eq('id', id); reloadList(table); }
@@ -1875,42 +1886,6 @@ async function loadTeamChatMessages(team) {
     // التعديل: التحقق من وجود data
     if (data) {
         data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
-    }
-}
-
-
-async function sendMessage() {
-    // 1. جلب القيم من المدخلات والذاكرة المحلية
-    const n = document.getElementById('chatNameInput').value; 
-    const avatar = localStorage.getItem('user_avatar'); // جلب رابط بصمة الصورة الشخصية
-    const c = document.getElementById('chatMsgInput').value;
-
-    // 2. امتيازات التحقق (الحفاظ على شروطك الأصلية)
-    if (!/^[A-Za-z0-9\s]+$/.test(n)) { 
-        return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); 
-    }
-    if (n.trim().split(/\s+/).length < 2) { 
-        return alert("Full Name Required (First & Last) / الاسم الكامل مطلوب (الاسم واللقب)"); 
-    }
-    
-    // 3. منع الإرسال إذا كان الاسم أو المحتوى فارغاً
-    if(!n || !c) return; 
-
-    // 4. حفظ الاسم في الذاكرة المحلية
-    localStorage.setItem('chat_username', n);
-
-    // 5. الإرسال إلى قاعدة البيانات مع إضافة رابط الصورة (avatar_url)
-    const { error } = await supabase.from('chat_messages').insert([{ 
-        username: n, 
-        content: c,
-        avatar_url: avatar // تم إضافة رابط الصورة هنا لربطها بالرسالة
-    }]);
-
-    // 6. مسح حقل الكتابة بعد الإرسال بنجاح
-    if (!error) {
-        document.getElementById('chatMsgInput').value = '';
-    } else {
-        console.error("Error sending message:", error);
     }
 }
 
