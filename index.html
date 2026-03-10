@@ -256,6 +256,130 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 </head>
 <body>
 
+<div id="englishNameModal" class="mini-modal-overlay" style="display: none; background: rgba(0,0,0,0.95); z-index: 9999;">
+    <div class="mini-modal-box" style="max-width: 400px; padding: 30px; border: 2px solid #d32f2f;">
+        <h2 style="color: #fff; margin-bottom: 20px;">⚽ Welcome Brother!</h2>
+        <p style="color: #bbb; font-size: 14px; margin-bottom: 20px;">To join Eternal Brothers FC, you must set your official identity.</p>
+        
+        <div style="margin-bottom: 20px;">
+            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 15px;">
+                <img id="userAvatarPreview" src="https://www.w3schools.com/howto/img_avatar.png" 
+                     style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #d32f2f;">
+                <label for="avatarInput" style="position: absolute; bottom: 0; right: 0; background: #d32f2f; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #fff;">
+                    📷
+                </label>
+                <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+            </div>
+            <p style="font-size: 12px; color: #ffeb3b;">Click the camera to upload your photo (Mandatory)</p>
+        </div>
+
+        <input type="text" id="forcedNameInput" placeholder="Full Name (First & Last)" 
+               style="width: 100%; padding: 12px; margin-bottom: 10px; background: #1e1e1e; color: #fff; border: 1px solid #555; border-radius: 8px; text-align: center;">
+        
+        <p id="nameErrorMsg" style="color: #ff5252; font-size: 12px; display: none; margin-bottom: 10px;"></p>
+        
+        <button id="entryBtn" onclick="submitFullProfile()" 
+                style="background: #d32f2f; color: #fff; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;">
+            Confirm Identity & Join ⚽
+        </button>
+    </div>
+</div>
+
+<script>
+// --- الدوال الجديدة لإجبار المستخدمين على رفع الصور ---
+
+// 1. معاينة الصورة قبل الرفع
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('userAvatarPreview').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 2. التحقق النهائي والحفظ (الاسم + الصورة)
+async function submitFullProfile() {
+    const name = document.getElementById('forcedNameInput').value.trim();
+    const avatarFile = document.getElementById('avatarInput').files[0];
+    const errorMsg = document.getElementById('nameErrorMsg');
+    const storedAvatar = localStorage.getItem('user_avatar');
+    
+    // فحص الاسم
+    if (name.split(/\s+/).length < 2) {
+        errorMsg.innerText = "Full Name Required (First & Last)!";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    // فحص الصورة (إلا إذا كان لديه صورة قديمة فعلاً)
+    if (!avatarFile && !storedAvatar) {
+        errorMsg.innerText = "Please upload a profile picture to continue!";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('entryBtn');
+    btn.innerText = "Creating Profile... ⏳";
+    btn.disabled = true;
+
+    try {
+        let finalAvatarUrl = storedAvatar;
+
+        // إذا رفع صورة جديدة، نقوم برفعها لـ Supabase
+        if (avatarFile) {
+            const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+            const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
+            if (error) throw error;
+            const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
+            finalAvatarUrl = urlData.publicUrl;
+        }
+
+        // حفظ البيانات نهائياً
+        localStorage.setItem('chat_username', name);
+        localStorage.setItem('user_avatar', finalAvatarUrl);
+
+        document.getElementById('englishNameModal').style.display = 'none';
+        showToast("Profile Secured! Welcome " + name);
+        
+        // تسجيل الدخول الرسمي
+        await logUserStatus('Online 🟢');
+        
+        // تحديث الصفحة لتنشيط كل شيء
+        setTimeout(() => location.reload(), 800);
+
+    } catch (err) {
+        alert("Setup failed: " + err.message);
+        btn.innerText = "Try Again";
+        btn.disabled = false;
+    }
+}
+
+// 3. فحص الهوية عند تشغيل التطبيق (الأمان)
+function checkUserIdentity() {
+    const storedName = localStorage.getItem('chat_username');
+    const storedAvatar = localStorage.getItem('user_avatar');
+    const modal = document.getElementById('englishNameModal');
+
+    // إذا لم يكن هناك اسم كامل أو لا توجد صورة (بصمة)، اجبره على التسجيل
+    if (!storedName || storedName.split(/\s+/).length < 2 || !storedAvatar) {
+        if (modal) {
+            modal.style.display = 'flex';
+            if (storedName) document.getElementById('forcedNameInput').value = storedName;
+            if (storedAvatar) document.getElementById('userAvatarPreview').src = storedAvatar;
+        }
+    } else {
+        // إذا كان كل شيء جاهز، ابدأ تتبع الحالة
+        initUserTracking();
+    }
+}
+
+// تشغيل الفحص بعد ثانية من تحميل الصفحة
+setTimeout(checkUserIdentity, 1000);
+</script>
+
+
 <audio id="musicPlayer" loop preload="auto"><source src="https://raw.githubusercontent.com/ahmadalshaear/eternal-brothers-audio/main/Eternal_Brothers%20_FC_new.mp3" type="audio/mp3"></audio>
 <audio id="radioStreamPlayer" preload="none"></audio>
 <audio id="notification-sound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3" type="audio/mp3"></audio>
