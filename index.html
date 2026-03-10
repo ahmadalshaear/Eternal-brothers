@@ -350,10 +350,6 @@ function previewAvatar(input) {
         reader.onload = function(e) {
             document.getElementById('userAvatarPreview').src = e.target.result;
         }
-        // أضف هذه الأسطر قبل reload في دالة submitFullProfile
-await logUserStatus('Online 🟢');
-setupRealtime(); 
-
         reader.readAsDataURL(input.files[0]);
     }
 }
@@ -2380,15 +2376,16 @@ function setupRealtime() {
     const myName = localStorage.getItem('chat_username') || 'Guest';
     const myAvatar = localStorage.getItem('user_avatar') || '';
 
-supabase.channel('user-logs-updates')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'user_logs' }, () => {
-        if (document.getElementById('userLogContainer').style.display === 'block') {
-            loadUserLogs(); // تحديث القائمة فوراً عند حدوث تغيير في الداتابيز
-        }
-    })
-    .subscribe();
+    // قناة تحديث سجل المستخدمين
+    supabase.channel('user-logs-updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_logs' }, () => {
+            if (document.getElementById('userLogContainer').style.display === 'block') {
+                loadUserLogs(); 
+            }
+        })
+        .subscribe();
 
-    // 1. قناة تحديثات الدردشة (العامة، الأزرق، الأصفر)
+    // 1. قناة تحديثات الدردشة
     supabase.channel('chat-updates')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
             renderMessage(payload.new, 'chatMessages'); 
@@ -2409,7 +2406,7 @@ supabase.channel('user-logs-updates')
         })
         .subscribe();
 
-    // 2. قناة تحديثات الجداول (اللاعبين، القوائم، السجلات)
+    // 2. قناة تحديثات الجداول
     supabase.channel('table-updates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
@@ -2423,55 +2420,68 @@ supabase.channel('user-logs-updates')
         })
         .subscribe();
 
-    // 3. قناة التواجد والنشاط (Online Users & Typing)
+    // 3. قناة التواجد (تمت إضافة الربط مع الجدول)
     roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
     
-    
-    
-    // داخل دالة setupRealtime
-roomChannel.on('presence', { event: 'sync' }, () => {
-    const newState = roomChannel.presenceState();
-    const onlineUsers = [];
-    
-    // استخراج أسماء المتصلين حالياً فقط
-    for (const id in newState) { 
-        const userObj = newState[id][0]; 
-        if (userObj && userObj.name) onlineUsers.push(userObj.name); 
-    }
-    
-    // 1. تحديث شريط الصور العلوي
-    updateOnlineUsersUI(onlineUsers);
+    roomChannel.on('presence', { event: 'sync' }, () => {
+        const newState = roomChannel.presenceState();
+        const onlineUsers = [];
+        
+        for (const id in newState) { 
+            const userObj = newState[id][0]; 
+            // نأخذ الاسم من المستشعر اللحظي
+            if (userObj && userObj.name) onlineUsers.push(userObj.name); 
+        }
+        
+        // --- التعديل هنا: استدعاء الدالة الجديدة التي ترسلها الأسماء اللحظية ---
+        refreshOnlineUsersUI(onlineUsers); 
 
-    // 2. تحديث الدوائر في القائمة الكبيرة (Activity Log) إذا كانت مفتوحة
-    const logItems = document.querySelectorAll('#userLogList li');
-    logItems.forEach(item => {
-        const nameElement = item.querySelector('span[style*="font-weight:bold"]');
-        if (nameElement) {
-            const userName = nameElement.innerText.trim();
-            const dot = item.querySelector('div[style*="border-radius:50%"]:not(img)');
-            const img = item.querySelector('img');
-            const statusText = item.querySelector('span[style*="font-size: 10px"]');
+        // تحديث سجل النشاط (Activity Log) ليبقى يعمل كما هو
+        const logItems = document.querySelectorAll('#userLogList li');
+        logItems.forEach(item => {
+            const nameElement = item.querySelector('span[style*="font-weight:bold"]');
+            if (nameElement) {
+                const userName = nameElement.innerText.trim();
+                const dot = item.querySelector('div[style*="border-radius:50%"]:not(img)');
+                const img = item.querySelector('img');
+                const statusText = item.querySelector('span[style*="font-size: 10px"]');
 
-            if (onlineUsers.includes(userName)) {
-                // تحويل الحالة إلى "متصل الآن" بلون أخضر فوري
-                if (dot) dot.style.background = '#00e676';
-                if (dot) dot.style.boxShadow = '0 0 5px #00e676';
-                if (img) img.style.borderColor = '#00e676';
-                if (statusText) {
-                    statusText.innerText = 'Online Now';
-                    statusText.style.color = '#00e676';
+                if (onlineUsers.includes(userName)) {
+                    if (dot) dot.style.background = '#00e676';
+                    if (img) img.style.borderColor = '#00e676';
+                    if (statusText) { statusText.innerText = 'Online Now'; statusText.style.color = '#00e676'; }
+                } else {
+                    if (dot) dot.style.background = '#757575';
+                    if (img) img.style.borderColor = '#757575';
                 }
-            } else {
-                // تحويل الحالة إلى "أوفلاين"
-                if (dot) dot.style.background = '#757575';
-                if (dot) dot.style.boxShadow = 'none';
-                if (img) img.style.borderColor = '#757575';
-                // نترك نص "آخر ظهور" كما هو ليعرف المستخدم متى غادر
             }
+        });
+    })
+    .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            // --- إضافة هامة: إرسال الاسم للمستشعر وتحديث الجدول فوراً ---
+            await roomChannel.track({ name: myName, avatar: myAvatar });
+            await supabase.from('user_presence').upsert([{ 
+                username: myName, 
+                avatar_url: myAvatar,
+                is_online: true,
+                last_seen: new Date().toISOString()
+            }], { onConflict: 'username' });
         }
     });
-});
 }
+
+// --- إضافة هامة خارج الدالة: تحديث الجدول عند إغلاق المتصفح ---
+window.addEventListener('beforeunload', async () => {
+    const myName = localStorage.getItem('chat_username');
+    if (myName) {
+        // إخبار قاعدة البيانات أن المستخدم خرج فعلياً
+        await supabase.from('user_presence')
+            .update({ is_online: false, last_seen: new Date().toISOString() })
+            .eq('username', myName);
+    }
+});
+
 async function checkAndRunAutoWash() {
     const now = new Date();
     if (now.getDay() !== 6 || now.getHours() < 21) return; 
@@ -3567,6 +3577,16 @@ async function refreshOnlineUsers() {
         console.error("Refresh error:", e);
     }
 }
+
+window.addEventListener('beforeunload', async () => {
+    const myName = localStorage.getItem('chat_username');
+    if (myName) {
+        // تحديث جدول قاعدة البيانات بأن المستخدم غادر
+        await supabase.from('user_presence')
+            .update({ is_online: false, last_seen: new Date().toISOString() })
+            .eq('username', myName);
+    }
+});
 
 
 </script>
