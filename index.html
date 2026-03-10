@@ -6,69 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-
-#onlineUsersBar {
-    display: flex;
-    flex-direction: row;
-    gap: 15px;
-    padding: 10px;
-    background: #1a1a1a;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    overflow-x: auto; /* للسماح بالتمرير إذا كان العدد كبيراً */
-    border-bottom: 2px solid #333;
-    min-height: 70px;
-    align-items: center;
-}
-
-.online-avatar-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.online-avatar-img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #00e676; /* الحواف الخضراء */
-    box-shadow: 0 0 8px rgba(0, 230, 118, 0.5);
-}
-
-.online-status-dot {
-    position: absolute;
-    bottom: 18px; /* فوق الاسم قليلاً */
-    right: 2px;
-    width: 10px;
-    height: 10px;
-    background: #00e676;
-    border-radius: 50%;
-    border: 2px solid #1a1a1a;
-}
-
-.online-user-name {
-    font-size: 10px;
-    color: #fff;
-    margin-top: 4px;
-    font-weight: bold;
-    max-width: 55px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-
-.online-name-tooltip {
-    animation: fadeIn 0.2s ease;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translate(-50%, 5px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
-}
-
 /* Smart Team Maker Styles */
 .tm-player-card {
     background: #333;
@@ -310,139 +247,6 @@ li { margin:5px 0; padding:6px; border-radius:8px; display:flex; justify-content
 </style>
 </head>
 <body>
-
-<div id="englishNameModal" class="mini-modal-overlay" style="display: none; background: rgba(0,0,0,0.95); z-index: 9999;">
-    <div class="mini-modal-box" style="max-width: 400px; padding: 30px; border: 2px solid #d32f2f;">
-        <h2 style="color: #fff; margin-bottom: 20px;">⚽ Welcome Brother!</h2>
-        <p style="color: #bbb; font-size: 14px; margin-bottom: 20px;">To join Eternal Brothers FC, you must set your official identity.</p>
-        
-        <div style="margin-bottom: 20px;">
-            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 15px;">
-                <img id="userAvatarPreview" src="https://www.w3schools.com/howto/img_avatar.png" 
-                     style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #d32f2f;">
-                <label for="avatarInput" style="position: absolute; bottom: 0; right: 0; background: #d32f2f; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #fff;">
-                    📷
-                </label>
-                <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
-            </div>
-            <p style="font-size: 12px; color: #ffeb3b;">Click the camera to upload your photo (Mandatory)</p>
-        </div>
-
-        <input type="text" id="forcedNameInput" placeholder="Full Name (First & Last)" 
-               style="width: 100%; padding: 12px; margin-bottom: 10px; background: #1e1e1e; color: #fff; border: 1px solid #555; border-radius: 8px; text-align: center;">
-        
-        <p id="nameErrorMsg" style="color: #ff5252; font-size: 12px; display: none; margin-bottom: 10px;"></p>
-        
-        <button id="entryBtn" onclick="submitFullProfile()" 
-                style="background: #d32f2f; color: #fff; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;">
-            Confirm Identity & Join ⚽
-        </button>
-    </div>
-</div>
-
-<script>
-// --- الدوال الجديدة لإجبار المستخدمين على رفع الصور ---
-
-// 1. معاينة الصورة قبل الرفع
-function previewAvatar(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('userAvatarPreview').src = e.target.result;
-        }
-        // أضف هذه الأسطر قبل reload في دالة submitFullProfile
-await logUserStatus('Online 🟢');
-setupRealtime(); 
-
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-// 2. التحقق النهائي والحفظ (الاسم + الصورة)
-async function submitFullProfile() {
-    const name = document.getElementById('forcedNameInput').value.trim();
-    const avatarFile = document.getElementById('avatarInput').files[0];
-    const errorMsg = document.getElementById('nameErrorMsg');
-    const storedAvatar = localStorage.getItem('user_avatar');
-    
-    // فحص الاسم
-    if (name.split(/\s+/).length < 2) {
-        errorMsg.innerText = "Full Name Required (First & Last)!";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    // فحص الصورة (إلا إذا كان لديه صورة قديمة فعلاً)
-    if (!avatarFile && !storedAvatar) {
-        errorMsg.innerText = "Please upload a profile picture to continue!";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    const btn = document.getElementById('entryBtn');
-    btn.innerText = "Creating Profile... ⏳";
-    btn.disabled = true;
-
-    try {
-        let finalAvatarUrl = storedAvatar;
-
-        // إذا رفع صورة جديدة، نقوم برفعها لـ Supabase
-        if (avatarFile) {
-            const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-            const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
-            if (error) throw error;
-            const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-            finalAvatarUrl = urlData.publicUrl;
-        }
-
-        // حفظ البيانات نهائياً
-        localStorage.setItem('chat_username', name);
-        localStorage.setItem('user_avatar', finalAvatarUrl);
-
-        document.getElementById('englishNameModal').style.display = 'none';
-        showToast("Profile Secured! Welcome " + name);
-        
-        // تسجيل الدخول الرسمي
-        await logUserStatus('Online 🟢');
-        
-        // تحديث الصفحة لتنشيط كل شيء
-        setTimeout(() => location.reload(), 800);
-
-    } catch (err) {
-        alert("Setup failed: " + err.message);
-        btn.innerText = "Try Again";
-        btn.disabled = false;
-    }
-}
-
-// دالة التحقق عند تشغيل التطبيق (الأمان والربط)
-function checkUserIdentity() {
-    const storedName = localStorage.getItem('chat_username');
-    const storedAvatar = localStorage.getItem('user_avatar');
-    const modal = document.getElementById('englishNameModal');
-
-    // إذا كان الاسم والصورة موجودين، ابدأ التتبع فوراً
-    if (storedName && storedName.split(/\s+/).length >= 2 && storedAvatar) {
-        if (modal) modal.style.display = 'none';
-        
-        // تشغيل الربط الفوري وتحديث الحالة
-        setupRealtime(); 
-        initUserTracking();
-        logUserStatus('Online 🟢');
-        
-        // تحديث الحقول بالاسم المخزن
-        updateAllNameInputs(storedName);
-    } else {
-        // إذا نقص شيء، اظهر النافذة الإجبارية
-        if (modal) modal.style.display = 'flex';
-    }
-}
-
-// تشغيل الفحص بعد ثانية من تحميل الصفحة لضمان جاهزية Supabase
-setTimeout(checkUserIdentity, 1000);
-
-</script>
-
 
 <audio id="musicPlayer" loop preload="auto"><source src="https://raw.githubusercontent.com/ahmadalshaear/eternal-brothers-audio/main/Eternal_Brothers%20_FC_new.mp3" type="audio/mp3"></audio>
 <audio id="radioStreamPlayer" preload="none"></audio>
@@ -949,9 +753,8 @@ window.addEventListener('load', updateWeatherPro);
         <button onclick="closeGameCenter()" id="closeGameBtn" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close Arcade</button>
     </div>
 </div>
-<<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-
 <script>
 // 1. إعداد اتصال Supabase (تعديل لتجنب الخطأ)
 const supabaseUrl = 'https://wihhlvgkjglphjzhivdn.supabase.co';
@@ -1044,68 +847,6 @@ let teamCaptains = {
 
 function stringToHash(str) { let hash = 0; if (str.length === 0) return hash; for (let i = 0; i < str.length; i++) { const char = str.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash |= 0; } return Math.abs(hash); }
 function getColorForUsername(username) { return nameColors[stringToHash(username.trim().toUpperCase()) % nameColors.length]; }
-// معاينة الصورة عند اختيارها
-function previewAvatar(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('userAvatarPreview').src = e.target.result;
-        }
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-async function submitFullProfile() {
-    const name = document.getElementById('forcedNameInput').value.trim();
-    const avatarFile = document.getElementById('avatarInput').files[0];
-    const errorMsg = document.getElementById('nameErrorMsg');
-    
-    if (name.split(/\s+/).length < 2) {
-        errorMsg.innerText = "Full Name Required (First & Last)!";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    if (!avatarFile) {
-        errorMsg.innerText = "Profile Picture is Required!";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    const btn = document.getElementById('entryBtn');
-    btn.innerText = "Uploading... ⏳";
-    btn.disabled = true;
-
-    try {
-        // رفع الصورة
-        const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-        const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
-
-        if (error) throw error;
-
-        // الحصول على الرابط العام
-        const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-        const avatarUrl = urlData.publicUrl;
-
-        // حفظ البيانات بشكل موحد في كل المفاتيح المستخدمة في الكود
-        localStorage.setItem('chat_username', name);
-        localStorage.setItem('chat_avatar', avatarUrl);
-        localStorage.setItem('user_avatar', avatarUrl); // هذا المفتاح هو الأكثر استخداماً في كودك
-
-        document.getElementById('englishNameModal').style.display = 'none';
-        showToast("Profile Created! Welcome " + name);
-        
-        // إرسال لوج الدخول بالصورة
-        await logUserStatus('Online 🟢');
-
-        // إعادة تحميل لضمان تحديث الواجهة
-        location.reload(); 
-    } catch (err) {
-        alert("Upload failed: " + err.message);
-        btn.innerText = "Try Again";
-        btn.disabled = false;
-    }
-}
 
 function showSection(id){
   document.querySelectorAll('.container').forEach(c=>c.style.display='none');
@@ -2010,119 +1751,61 @@ function updateAudioTime(uniqueId) {
 function resetAudio(uniqueId) { const btn = document.getElementById('btn-' + uniqueId); if (btn) btn.innerText = '▶'; }
 function formatTime(seconds) { if (isNaN(seconds)) return "0:00"; const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60); return `${m}:${s < 10 ? '0' : ''}${s}`; }
 
-// 1. تحديث دالة عرض الرسائل لتجنب الاختفاء
 function renderMessage(m, id) {
-    const div = document.getElementById(id); 
-    if (!div) return;
-
-    const currentUsername = localStorage.getItem('chat_username');
-    const isMe = m.username === currentUsername;
-    
-    const userAvatar = m.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
-    
-    let c = m.content || "";
-    if (c.startsWith('[IMG]')) { 
-        c = `<img src="${c.substring(5)}" class="chat-media-content" onclick="window.open(this.src)">`; 
-    } else if (c.startsWith('[AUDIO]')) {
+    const div = document.getElementById(id); const isMe = m.username === localStorage.getItem('chat_username');
+    let c = m.content;
+    if (c.startsWith('[IMG]')) { c = `<img src="${c.substring(5)}" class="chat-media-content" onclick="window.open(this.src)">`; } 
+    else if (c.startsWith('[VID]')) { c = `<video src="${c.substring(5)}" controls class="chat-media-content"></video>`; } 
+    else if (c.startsWith('[AUDIO]')) {
         const uniqueId = 'audio-' + Math.random().toString(36).substr(2, 9);
-        c = `<div class="custom-audio-player"><button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button><span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span><audio id="${uniqueId}" src="${c.substring(7)}" ontimeupdate="updateAudioTime('${uniqueId}')" style="display:none;"></audio></div>`;
+        const src = c.substring(7);
+        c = `<div class="custom-audio-player"><button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button><span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span><audio id="${uniqueId}" src="${src}" ontimeupdate="updateAudioTime('${uniqueId}')" onloadedmetadata="updateAudioTime('${uniqueId}')" onended="resetAudio('${uniqueId}')" style="display:none;"></audio></div>`;
     }
-
+    let delBtn = '';
+    const table = id.includes('blue') ? 'blue_chat' : (id.includes('yellow') ? 'yellow_chat' : 'chat_messages');
+    if (isMe) delBtn = `<button class="delete-msg-btn" title="Delete" onclick="deleteSingleMessage('${table}', ${m.id})">✕</button>`;
     const timeSpan = new Date(m.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
-
-    // إضافة زر X فقط إذا كانت الرسالة لي
-    const deleteBtn = isMe ? `<button class="delete-msg-btn" onclick="deleteMyMessage('${id.includes('blue') ? 'blue_chat' : (id.includes('yellow') ? 'yellow_chat' : 'chat_messages')}', ${m.id}, '${id}')" title="Delete Message">×</button>` : '';
-
-    const messageWrapper = `
-    <div id="msg-container-${m.id}" class="msg-row" style="display:flex; align-items:flex-end; gap:8px; margin-bottom:15px; flex-direction:${isMe ? 'row-reverse' : 'row'}; clear:both; position:relative;">
-        <img src="${userAvatar}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #444;">
-        <div class="message ${isMe ? 'my-message' : ''}" style="position:relative; max-width:75%; padding-top: 10px;">
-            ${deleteBtn}
-            <div style="font-size:11px; color:${isMe ? '#ffeb3b' : getColorForUsername(m.username)}; font-weight:bold; margin-bottom:4px; padding-right:15px;">${m.username}</div>
-            <div style="word-break: break-word;">${c}</div>
-            <div style="font-size:9px; color:${isMe ? 'rgba(255,255,255,0.6)' : '#888'}; text-align:right; margin-top:4px;">${timeSpan}</div>
-        </div>
-    </div>`;
-
-    div.innerHTML += messageWrapper;
+    div.innerHTML += `<div class="message ${isMe?'my-message':''}" style="border-color:${getColorForUsername(m.username)}"><div style="font-size:12px; color:${getColorForUsername(m.username)}; font-weight:bold;">${m.username} <span style="font-weight:normal; color:#888; font-size:10px;">${timeSpan}</span></div><div>${c}</div>${delBtn}</div>`;
     div.scrollTop = div.scrollHeight;
 }
 
+async function deleteSingleMessage(table, id) { if(!confirm("Delete?")) return; await supabase.from(table).delete().eq('id', id); reloadList(table); }
 
-// دالة إرسال الشات العام الموحدة والمحسنة
+async function loadChatMessages() { 
+    const { data } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); 
+    document.getElementById('chatMessages').innerHTML=''; 
+    // التعديل: إضافة (data || []) لمنع الخطأ إذا كانت البيانات فارغة
+    if (data) {
+        data.forEach(m=>renderMessage(m,'chatMessages')); 
+    }
+}
+
+async function loadTeamChatMessages(team) { 
+    const { data } = await supabase.from(`${team}_chat`).select('*').order('created_at', {ascending:true}).limit(50); 
+    document.getElementById(`${team}ChatMessages`).innerHTML=''; 
+    // التعديل: التحقق من وجود data
+    if (data) {
+        data.forEach(m=>renderMessage(m,`${team}ChatMessages`)); 
+    }
+}
+
+
 async function sendMessage() {
-    const n = document.getElementById('chatNameInput').value.trim(); 
-    const c = document.getElementById('chatMsgInput').value.trim();
-    const avatar = localStorage.getItem('user_avatar') || ''; 
-
-    if (!n || !c) return;
-    
-    // حفظ الاسم لضمان استمرارية الهوية
-    localStorage.setItem('chat_username', n);
-
-    const { data, error } = await supabase.from('chat_messages').insert([{ 
-        username: n, 
-        content: c,
-        avatar_url: avatar,
-        created_at: new Date().toISOString()
-    }]).select();
-
-    if (!error) {
-        document.getElementById('chatMsgInput').value = '';
-        // إذا لم يعمل الـ Realtime فوراً، هذه السطر يضمن ظهور رسالتك عندك
-        if(data) renderMessage(data[0], 'chatMessages');
-    } else {
-        console.error("إخفاق في الإرسال:", error);
-    }
+    const n = document.getElementById('chatNameInput').value; 
+    if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
+    if (n.trim().split(/\s+/).length < 2) { return alert("Full Name Required (First & Last) / الاسم الكامل مطلوب (الاسم واللقب)"); }
+    const c = document.getElementById('chatMsgInput').value;
+    if(!n || !c) return; localStorage.setItem('chat_username', n);
+    await supabase.from('chat_messages').insert([{ username:n, content:c }]); document.getElementById('chatMsgInput').value='';
 }
 
-async function deleteMyMessage(table, messageId, containerId) {
-    if (!confirm("Are you sure you want to delete your message?")) return;
-
-    try {
-        // الحذف من Supabase
-        const { error } = await supabase
-            .from(table)
-            .delete()
-            .eq('id', messageId);
-
-        if (error) throw error;
-
-        // إخفاء الرسالة من الواجهة فوراً
-        const msgEl = document.getElementById(`msg-container-${messageId}`);
-        if (msgEl) {
-            msgEl.style.opacity = '0';
-            setTimeout(() => msgEl.remove(), 300);
-        }
-        
-        showToast("Message deleted. 🗑️");
-    } catch (err) {
-        console.error("Delete error:", err);
-        alert("Could not delete message. You can only delete your own messages.");
-    }
-}
-
-
-// دالة إرسال شات الفرق الموحدة
 async function sendTeamMessage(team) {
-    const n = document.getElementById(`${team}ChatNameInput`).value.trim(); 
-    const c = document.getElementById(`${team}ChatMsgInput`).value.trim();
-    const avatar = localStorage.getItem('user_avatar') || '';
-
-    if(!n || !c) return; 
-
-    const table = `${team}_chat`;
-    const { data, error } = await supabase.from(table).insert([{ 
-        username: n, 
-        content: c,
-        avatar_url: avatar,
-        created_at: new Date().toISOString()
-    }]).select();
-
-    if (!error) {
-        document.getElementById(`${team}ChatMsgInput`).value = '';
-        if(data) renderMessage(data[0], `${team}ChatMessages`);
-    }
+    const n = document.getElementById(`${team}ChatNameInput`).value; 
+    if (!/^[A-Za-z0-9\s]+$/.test(n)) { return alert("Please use English Name Only / الرجاء استخدام اسم إنجليزي فقط"); }
+    if (n.trim().split(/\s+/).length < 2) { return alert("Full Name Required (First & Last) / الاسم الكامل مطلوب (الاسم واللقب)"); }
+    const c = document.getElementById(`${team}ChatMsgInput`).value;
+    if(!n || !c) return; localStorage.setItem('chat_username', n);
+    await supabase.from(`${team}_chat`).insert([{ username:n, content:c }]); document.getElementById(`${team}ChatMsgInput`).value='';
 }
 
 let gameInterval, gameActive = false, currentScore = 0, currentGameType = '';
@@ -2322,169 +2005,62 @@ function handleTyping(context) {
     roomChannel.send({ type: 'broadcast', event: 'typing', payload: { name: name } });
 }
 
-async function updateOnlineUsersUI(onlineNames) {
+function updateOnlineUsersUI(users) {
     const bar = document.getElementById('onlineUsersBar');
-    if (!bar) return;
-
-    if (!onlineNames || onlineNames.length === 0) {
-        bar.innerHTML = '<span style="color:#555; font-size:12px; margin:auto;">Waiting for brothers... ⚽</span>';
-        return;
-    }
-
-    // جلب بيانات الصور من جدول user_logs لضمان عرض الصورة الحقيقية لكل شخص أونلاين
-    const { data: logs, error } = await supabase
-        .from('user_logs')
-        .select('username, avatar_url');
-
-    const avatarMap = {};
-    if (logs) {
-        logs.forEach(l => avatarMap[l.username] = l.avatar_url);
-    }
-
-    // إزالة التكرار من الأسماء المتصلة
-    const uniqueOnlineUsers = [...new Set(onlineNames)];
-
-    bar.innerHTML = uniqueOnlineUsers.map(name => {
-        const img = avatarMap[name] || 'https://www.w3schools.com/howto/img_avatar.png'; // صورة افتراضية إذا لم يرفع صورة
-        return `
-            <div class="online-avatar-container" title="${name}">
-                <img src="${img}" class="online-avatar-img">
-                <div class="online-status-dot"></div>
-                <span class="online-user-name">${name.split(' ')[0]}</span> 
-            </div>
-        `;
-    }).join('');
+    if(!bar) return;
+    const uniqueUsers = [...new Set(users)];
+    bar.innerHTML = uniqueUsers.map(u => `<div class="online-user-pill">${u} <div class="online-dot"></div></div>`).join('');
 }
-
-
-
-
-// دالة إظهار الاسم عند النقر
-function toggleOnlineName(event, name) {
-    event.stopPropagation();
-    // إخفاء كل الأسماء المفتوحة أولاً
-    document.querySelectorAll('.online-name-tooltip').forEach(t => t.style.display = 'none');
-    // إظهار الاسم المختار
-    const tooltip = event.currentTarget.querySelector('.online-name-tooltip');
-    tooltip.style.display = 'block';
-}
-
-// إغلاق الأسماء عند النقر في أي مكان آخر
-document.addEventListener('click', () => {
-    document.querySelectorAll('.online-name-tooltip').forEach(t => t.style.display = 'none');
-});
 
 function setupRealtime() {
-    const myName = localStorage.getItem('chat_username') || 'Guest';
-    const myAvatar = localStorage.getItem('user_avatar') || '';
+  const myName = localStorage.getItem('chat_username') || 'Guest';
+  
+  supabase.channel('global-chat-updates')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
+        renderMessage(payload.new, 'chatMessages'); 
+        if (payload.new.username !== myName) playNotificationSound();
+    })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => { loadChatMessages(); })
+    .subscribe();
+    
+  supabase.channel('system-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { const hc = document.getElementById('systemHistoryContainer'); if (hc.style.display === 'block') loadSystemHistory(false); }).subscribe();
+  supabase.channel('laundry-history-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { const container = document.getElementById('laundryHistoryContainer'); if (container.style.display === 'block') loadLaundryHistory(false); }).subscribe();
+  
+  supabase.channel('blue-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
+      if(document.getElementById('blue').style.display === 'block') {
+          renderMessage(payload.new, 'blueChatMessages'); 
+          if (payload.new.username !== myName) playNotificationSound();
+      }
+  }).subscribe();
 
-supabase.channel('user-logs-updates')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'user_logs' }, () => {
-        if (document.getElementById('userLogContainer').style.display === 'block') {
-            loadUserLogs(); // تحديث القائمة فوراً عند حدوث تغيير في الداتابيز
+  supabase.channel('yellow-chat-updates').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
+      if(document.getElementById('yellow').style.display === 'block') {
+          renderMessage(payload.new, 'yellowChatMessages'); 
+          if (payload.new.username !== myName) playNotificationSound();
+      }
+  }).subscribe();
+
+  supabase.channel('teams-updates').on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers()).on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue()).on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow()).subscribe();
+
+  roomChannel = supabase.channel('online-room', { config: { presence: { key: myId, }, }, });
+  roomChannel
+    .on('presence', { event: 'sync' }, () => {
+      const newState = roomChannel.presenceState();
+      const users = [];
+      for (const id in newState) { const userObj = newState[id][0]; if (userObj && userObj.name) users.push(userObj.name); }
+      updateOnlineUsersUI(users);
+    })
+    .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        const indicator = document.getElementById('typingIndicator');
+        if(indicator) {
+            indicator.innerText = `${payload.name} is typing...`;
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => { indicator.innerText = ''; }, 2000);
         }
     })
-    .subscribe();
-
-    // 1. قناة تحديثات الدردشة (العامة، الأزرق، الأصفر)
-    supabase.channel('chat-updates')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
-            renderMessage(payload.new, 'chatMessages'); 
-            if (payload.new.username !== myName) playNotificationSound();
-        })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, () => loadChatMessages())
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'blue_chat' }, (payload) => { 
-            if(document.getElementById('blue').style.display === 'block') {
-                renderMessage(payload.new, 'blueChatMessages'); 
-                if (payload.new.username !== myName) playNotificationSound();
-            }
-        })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'yellow_chat' }, (payload) => { 
-            if(document.getElementById('yellow').style.display === 'block') {
-                renderMessage(payload.new, 'yellowChatMessages'); 
-                if (payload.new.username !== myName) playNotificationSound();
-            }
-        })
-        .subscribe();
-
-    // 2. قناة تحديثات الجداول (اللاعبين، القوائم، السجلات)
-    supabase.channel('table-updates')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'blue_team' }, () => loadBlue())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'yellow_team' }, () => loadYellow())
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_history' }, () => { 
-            if (document.getElementById('systemHistoryContainer').style.display === 'block') loadSystemHistory(false); 
-        })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'laundry_history' }, () => { 
-            if (document.getElementById('laundryHistoryContainer').style.display === 'block') loadLaundryHistory(false); 
-        })
-        .subscribe();
-
-    // 3. قناة التواجد والنشاط (Online Users & Typing)
-    roomChannel = supabase.channel('online-room', { config: { presence: { key: myId } } });
-    
-    // داخل دالة setupRealtime تأكد من وجود هذا الجزء:
-roomChannel.subscribe(async (status) => {
-    if (status === 'SUBSCRIBED') {
-        const myName = localStorage.getItem('chat_username');
-        const myAvatar = localStorage.getItem('user_avatar');
-        
-        if(myName) {
-            await roomChannel.track({
-                name: myName,
-                avatar: myAvatar,
-                online_at: new Date().toISOString()
-            });
-        }
-    }
-});
-
-    
-    // داخل دالة setupRealtime
-roomChannel.on('presence', { event: 'sync' }, () => {
-    const newState = roomChannel.presenceState();
-    const onlineUsers = [];
-    
-    // استخراج أسماء المتصلين حالياً فقط
-    for (const id in newState) { 
-        const userObj = newState[id][0]; 
-        if (userObj && userObj.name) onlineUsers.push(userObj.name); 
-    }
-    
-    // 1. تحديث شريط الصور العلوي
-    updateOnlineUsersUI(onlineUsers);
-
-    // 2. تحديث الدوائر في القائمة الكبيرة (Activity Log) إذا كانت مفتوحة
-    const logItems = document.querySelectorAll('#userLogList li');
-    logItems.forEach(item => {
-        const nameElement = item.querySelector('span[style*="font-weight:bold"]');
-        if (nameElement) {
-            const userName = nameElement.innerText.trim();
-            const dot = item.querySelector('div[style*="border-radius:50%"]:not(img)');
-            const img = item.querySelector('img');
-            const statusText = item.querySelector('span[style*="font-size: 10px"]');
-
-            if (onlineUsers.includes(userName)) {
-                // تحويل الحالة إلى "متصل الآن" بلون أخضر فوري
-                if (dot) dot.style.background = '#00e676';
-                if (dot) dot.style.boxShadow = '0 0 5px #00e676';
-                if (img) img.style.borderColor = '#00e676';
-                if (statusText) {
-                    statusText.innerText = 'Online Now';
-                    statusText.style.color = '#00e676';
-                }
-            } else {
-                // تحويل الحالة إلى "أوفلاين"
-                if (dot) dot.style.background = '#757575';
-                if (dot) dot.style.boxShadow = 'none';
-                if (img) img.style.borderColor = '#757575';
-                // نترك نص "آخر ظهور" كما هو ليعرف المستخدم متى غادر
-            }
-        }
-    });
-});
+    .subscribe(async (status) => { if (status === 'SUBSCRIBED') { const name = document.getElementById('chatNameInput').value || 'Guest'; await roomChannel.track({ name: name, online_at: new Date().toISOString() }); } });
 }
+
 async function checkAndRunAutoWash() {
     const now = new Date();
     if (now.getDay() !== 6 || now.getHours() < 21) return; 
@@ -2519,47 +2095,49 @@ function submitEnglishName() {
     const errorMsg = document.getElementById('nameErrorMsg');
     const englishRegex = /^[A-Za-z0-9\s]+$/;
 
-    // 1. التحقق من الفراغ
+    // 1. Check if empty
     if (!name) {
         errorMsg.innerText = "Name is required!";
         errorMsg.style.display = 'block';
         return;
     }
 
-    // 2. التحقق من الحروف الإنجليزية فقط
+    // 2. Check for English letters only
     if (!englishRegex.test(name)) {
         errorMsg.innerHTML = "Only English letters allowed!";
         errorMsg.style.display = 'block';
         return;
     }
 
-    // تقسيم الاسم لفحصه
+    // Split name
     const nameParts = name.split(/\s+/);
 
-    // 3. التحقق من وجود اسمين على الأقل (الأول والأخير)
+    // 3. Check for at least 2 words
     if (nameParts.length < 2) {
         errorMsg.innerHTML = "Full Name Required (First & Last Name)";
         errorMsg.style.display = 'block';
         return;
     }
 
-    // 4. التحقق من الطول (يجب أن يكون الاسم الأول والأخير 4 حروف فأكثر)
+    // 4. Check length (Logic: 4 chars, Message: Generic)
     const firstName = nameParts[0];
     const lastName = nameParts[nameParts.length - 1];
 
     if (firstName.length < 4 || lastName.length < 4) {
+        // الرسالة هنا عامة ولا تذكر رقم 4 كما طلبت
         errorMsg.innerHTML = "Please enter a valid Full Name (First & Last Name)";
         errorMsg.style.display = 'block';
         return;
     }
 
-    // --- النجاح: المرحلة الأولى ---
+    // Success
     localStorage.setItem('chat_username', name);
     updateAllNameInputs(name);
-    
-    // إخلاق نافذة الاسم وفتح نافذة "بصمة الصورة" إجبارياً
     document.getElementById('englishNameModal').style.display = 'none';
-    document.getElementById('avatarModal').style.display = 'flex'; 
+    setupRealtime(); 
+    
+    logUserStatus('Online 🟢');
+    initUserTracking();
 }
 
 function updateAllNameInputs(name) {
@@ -2569,140 +2147,47 @@ function updateAllNameInputs(name) {
     if(document.getElementById('nameInput')) document.getElementById('nameInput').value = name;
 }
 
-// دالة الحفظ النهائي للبصمة (الصورة الشخصية) - تم إضافتها هنا
-async function saveAvatarAndEnter() {
-    if (!selectedAvatarUrl) {
-        alert("Please choose an identity first! ⚽");
-        return;
-    }
-
-    const btn = document.getElementById('finalEntryBtn');
-    const name = localStorage.getItem('chat_username'); 
-    
-    btn.innerText = "Finalizing Profile... ⚽";
-    btn.disabled = true;
-
-    try {
-        let finalUrl = selectedAvatarUrl;
-
-        // رفع الصورة إذا كانت مخصصة من الجهاز لـ Supabase
-        const fileInput = document.getElementById('customAvatarInput');
-        if (fileInput && fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const fileName = `profiles/${Date.now()}.jpg`;
-            const { error: uploadError } = await supabase.storage.from('chat_images').upload(fileName, file);
-            if (uploadError) throw uploadError;
-            const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-            finalUrl = urlData.publicUrl;
-        }
-
-        // حفظ رابط الصورة (البصمة) دائمياً في المتصفح
-        localStorage.setItem('user_avatar', finalUrl);
-
-        // تشغيل الامتيازات الأصلية بعد اكتمال الصورة
-        setupRealtime(); 
-        logUserStatus('Online 🟢'); 
-        initUserTracking();
-
-        document.getElementById('avatarModal').style.display = 'none';
-        showToast("Profile Ready! Welcome to Eternal Brothers FC ⚽");
-        
-        // إعادة تحميل خفيفة لتنشيط الصور في كل النظام
-        setTimeout(() => location.reload(), 800);
-
-    } catch (err) {
-        console.error(err);
-        alert("Failed to save avatar. Please try again.");
-        btn.disabled = false;
-        btn.innerText = "Confirm & Join Match";
-    }
-}
-
-// دالة التحقق عند فتح التطبيق
 setTimeout(function() {
     const storedName = localStorage.getItem('chat_username');
-    const storedAvatar = localStorage.getItem('user_avatar'); // فحص وجود الصورة (البصمة)
     const englishRegex = /^[A-Za-z0-9\s]+$/;
     const modal = document.getElementById('englishNameModal');
 
-    // التأكد من أن الاسم المسجل هو اسم كامل (مقطعين على الأقل)
     const hasFullName = storedName && storedName.trim().split(/\s+/).length >= 2;
 
     if (modal) {
-        // الحالة 1: لا يوجد اسم أو الاسم غير صحيح -> افتح النافذة لإدخال البيانات كاملة
         if (!storedName || !englishRegex.test(storedName) || !hasFullName) {
             modal.style.display = 'flex'; 
-        } 
-        // الحالة 2: الاسم موجود ولكن الصورة (البصمة) مفقودة (للمستخدمين القدامى)
-        else if (!storedAvatar) {
-            updateAllNameInputs(storedName); // تعبئة الاسم تلقائياً
-            modal.style.display = 'flex';    // فتح النافذة لإجباره على رفع الصورة
-            // تغيير نص الزر ليكون واضحاً للمستخدم القديم
-            document.getElementById('entryBtn').innerText = "Update Photo & Enter ⚽";
-        } 
-        // الحالة 3: كل شيء تمام
-        else {
+        } else {
             updateAllNameInputs(storedName);
             setupRealtime(); 
-            logUserStatus('Online 🟢');
-            initUserTracking();
         }
     }
-}, 1000);
+}, 1000); 
 
-// دالة الحفظ المحدثة (الاسم + الصورة)
-async function submitFullProfile() {
-    const name = document.getElementById('forcedNameInput').value.trim();
-    const avatarFile = document.getElementById('avatarInput').files[0];
-    const errorMsg = document.getElementById('nameErrorMsg');
+async function logUserStatus(status) {
+    const name = localStorage.getItem('chat_username');
+    if (!name) return; 
+
+    await supabase.from('user_logs').insert([{ 
+        username: name, 
+        status: status 
+    }]);
+}
+
+function initUserTracking() {
+    const name = localStorage.getItem('chat_username');
     
-    // التحقق من الاسم
-    if (name.split(/\s+/).length < 2) {
-        errorMsg.innerText = "Full Name Required (First & Last)!";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    // التحقق من الصورة (إجباري)
-    if (!avatarFile) {
-        errorMsg.innerText = "Profile Picture is Required! 📷";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    const btn = document.getElementById('entryBtn');
-    btn.innerText = "Uploading Profile... ⏳";
-    btn.disabled = true;
-
-    try {
-        // رفع الصورة إلى Supabase Storage
-        const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-        const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
-
-        if (error) throw error;
-
-        // الحصول على الرابط العام للصورة
-        const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-        const avatarUrl = urlData.publicUrl;
-
-        // حفظ البيانات في المتصفح
-        localStorage.setItem('chat_username', name);
-        localStorage.setItem('user_avatar', avatarUrl); // هذه هي البصمة الإجبارية
-
-        document.getElementById('englishNameModal').style.display = 'none';
-        showToast("Welcome back, " + name + "! Profile updated.");
-        
-        // تفعيل النظام
-        setupRealtime();
+    if (name) {
         logUserStatus('Online 🟢');
-
-        // إعادة تحميل بسيطة لتنشيط الهوية الجديدة في كل الأقسام
-        setTimeout(() => location.reload(), 500); 
-    } catch (err) {
-        alert("Upload failed: " + err.message);
-        btn.innerText = "Try Again";
-        btn.disabled = false;
     }
+
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            logUserStatus('Offline 🔴');
+        } else {
+             logUserStatus('Online 🟢');
+        }
+    });
 }
 
 function timeAgo(dateParam) {
@@ -2723,71 +2208,59 @@ async function loadUserLogs() {
     const container = document.getElementById('userLogContainer');
     const list = document.getElementById('userLogList');
     
-    if (container.style.display === 'none' || container.style.display === '') {
+    if (container.style.display === 'none') {
         container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
         container.style.display = 'none';
         return; 
     }
 
-    list.innerHTML = '<li style="text-align:center; color:#aaa; padding:10px;">Reading Brothers Identity... ⚽</li>';
-    try {
-        // جلب البيانات من السيرفر
-        const { data, error } = await supabase
-            .from('user_logs')
-            .select('username, status, avatar_url, created_at')
-            .order('created_at', { ascending: false });
+    list.innerHTML = '<li style="text-align:center;">Loading status...</li>';
 
-        if (error) throw error;
-        if (!data || data.length === 0) {
-            list.innerHTML = '<li style="text-align:center; color:#777; padding:10px;">No brothers found.</li>';
-            return;
-        }
+    const { data, error } = await supabase
+        .from('user_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(150);
 
-        // --- الخطوة السحرية: جعل كل اسم يظهر مرة واحدة فقط ---
-        const uniqueUsers = {};
-        data.forEach(log => {
-            // إذا لم يكن الاسم موجوداً في القائمة المؤقتة، أضفه (بما أننا رتبنا حسب الأحدث، سيأخذ آخر حالة له)
-            if (!uniqueUsers[log.username]) {
-                uniqueUsers[log.username] = log;
-            }
-        });
-        
-        const onlineState = roomChannel.presenceState();
-        const onlineNames = Object.values(onlineState).map(u => u[0].name);
-        let finalHtml = '';
-        // تحويل الكائن إلى مصفوفة للمرور عليها
-        Object.values(uniqueUsers).forEach(user => {
-            const lastSeen = new Date(user.created_at);
-            // متصل إذا كان آخر نشاط خلال 10 دقائق
-            const isOnline = (new Date() - lastSeen) < 600000; 
-            
-            const statusColor = isOnline ? '#00e676' : '#757575'; 
-            const statusText = isOnline ? 'Online Now' : 'Last seen: ' + timeAgo(user.created_at);
-            const userAvatar = user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
-
-            finalHtml += `
-                <li style="padding: 10px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); margin-bottom: 5px; border-radius: 10px;">
-                    <div style="position:relative; width: 42px; height: 42px; flex-shrink:0;">
-                        <img src="${userAvatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border: 2px solid ${statusColor};">
-                        <div style="position:absolute; bottom:0; right:0; width:11px; height:11px; background:${statusColor}; border-radius:50%; border: 2px solid #2c2c2c; box-shadow: 0 0 5px ${statusColor};"></div>
-                    </div>
-                    <div style="display:flex; flex-direction:column; overflow:hidden;">
-                        <span style="color: #fff; font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${user.username}</span>
-                        <span style="color: ${isOnline ? '#00e676' : '#aaa'}; font-size: 10px;">${statusText}</span>
-                    </div>
-                </li>
-            `;
-        });
-        list.innerHTML = finalHtml;
-    } catch (e) {
-        console.error("Logs error:", e);
-        list.innerHTML = '<li style="color:#ff5252; text-align:center; padding:10px;">Error reading logs.</li>';
+    if (error || !data || data.length === 0) {
+        list.innerHTML = '<li style="text-align:center; color:#777;">No active users found.</li>';
+        return;
     }
-} 
 
+    const uniqueUsers = {};
+    data.forEach(log => {
+        if (!uniqueUsers[log.username]) {
+            uniqueUsers[log.username] = log;
+        }
+    });
 
-
+    list.innerHTML = '';
+    
+    Object.values(uniqueUsers).forEach(user => {
+        const isOnline = user.status.includes('Online');
+        const timeDisplay = timeAgo(user.created_at);
+        
+        const statusColor = isOnline ? '#00e676' : '#757575'; 
+        const statusText = isOnline ? 'Active' : 'Last seen';
+        const nameColor = isOnline ? '#fff' : '#aaa';
+        
+        list.innerHTML += `
+            <li style="padding: 10px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 2px; border-radius: 4px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="position:relative;">
+                        <div style="width:12px; height:12px; background:${statusColor}; border-radius:50%; box-shadow: 0 0 8px ${statusColor}; border: 1px solid #333;"></div>
+                    </div>
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="color: ${nameColor}; font-weight:bold; font-size:15px;">${user.username}</span>
+                        <span style="color: #888; font-size: 11px;">${statusText} • ${timeDisplay}</span>
+                    </div>
+                </div>
+            </li>
+        `;
+    });
+}
 
 async function addScheduledPlayer() {
     const name = document.getElementById('autoNameInput').value.trim();
@@ -3401,100 +2874,88 @@ async function getPlayerNameById(table, playerId) {
     return data ? data.name : 'Unknown';
 }
 
-// --- 1. تعريف الدوال المفقودة التي ظهرت في صور الـ Console ---
-
-// --- الجزء المصلح والنهائي (ضعه مكان الجزء القديم) ---
-
-// --- 1. دوال تتبع نشاط المستخدم وحالته ---
-
-// --- 1. تعريف الدوال المفقودة لضمان عدم ظهور أخطاء ReferenceError ---
-
-async function logUserStatus(status) {
-    const name = localStorage.getItem('chat_username');
-    const avatar = localStorage.getItem('user_avatar'); 
-    
-    if (!name) return;
-
-    try {
-        // نحدث الحالة في السيرفر فقط
-        await supabase.from('user_logs').upsert([{ 
-            username: name, 
-            status: status, 
-            avatar_url: avatar, 
-            created_at: new Date().toISOString()
-        }], { onConflict: 'username' });
-        
-        console.log("Status updated: " + status);
-    } catch (e) { 
-        console.log("Status log error", e); 
-    }
-}
-
-
-
-function initUserTracking() {
-    logUserStatus('Online 🟢');
-    window.addEventListener('beforeunload', () => logUserStatus('Offline ⚪'));
-    setInterval(() => logUserStatus('Online 🟢'), 300000);
-}
-
-// دالة تحميل الرسائل الأساسية التي كانت تظهر كخطأ أحمر
-async function loadChatMessages() { 
-    try {
-        const { data, error } = await supabase.from('chat_messages').select('*').order('created_at', {ascending:true}).limit(50); 
-        const chatDiv = document.getElementById('chatMessages');
-        if (chatDiv) {
-            chatDiv.innerHTML = ''; 
-            if (data) data.forEach(m => renderMessage(m, 'chatMessages')); 
-        }
-    } catch (e) { console.error("Load messages error:", e); }
-}
-
-// --- 2. دالة تشغيل التطبيق (التي تجمع كل شيء) ---
-
 (async function init() {
-    // إظهار الواجهة فوراً
+    // 1. إظهار الشاشة الرئيسية فوراً (الحل للشاشة السوداء)
     showSection('main');
 
-    // استرجاع الاسم المسجل
+    // 2. تنظيف الإعدادات القديمة
+    localStorage.removeItem('captain_mode_blue');
+    localStorage.removeItem('captain_mode_yellow');
+
     const storedUsername = localStorage.getItem('chat_username');
     if (storedUsername) {
-        ['chatNameInput', 'blueChatNameInput', 'yellowChatNameInput', 'nameInput'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = storedUsername;
-        });
+        if(document.getElementById('chatNameInput')) document.getElementById('chatNameInput').value = storedUsername;
+        if(document.getElementById('blueChatNameInput')) document.getElementById('blueChatNameInput').value = storedUsername;
+        if(document.getElementById('yellowChatNameInput')) document.getElementById('yellowChatNameInput').value = storedUsername;
+        if(document.getElementById('nameInput')) document.getElementById('nameInput').value = storedUsername;
     }
 
-    // تفعيل أزرار الـ Enter للإرسال
-    const bindEnter = (id, fn) => {
-        document.getElementById(id)?.addEventListener('keypress', (e) => { if (e.key === 'Enter') fn(); });
-    };
-    bindEnter('chatMsgInput', sendMessage);
-    bindEnter('blueChatMsgInput', () => sendTeamMessage('blue'));
-    bindEnter('yellowChatMsgInput', () => sendTeamMessage('yellow'));
+    // تفعيل زر Enter للشات
+    const chatMsgInput = document.getElementById('chatMsgInput');
+    if (chatMsgInput) chatMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
 
-    // تحميل البيانات من السيرفر بالترتيب الصحيح
+    const blueMsgInput = document.getElementById('blueChatMsgInput');
+    if (blueMsgInput) blueMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('blue'); } });
+    
+    const yellowMsgInput = document.getElementById('yellowChatMsgInput');
+    if (yellowMsgInput) yellowMsgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendTeamMessage('yellow'); } });
+
+    // 3. تحميل البيانات في الخلفية (حتى لو تأخرت، الشاشة تعمل)
     try {
         await loadSystemConfig(); 
         loadMatchAddress(); 
         loadPlayers(); 
         loadBlue(); 
         loadYellow(); 
-        
-        // الآن الدالة معرفة ولن يظهر خطأ "is not defined"
-        await loadChatMessages(); 
+        loadChatMessages(); 
         
         checkAndRunAutoWash(); 
         initUserTracking();
-        
-        // تشغيل استقبال الرسائل الفوري
-        if (typeof setupRealtime === 'function') setupRealtime();
-        
     } catch (error) {
-        console.error("Error during initialization:", error);
+        console.error("Error loading data:", error);
     }
 })();
 
 </script>
+
+<div id="englishNameModal" class="mini-modal-overlay" style="display:none; z-index: 9999; background: rgba(0,0,0,0.96); backdrop-filter: blur(5px);">
+    <div class="mini-modal-box" style="border: 1px solid #444; box-shadow: 0 10px 40px rgba(0,0,0,0.8); max-width: 320px;">
+        <h2 style="color:#e53935; margin-top:0; font-size: 22px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            ⚠️ Name Required
+        </h2>
+        
+        <p style="color:#e0e0e0; font-size: 16px; margin: 20px 0; line-height: 1.6;">
+            Please write your FULL name (English)<br>
+            <span style="font-size:14px; color:#aaa;">(First Name & Last Name)</span>
+        </p>
+        
+        <input type="text" id="forcedNameInput" placeholder="Your Full Name" style="width:100%; padding:12px; margin:10px 0; border-radius: 8px; border: 1px solid #555; background: #1e1e1e; color: #fff; text-align: center; font-size:16px; box-sizing: border-box;">
+        
+        <p id="nameErrorMsg" style="color:#ff5252; display:none; font-size:13px; margin:8px 0; font-weight: bold; background: rgba(255, 82, 82, 0.1); padding: 8px; border-radius: 6px;">
+            Only English letters allowed!
+        </p>
+        
+        <button onclick="submitEnglishName()" style="background:#e53935; color:#fff; width:100%; padding:14px; font-weight:bold; margin-top: 15px; border-radius: 8px; font-size:16px; transition: 0.2s;">Confirm & Enter</button>
+    </div>
+</div>
+
+<div id="viewAddressModal" class="mini-modal-overlay" style="display:none; z-index: 3500;">
+    <div class="mini-modal-box">
+        <h3 style="color:#fff; margin-top:0;">Match Address 📍</h3>
+        <p style="color:#ccc; font-size:12px; margin-bottom:5px;">You can copy the address below or open the map:</p>
+        
+        <input type="text" id="addressDisplayInput" readonly 
+               style="width:95%; background:#111; color:#fff; border:1px solid #FF9800; padding:10px; text-align:center; user-select: text;">
+        
+        <div style="display:flex; gap:10px; margin-top:10px; justify-content: center;">
+            <button onclick="copyToClipboard()" style="background:#009688; color:#fff; flex:1; padding:10px;">Copy 📋</button>
+            <button onclick="openMapDirectly()" style="background:#1976d2; color:#fff; flex:1; padding:10px;">Open Map 🗺️</button>
+        </div>
+        
+        <button onclick="closeAddressModal()" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close</button>
+    </div>
+</div>
+
 </body>
 </html>
+
