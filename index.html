@@ -2394,59 +2394,91 @@ async function saveAvatarAndEnter() {
     }
 }
 
+// دالة التحقق عند فتح التطبيق
 setTimeout(function() {
     const storedName = localStorage.getItem('chat_username');
-    const storedAvatar = localStorage.getItem('user_avatar'); // فحص وجود الصورة
+    const storedAvatar = localStorage.getItem('user_avatar'); // فحص وجود الصورة (البصمة)
     const englishRegex = /^[A-Za-z0-9\s]+$/;
     const modal = document.getElementById('englishNameModal');
-    const avatarModal = document.getElementById('avatarModal');
 
+    // التأكد من أن الاسم المسجل هو اسم كامل (مقطعين على الأقل)
     const hasFullName = storedName && storedName.trim().split(/\s+/).length >= 2;
 
     if (modal) {
+        // الحالة 1: لا يوجد اسم أو الاسم غير صحيح -> افتح النافذة لإدخال البيانات كاملة
         if (!storedName || !englishRegex.test(storedName) || !hasFullName) {
             modal.style.display = 'flex'; 
-        } else if (!storedAvatar) {
-            // إذا وجد الاسم ولكن لا توجد صورة، نفتح اختيار الصورة إجبارياً
-            updateAllNameInputs(storedName);
-            if (avatarModal) avatarModal.style.display = 'flex';
-        } else {
+        } 
+        // الحالة 2: الاسم موجود ولكن الصورة (البصمة) مفقودة (للمستخدمين القدامى)
+        else if (!storedAvatar) {
+            updateAllNameInputs(storedName); // تعبئة الاسم تلقائياً
+            modal.style.display = 'flex';    // فتح النافذة لإجباره على رفع الصورة
+            // تغيير نص الزر ليكون واضحاً للمستخدم القديم
+            document.getElementById('entryBtn').innerText = "Update Photo & Enter ⚽";
+        } 
+        // الحالة 3: كل شيء تمام
+        else {
             updateAllNameInputs(storedName);
             setupRealtime(); 
             logUserStatus('Online 🟢');
             initUserTracking();
         }
     }
-}, 1000); 
+}, 1000);
 
-
-async function logUserStatus(status) {
-    const name = localStorage.getItem('chat_username');
-    const av = localStorage.getItem('user_avatar'); // جلب البصمة
-    if (!name) return; 
-
-    await supabase.from('user_logs').insert([{ 
-        username: name, 
-        status: status,
-        avatar_url: av 
-    }]);
-}
-
-
-function initUserTracking() {
-    const name = localStorage.getItem('chat_username');
+// دالة الحفظ المحدثة (الاسم + الصورة)
+async function submitFullProfile() {
+    const name = document.getElementById('forcedNameInput').value.trim();
+    const avatarFile = document.getElementById('avatarInput').files[0];
+    const errorMsg = document.getElementById('nameErrorMsg');
     
-    if (name) {
-        logUserStatus('Online 🟢');
+    // التحقق من الاسم
+    if (name.split(/\s+/).length < 2) {
+        errorMsg.innerText = "Full Name Required (First & Last)!";
+        errorMsg.style.display = 'block';
+        return;
     }
 
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'hidden') {
-            logUserStatus('Offline 🔴');
-        } else {
-             logUserStatus('Online 🟢');
-        }
-    });
+    // التحقق من الصورة (إجباري)
+    if (!avatarFile) {
+        errorMsg.innerText = "Profile Picture is Required! 📷";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('entryBtn');
+    btn.innerText = "Uploading Profile... ⏳";
+    btn.disabled = true;
+
+    try {
+        // رفع الصورة إلى Supabase Storage
+        const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+        const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
+
+        if (error) throw error;
+
+        // الحصول على الرابط العام للصورة
+        const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
+        const avatarUrl = urlData.publicUrl;
+
+        // حفظ البيانات في المتصفح
+        localStorage.setItem('chat_username', name);
+        localStorage.setItem('user_avatar', avatarUrl); // هذه هي البصمة الإجبارية
+
+        document.getElementById('englishNameModal').style.display = 'none';
+        showToast("Welcome back, " + name + "! Profile updated.");
+        
+        // تفعيل النظام
+        setupRealtime();
+        logUserStatus('Online 🟢');
+
+        // إعادة تحميل بسيطة لتنشيط الهوية الجديدة في كل الأقسام
+        setTimeout(() => location.reload(), 500); 
+    } catch (err) {
+        alert("Upload failed: " + err.message);
+        btn.innerText = "Try Again";
+        btn.disabled = false;
+    }
 }
 
 function timeAgo(dateParam) {
