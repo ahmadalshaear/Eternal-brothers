@@ -2022,12 +2022,33 @@ function renderMessage(m, id) {
     const userAvatar = m.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
     
     let c = m.content || "";
+    
+    // --- الجزء المحدث لدعم الفيديو والصور والملصقات والصوت ---
     if (c.startsWith('[IMG]')) { 
-        c = `<img src="${c.substring(5)}" class="chat-media-content" onclick="window.open(this.src)">`; 
-    } else if (c.startsWith('[AUDIO]')) {
+        const url = c.substring(5);
+        // التحقق إذا كان الرابط ملصقاً (Sticker) من Giphy
+        if (url.includes('giphy.com')) {
+            c = `<img src="${url}" class="chat-sticker" style="width:120px; height:auto; display:block; margin-top:5px; border-radius:5px;">`;
+        } else {
+            // عرض صورة عادية قابلة للفتح
+            c = `<img src="${url}" class="chat-media-content" onclick="window.open(this.src)" style="max-width:200px; cursor:pointer; border-radius:8px; margin-top:5px;">`; 
+        }
+    } 
+    else if (c.startsWith('[VID]')) {
+        // إضافة دعم عرض الفيديو بجميع الصيغ (بما فيها آيفون)
+        c = `
+        <video controls class="chat-media-content" style="max-width:220px; border-radius:8px; margin-top:5px;">
+            <source src="${c.substring(5)}" type="video/mp4">
+            <source src="${c.substring(5)}" type="video/webm">
+            <source src="${c.substring(5)}" type="video/quicktime">
+            Your browser does not support the video tag.
+        </video>`;
+    } 
+    else if (c.startsWith('[AUDIO]')) {
         const uniqueId = 'audio-' + Math.random().toString(36).substr(2, 9);
         c = `<div class="custom-audio-player"><button id="btn-${uniqueId}" class="audio-play-btn" onclick="toggleCustomAudio('${uniqueId}')">▶</button><span id="time-${uniqueId}" class="audio-time-display">0:00 / 0:00</span><audio id="${uniqueId}" src="${c.substring(7)}" ontimeupdate="updateAudioTime('${uniqueId}')" style="display:none;"></audio></div>`;
     }
+    // -------------------------------------------------------
 
     const timeSpan = new Date(m.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
 
