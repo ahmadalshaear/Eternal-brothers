@@ -7,6 +7,32 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 
+/* صندوق معاينة الرد فوق حقل الإدخال */
+.reply-preview-container {
+    display: none;
+    background: #2a2a2a;
+    border-left: 4px solid #00e676;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    text-align: left;
+}
+.reply-preview-name { color: #00e676; font-size: 12px; font-weight: bold; }
+.reply-preview-text { color: #ccc; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cancel-reply { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #fff; cursor: pointer; font-size: 18px; }
+
+/* شكل الرسالة الأصلية المقتبسة داخل الفقاعة */
+.quoted-message {
+    background: rgba(0,0,0,0.2);
+    border-left: 3px solid #FFD700;
+    padding: 5px 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+
 #onlineUsersBar {
     display: flex;
     flex-direction: row;
@@ -118,6 +144,16 @@
     font-size: 10px;
     color: #aaa;
     width: 15px;
+}
+#userBadgeBtn:hover {
+    border-color: #00e676;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 230, 118, 0.2);
+}
+
+#userBadgeBtn:active {
+    transform: translateY(0);
+    filter: brightness(0.9);
 }
 
 /* CSS موجود مسبقاً - تم الاحتفاظ به كما هو */
@@ -351,64 +387,7 @@ function previewAvatar(input) {
     }
 }
 
-// 2. التحقق النهائي والحفظ (الاسم + الصورة)
-async function submitFullProfile() {
-    const name = document.getElementById('forcedNameInput').value.trim();
-    const avatarFile = document.getElementById('avatarInput').files[0];
-    const errorMsg = document.getElementById('nameErrorMsg');
-    const storedAvatar = localStorage.getItem('user_avatar');
-    
-    // فحص الاسم
-    if (name.split(/\s+/).length < 2) {
-        errorMsg.innerText = "Full Name Required (First & Last)!";
-        errorMsg.style.display = 'block';
-        return;
-    }
 
-    // فحص الصورة (إلا إذا كان لديه صورة قديمة فعلاً)
-    if (!avatarFile && !storedAvatar) {
-        errorMsg.innerText = "Please upload a profile picture to continue!";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    const btn = document.getElementById('entryBtn');
-    btn.innerText = "Creating Profile... ⏳";
-    btn.disabled = true;
-
-    try {
-        let finalAvatarUrl = storedAvatar;
-
-        // إذا رفع صورة جديدة، نقوم برفعها لـ Supabase
-        if (avatarFile) {
-            const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-            const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
-            if (error) throw error;
-            const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-            finalAvatarUrl = urlData.publicUrl;
-        }
-
-        // حفظ البيانات نهائياً
-        localStorage.setItem('chat_username', name);
-        localStorage.setItem('user_avatar', finalAvatarUrl);
-
-        document.getElementById('englishNameModal').style.display = 'none';
-        showToast("Profile Secured! Welcome " + name);
-        
-        // تسجيل الدخول الرسمي
-        await logUserStatus('Online 🟢');
-        
-        // تحديث الصفحة لتنشيط كل شيء
-        setTimeout(() => location.reload(), 800);
-
-    } catch (err) {
-        alert("Setup failed: " + err.message);
-        btn.innerText = "Try Again";
-        btn.disabled = false;
-    }
-}
-
-// دالة التحقق عند تشغيل التطبيق (الأمان والربط)
 function checkUserIdentity() {
     const storedName = localStorage.getItem('chat_username');
     const storedAvatar = localStorage.getItem('user_avatar');
@@ -621,16 +600,42 @@ window.addEventListener('beforeunload', () => {
     <div id="chatMessages" class="chat-messages"></div>
     <div id="typingIndicator"></div>
     
+    <div id="replyPreview" class="reply-preview-container">
+    <div class="reply-preview-name" id="replyName"></div>
+    <div class="reply-preview-text" id="replyText"></div>
+    <div class="cancel-reply" onclick="cancelReply()">×</div>
+</div>
+
+    
     <div class="chat-input-area">
         <div id="recordingBar_global" class="recording-overlay">
             <button class="rec-action-btn rec-send-btn" onclick="finishVoiceRecording('global', 'send')">➤</button>
             <span class="recording-text">Recording...</span>
             <button class="rec-action-btn rec-trash-btn" onclick="finishVoiceRecording('global', 'cancel')">🗑️</button>
         </div>
-        <div class="chat-row-inputs">
-            <input type="text" id="chatNameInput" placeholder="Name" value="">
-            <input type="text" id="chatMsgInput" placeholder="Type a message..." oninput="handleTyping('global')">
-            <button id="sendChatBtn" class="send-btn" onclick="sendMessage()">Send</button>
+   <div class="chat-row-inputs" style="align-items: center;">
+    <div id="userBadgeBtn" onclick="triggerAvatarChange()" 
+         style="cursor: pointer; display: flex; align-items: center; background: linear-gradient(135deg, #2c2c2c, #1a1a1a); border: 1px solid #d32f2f; border-radius: 6px; padding: 3px 6px; position: relative; transition: 0.3s; min-width: 45px; height: 35px; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+        
+        <img id="currentChatAvatar" src="https://www.w3schools.com/howto/img_avatar.png" 
+             style="width: 24px; height: 24px; border-radius: 3px; object-fit: cover; border: 1px solid #555;">
+        
+        <div style="margin-left: 5px; display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div style="width: 10px; height: 2px; background: #d32f2f; border-radius: 1px;"></div>
+            <div style="width: 15px; height: 2px; background: #555; border-radius: 1px;"></div>
+            <div style="width: 12px; height: 2px; background: #555; border-radius: 1px;"></div>
+        </div>
+        
+        <span style="position: absolute; top: -5px; right: -5px; background: #00e676; color: #000; font-size: 8px; width: 12px; height: 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid #1a1a1a;">ID</span>
+    </div>
+
+    <input type="text" id="chatNameInput" placeholder="Name" value="" style="margin-left: 5px;">
+    <input type="text" id="chatMsgInput" placeholder="Type a message..." oninput="handleTyping('global')">
+    <button id="sendChatBtn" class="send-btn" onclick="sendMessage()">Send</button>
+</div>
+
+<input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none" onchange="updateUserAvatar(this)">
+
         </div>
         <div class="chat-row-tools">
             <input type="file" id="globalChatFile" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this, 'global')">
@@ -2044,7 +2049,6 @@ function renderMessage(m, id) {
     div.scrollTop = div.scrollHeight;
 }
 
-
 // دالة إرسال الشات العام الموحدة والمحسنة
 async function sendMessage() {
     const n = document.getElementById('chatNameInput').value.trim(); 
@@ -2099,6 +2103,7 @@ async function deleteMyMessage(table, messageId, containerId) {
 
 
 // دالة إرسال شات الفرق الموحدة
+// دالة إرسال شات الفرق الموحدة والمصححة (بدون تكرار)
 async function sendTeamMessage(team) {
     const n = document.getElementById(`${team}ChatNameInput`).value.trim(); 
     const c = document.getElementById(`${team}ChatMsgInput`).value.trim();
@@ -2107,18 +2112,24 @@ async function sendTeamMessage(team) {
     if(!n || !c) return; 
 
     const table = `${team}_chat`;
-    const { data, error } = await supabase.from(table).insert([{ 
+    
+    // نكتفي بالإرسال لقاعدة البيانات فقط
+    // قناة setupRealtime ستتكفل بعرض الرسالة فور وصولها للسيرفر
+    const { error } = await supabase.from(table).insert([{ 
         username: n, 
         content: c,
         avatar_url: avatar,
         created_at: new Date().toISOString()
-    }]).select();
+    }]);
 
     if (!error) {
+        // تفريغ حقل الإدخال فقط
         document.getElementById(`${team}ChatMsgInput`).value = '';
-        if(data) renderMessage(data[0], `${team}ChatMessages`);
+    } else {
+        console.error("Error sending team message:", error);
     }
 }
+
 
 let gameInterval, gameActive = false, currentScore = 0, currentGameType = '';
 const canvas = document.getElementById('gameCanvas');
@@ -2333,11 +2344,34 @@ document.addEventListener('click', () => {
     document.querySelectorAll('.online-name-tooltip').forEach(t => t.style.display = 'none');
 });
 
+// --- 1. الدالة الموحدة لتحديث التواجد في الجدول (المصدر الوحيد للحقيقة) ---
+async function syncUserPresence(isOnline) {
+    const name = localStorage.getItem('chat_username');
+    const avatar = localStorage.getItem('user_avatar');
+    
+    if (!name || !window.supabase) return;
+
+    try {
+        await supabase.from('user_presence').upsert([{ 
+            username: name, 
+            avatar_url: avatar,
+            is_online: isOnline,
+            last_seen: new Date().toISOString()
+        }], { onConflict: 'username' });
+        
+        // تحديث الواجهة محلياً فوراً
+        updateOnlineBarFromTable();
+    } catch (e) {
+        console.error("Presence Sync Error:", e);
+    }
+}
+
+// --- 2. إعداد الربط اللحظي (Realtime) ---
 function setupRealtime() {
     const myName = localStorage.getItem('chat_username') || 'Guest';
     const myAvatar = localStorage.getItem('user_avatar') || '';
 
-    // --- 1. قناة تحديث سجل المستخدمين (User Stats) ---
+    // قناة تحديث سجل المستخدمين
     supabase.channel('user-logs-updates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'user_logs' }, () => {
             if (document.getElementById('userLogContainer').style.display === 'block') {
@@ -2346,19 +2380,18 @@ function setupRealtime() {
         })
         .subscribe();
 
-    // --- 2. قناة التحديثات اللحظية لجدول user_presence (المهمة لطلبك) ---
+    // قناة التحديثات اللحظية لجدول user_presence (تحديث شريط المتصلين فوراً)
     supabase.channel('presence-table-sync')
         .on('postgres_changes', { 
             event: '*', 
             schema: 'public', 
             table: 'user_presence' 
         }, () => {
-            // تحديث شريط الحالات فور حدوث أي تغيير في الجدول (دخول أو خروج)
             updateOnlineBarFromTable();
         })
         .subscribe();
 
-    // --- 3. قناة تحديثات الدردشة (العام والفرق) ---
+    // قناة تحديثات الدردشة (العام والفرق)
     supabase.channel('chat-updates')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => { 
             renderMessage(payload.new, 'chatMessages'); 
@@ -2379,7 +2412,7 @@ function setupRealtime() {
         })
         .subscribe();
 
-    // --- 4. قناة تحديثات الجداول (اللاعبين، التاريخ، الغسيل) ---
+    // قناة تحديثات الجداول (اللاعبين والخطط)
     supabase.channel('table-updates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'main_team' }, () => loadPlayers())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'waiting_list' }, () => loadPlayers())
@@ -2393,58 +2426,57 @@ function setupRealtime() {
         })
         .subscribe();
 
-    // --- 5. قناة التواجد اللحظية (Presence) لضمان الحذف الفوري عند الإغلاق ---
-    roomChannel = supabase.channel('online-room', { config: { presence: { key: myName } } });
-    
+    // قناة التواجد للاستماع فقط (تم إلغاء track لمنع التكرار الوهمي)
+    roomChannel = supabase.channel('online-room');
     roomChannel.on('presence', { event: 'sync' }, () => {
-        // تحديث الواجهة بناءً على المتصلين حالياً
         updateOnlineBarFromTable();
-    })
-    .subscribe(async (status) => {
+    }).subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-            await roomChannel.track({ avatar: myAvatar });
-            
-            // تسجيل الدخول في الجدول
-            await supabase.from('user_presence').upsert([{ 
-                username: myName, 
-                avatar_url: myAvatar,
-                is_online: true,
-                last_seen: new Date().toISOString()
-            }], { onConflict: 'username' });
+            syncUserPresence(true); 
         }
     });
 
-    // تحميل الشريط لأول مرة
     updateOnlineBarFromTable();
 }
 
-// --- دالة رسم شريط الحالات بناءً على المتصلين فقط في الجدول ---
+// --- 3. دوال المعالجة التلقائية (الخروج والنبض) ---
+
+// إرسال نبض كل 30 ثانية لتجديد حالة "متصل"
+setInterval(() => syncUserPresence(true), 30000);
+
+// معالج الخروج الفوري عند إغلاق التبويب أو المتصفح
+window.addEventListener('beforeunload', () => {
+    syncUserPresence(false);
+});
+
 async function updateOnlineBarFromTable() {
     const bar = document.getElementById('onlineUsersBar');
     if (!bar) return;
 
-    // جلب المستخدمين الذين حالتهم Online فقط من التيبل
+    // جلب المستخدمين النشطين (تجاوزاً لأي خطأ في إشارة الخروج)
+    const activeThreshold = new Date(Date.now() - 60000).toISOString();
+
     const { data: onlineUsers, error } = await supabase
         .from('user_presence')
         .select('username, avatar_url')
-        .eq('is_online', true);
+        .eq('is_online', true)
+        .gt('last_seen', activeThreshold); 
 
     if (error || !onlineUsers || onlineUsers.length === 0) {
         bar.innerHTML = '<span style="color:#555; font-size:11px; margin:auto;">No brothers online ⚽</span>';
         return;
     }
 
-    // رسم الأفاتارات للأشخاص المتصلين
     bar.innerHTML = onlineUsers.map(user => `
         <div class="online-avatar-container" title="${user.username}" style="margin-right:12px;">
             <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" 
-                 class="online-avatar-img" 
-                 style="border: 2px solid #00e676; width:40px; height:40px; border-radius:50%; object-fit:cover;">
-            <div class="online-status-dot" style="position:absolute; bottom:18px; right:2px; width:10px; height:10px; background:#00e676; border-radius:50%; border:2px solid #1a1a1a;"></div>
-            <span class="online-user-name" style="font-size:10px; color:#fff; display:block; text-align:center;">${user.username.split(' ')[0]}</span> 
+                 class="online-avatar-img" style="border: 2px solid #00e676;">
+            <div class="online-status-dot"></div>
+            <span class="online-user-name">${user.username.split(' ')[0]}</span> 
         </div>
     `).join('');
 }
+
 
 // --- معالج الخروج الفوري عند إغلاق المتصفح ---
 window.addEventListener('beforeunload', async () => {
@@ -2464,18 +2496,6 @@ window.addEventListener('beforeunload', () => {
     // إرسال إشارة الخروج لقاعدة البيانات قبل إغلاق الصفحة مباشرة
     logUserPresence(false);
 });
-
-async function logUserPresence(isOnline) {
-    const name = localStorage.getItem('chat_username');
-    if (!name) return;
-
-    await supabase.from('user_presence').upsert([{ 
-        username: name, 
-        is_online: isOnline,
-        last_seen: new Date().toISOString()
-    }], { onConflict: 'username' });
-}
-
 
 async function checkAndRunAutoWash() {
     const now = new Date();
@@ -2642,60 +2662,6 @@ setTimeout(function() {
     }
 }, 1000);
 
-// دالة الحفظ المحدثة (الاسم + الصورة)
-async function submitFullProfile() {
-    const name = document.getElementById('forcedNameInput').value.trim();
-    const avatarFile = document.getElementById('avatarInput').files[0];
-    const errorMsg = document.getElementById('nameErrorMsg');
-    
-    // التحقق من الاسم
-    if (name.split(/\s+/).length < 2) {
-        errorMsg.innerText = "Full Name Required (First & Last)!";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    // التحقق من الصورة (إجباري)
-    if (!avatarFile) {
-        errorMsg.innerText = "Profile Picture is Required! 📷";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    const btn = document.getElementById('entryBtn');
-    btn.innerText = "Uploading Profile... ⏳";
-    btn.disabled = true;
-
-    try {
-        // رفع الصورة إلى Supabase Storage
-        const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-        const { data, error } = await supabase.storage.from('chat_images').upload(fileName, avatarFile);
-
-        if (error) throw error;
-
-        // الحصول على الرابط العام للصورة
-        const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
-        const avatarUrl = urlData.publicUrl;
-
-        // حفظ البيانات في المتصفح
-        localStorage.setItem('chat_username', name);
-        localStorage.setItem('user_avatar', avatarUrl); // هذه هي البصمة الإجبارية
-
-        document.getElementById('englishNameModal').style.display = 'none';
-        showToast("Welcome back, " + name + "! Profile updated.");
-        
-        // تفعيل النظام
-        setupRealtime();
-        logUserStatus('Online 🟢');
-
-        // إعادة تحميل بسيطة لتنشيط الهوية الجديدة في كل الأقسام
-        setTimeout(() => location.reload(), 500); 
-    } catch (err) {
-        alert("Upload failed: " + err.message);
-        btn.innerText = "Try Again";
-        btn.disabled = false;
-    }
-}
 
 function timeAgo(dateParam) {
     const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
@@ -3442,16 +3408,6 @@ async function logUserPresence(status) {
     }
 }
 
-
-function initUserTracking() {
-    updateMyPresence(true); // تحديث جدول user_presence
-    logUserStatus('Online 🟢'); // تحديث اللوج القديم (إذا كنت لا تزال تريده)
-
-    // تحديث الحالة كل 5 دقائق لضمان بقاء المستخدم "نشط"
-    setInterval(() => updateMyPresence(true), 300000);
-}
-
-
 // دالة تحميل الرسائل الأساسية التي كانت تظهر كخطأ أحمر
 async function loadChatMessages() { 
     try {
@@ -3529,84 +3485,117 @@ async function updateMyPresence(status) {
         console.error("Error updating presence table:", e);
     }
 }
-
-// 2. دالة رسم كرات المتصلين (تعيد بناء الشريط بالكامل بناءً على البث اللحظي)
-function renderOnlineBarUI(onlineUsers) {
-    const bar = document.getElementById('onlineUsersBar');
-    if (!bar) return;
-
-    if (onlineUsers.length === 0) {
-        bar.innerHTML = '<span style="color:#555; font-size:12px; margin:auto;">No brothers online ⚽</span>';
-        return;
-    }
-
-    // بناء الأفاتار للموجودين حالياً فقط، أي شخص يخرج سيختفي فوراً من هذه المصفوفة
-    bar.innerHTML = onlineUsers.map(user => `
-        <div class="online-avatar-container" id="avatar-${user.name.replace(/\s+/g, '-')}" title="${user.name}">
-            <img src="${user.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" class="online-avatar-img">
-            <div class="online-status-dot"></div>
-            <span class="online-user-name">${user.name.split(' ')[0]}</span> 
-        </div>
-    `).join('');
-}
-
-// 3. تحديث مؤشرات سجل النشاط (User Status)
-function updateStatsIndicators(onlineNames) {
-    const logItems = document.querySelectorAll('#userLogList li');
-    logItems.forEach(item => {
-        const nameElement = item.querySelector('span[style*="font-weight:bold"]');
-        if (nameElement) {
-            const userName = nameElement.innerText.trim();
-            const dot = item.querySelector('div[style*="border-radius:50%"]:not(img)');
-            const img = item.querySelector('img');
-            const statusText = item.querySelector('span[style*="font-size: 10px"]');
-
-            if (onlineNames.includes(userName)) {
-                if (dot) dot.style.background = '#00e676';
-                if (img) img.style.borderColor = '#00e676';
-                if (statusText) { 
-                    statusText.innerText = 'Online Now'; 
-                    statusText.style.color = '#00e676'; 
-                }
-            } else {
-                if (dot) dot.style.background = '#757575';
-                if (img) img.style.borderColor = '#757575';
-            }
-        }
-    });
-}
-
-// 4. تفعيل المغادرة الفورية عند إغلاق التبويب أو المتصفح
-window.addEventListener('beforeunload', () => {
-    updateMyPresence(false);
-});
-
-// دالة تحديث التيبل
-async function setPresenceStatus(isOnline) {
+// --- الدالة الموحدة والوحيدة لتحديث التواجد في الجدول ---
+// --- الدالة الموحدة والوحيدة لتحديث التواجد في الجدول ---
+async function syncUserPresence(isOnline) {
     const name = localStorage.getItem('chat_username');
     const avatar = localStorage.getItem('user_avatar');
-    if (!name) return;
+    
+    if (!name || !window.supabase) return;
 
-    await supabase.from('user_presence').upsert([{ 
-        username: name, 
-        avatar_url: avatar,
-        is_online: isOnline,
-        last_seen: new Date().toISOString()
-    }], { onConflict: 'username' });
+    try {
+        await supabase.from('user_presence').upsert([{ 
+            username: name, 
+            avatar_url: avatar,
+            is_online: isOnline,
+            last_seen: new Date().toISOString()
+        }], { onConflict: 'username' });
+        
+        // تحديث الواجهة محلياً إذا لزم الأمر
+        if (isOnline && typeof updateOnlineBarFromTable === 'function') {
+            updateOnlineBarFromTable();
+        }
+    } catch (e) {
+        console.error("Presence Sync Error:", e);
+    }
 }
 
-// عند إغلاق الصفحة، اجعل الحالة false فوراً في التيبل
-window.addEventListener('beforeunload', () => {
-    // نستخدم sendBeacon أو استدعاء سريع لضمان التنفيذ قبل الإغلاق
-    setPresenceStatus(false);
-});
+// نبض (Heartbeat) لتجديد التواجد كل 30 ثانية لضمان الدقة
+setInterval(() => syncUserPresence(true), 30000);
 
-// عند فتح الصفحة، اجعل الحالة true
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => setPresenceStatus(true), 1500);
-});
+// فتح اختيار الصور عند النقر على الهوية
+function triggerAvatarChange() {
+    document.getElementById('hiddenAvatarInput').click();
+}
+
+// معالجة تحديث الصورة (البصمة)
+async function updateUserAvatar(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        showToast("Updating Identity... 📋");
+
+        try {
+            // رفع الصورة إلى Supabase
+            const fileName = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+            const { data, error } = await supabase.storage.from('chat_images').upload(fileName, file);
+
+            if (error) throw error;
+
+            const { data: urlData } = supabase.storage.from('chat_images').getPublicUrl(fileName);
+            const newAvatarUrl = urlData.publicUrl;
+
+            // حفظ التحديث محلياً
+            localStorage.setItem('user_avatar', newAvatarUrl);
+            
+            // تحديث شكل الهوية فوراً
+            document.getElementById('currentChatAvatar').src = newAvatarUrl;
+
+            // مزامنة الحالة مع السيرفر
+            if (typeof syncUserPresence === 'function') await syncUserPresence(true);
+            await logUserStatus('Updated Identity Photo 📋');
+
+            showToast("Identity Verified! ✅");
+        } catch (err) {
+            console.error(err);
+            alert("Upload failed. Try again.");
+        }
+    }
+}
+
+// مزامنة صورة الهوية عند تحميل الصفحة
+function syncIdentityUI() {
+    const savedAvatar = localStorage.getItem('user_avatar');
+    if (savedAvatar && document.getElementById('currentChatAvatar')) {
+        document.getElementById('currentChatAvatar').src = savedAvatar;
+    }
+}
+window.addEventListener('load', syncIdentityUI);
+
+let currentReplyData = null;
+
+// دالة لتفعيل الرد عند سحب الرسالة أو النقر عليها مطولاً
+function setReply(username, text) {
+    currentReplyData = { username, text };
+    document.getElementById('replyName').innerText = "Replying to: " + username;
+    document.getElementById('replyText').innerText = text;
+    document.getElementById('replyPreview').style.display = 'block';
+    document.getElementById('chatMsgInput').focus();
+}
+
+function cancelReply() {
+    currentReplyData = null;
+    document.getElementById('replyPreview').style.display = 'none';
+}
+
+// تعديل دالة renderMessage لإضافة خاصية السحب
+// أضف هذا السطر داخل حلقة إنشاء الرسالة في دالة renderMessage:
+// m.addEventListener('touchstart', handleSwipeStart); (مثال توضيحي)
 
 
 </script>
+<div id="viewAddressModal" class="mini-modal-overlay" style="display:none; z-index: 3500;">
+    <div class="mini-modal-box">
+        <h3 style="color:#fff; margin-top:0;">Match Address 📍</h3>
+        <p style="color:#ccc; font-size:12px; margin-bottom:5px;">You can copy the address below or open the map:</p>
+        
+        <input type="text" id="addressDisplayInput" readonly 
+               style="width:95%; background:#111; color:#fff; border:1px solid #FF9800; padding:10px; text-align:center; user-select: text;">
+        
+        <div style="display:flex; gap:10px; margin-top:10px; justify-content: center;">
+            <button onclick="copyToClipboard()" style="background:#009688; color:#fff; flex:1; padding:10px;">Copy 📋</button>
+            <button onclick="openMapDirectly()" style="background:#1976d2; color:#fff; flex:1; padding:10px;">Open Map 🗺️</button>
+        </div>
+        
+        <button onclick="closeAddressModal()" style="background:#555; color:#fff; margin-top:10px; width:100%;">Close</button>
 </body>
 </html>
