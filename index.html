@@ -1713,59 +1713,81 @@ async function addPlayer() {
   if(!systemConfig.allowPlayerEdit) return alert("Add disabled");
   if(!isWithinAllowedTime()){ alert("Adding players is only allowed from Wednesday 3 PM to Sunday 12 PM."); return; }
   
-  // جلب البيانات من بصمة الدخول (localStorage)
-  const name = localStorage.getItem('chat_username');
-  const userPin = localStorage.getItem('user_pin');
+  // Data of the person currently using the device
+  const myName = localStorage.getItem('chat_username');
+  const myPin = localStorage.getItem('user_pin');
   
-  if(!name || !userPin) {
+  // Super Admin Privilege
+  const isAdmin = (myName === "Eternal Brothers FC Admin" && myPin === "2023");
+
+  if(!myName || !myPin) {
       alert("Please set your Identity and PIN first! 🔑");
       return;
   }
   
-  // التحقق من أن الاسم في حقل الإدخال يطابق اسم الشخص المسجل دخول (اختياري لزيادة الأمان)
   const inputName = document.getElementById("nameInput").value.trim();
-  if (inputName && inputName.toLowerCase() !== name.toLowerCase()) {
-      alert("You can only add your own registered name! 🛑");
-      return;
-  }
+  if (!inputName) return alert("Please enter a name! ⚽");
 
-  // منع التكرار
-  const { data: existMain } = await supabase.from("main_team").select("id").ilike("name", name);
-  const { data: existWait } = await supabase.from("waiting_list").select("id").ilike("name", name);
+  // 1. Permission Check: Admin can add anyone, users can add themselves or others 
+  // (Control is managed via dual-PIN logic during Edit/Delete)
+  
+  // 2. Prevent Duplicates in Lists
+  const { data: existMain } = await supabase.from("main_team").select("id").ilike("name", inputName);
+  const { data: existWait } = await supabase.from("waiting_list").select("id").ilike("name", inputName);
 
   if ((existMain && existMain.length > 0) || (existWait && existWait.length > 0)) {
-      return alert("You are already on the list! ⚽");
+      return alert("This name is already on the list! ⚽");
   }
-  
-  // استخدام الـ PIN الخاص بالبصمة تلقائياً
-  const pin = userPin; 
 
+  // 3. Fetch "Owner's" data if they are already registered in the system
+  const { data: registeredUser } = await supabase.from('user_presence')
+      .select('pin')
+      .eq('username', inputName)
+      .maybeSingle();
+
+  // Determine the Player's PIN (Original footprint if registered)
+  let playerPin = "0000"; 
+  if (registeredUser) {
+      playerPin = registeredUser.pin; // Linked to the registered owner
+  } else if (inputName.toLowerCase() === myName.toLowerCase()) {
+      playerPin = myPin; // Self-adding but not registered yet
+  }
+
+  // 4. Determine Target List (Main or Waiting)
   const { data: team } = await supabase.from("main_team").select("id");
   const table = team.length < 24 ? "main_team" : "waiting_list";
   
-  await supabase.from(table).insert([{ 
-      name: name, 
+  // 5. Insert Operation with Dual-PIN (Owner PIN + Host PIN)
+  const { error } = await supabase.from(table).insert([{ 
+      name: inputName, 
       time: Date.now(), 
-      player_pin: pin // البصمة المحفوظة
+      player_pin: playerPin,   // Original owner's footprint
+      added_by_pin: myPin      // Device footprint (The Host/Caterer)
   }]);
   
-  // Log to Multi-Add Monitor
-  await supabase.from('multi_add_log').insert([{ 
-      device_name: name, 
-      player_name: name,
-      added_at: new Date().toISOString() 
-  }]);
-  
-  if(team.length < 24) { 
-      sendSystemMessageToChat(name, `joined the Main Team`); 
-  } else { 
-      sendSystemMessageToChat(name, `added to the Waiting List`); 
-      alert(`Main team is full. You've been added to the Waiting List.`); 
+  if (!error) {
+      // Log to Multi-Add Monitor
+      await supabase.from('multi_add_log').insert([{ 
+          device_name: myName, 
+          player_name: inputName,
+          added_at: new Date().toISOString() 
+      }]);
+      
+      if(table === "main_team") { 
+          sendSystemMessageToChat(inputName, `joined the Main Team`); 
+      } else { 
+          sendSystemMessageToChat(inputName, `added to the Waiting List`); 
+          alert(`Main team is full. Added to the Waiting List.`); 
+      }
+      
+      document.getElementById("nameInput").value = ""; 
+      loadPlayers();
+  } else {
+      console.error("Error:", error);
+      alert("Failed to add player.");
   }
-  
-  document.getElementById("nameInput").value = ""; 
-  loadPlayers();
 }
+
 
 async function loadPlayers(){
   const { data: team } = await supabase.from("main_team").select("*").order("id");
@@ -3640,79 +3662,7 @@ async function deleteMultiAddRecord(id) {
     }
 }
 
-async function toggleCaptainForPlayer(table, playerId, playerName, team) {
-    const myName = localStorage.getItem('chat_username');
-    const myPin = localStorage.getItem('user_pin');
-    
-    // التحقق من هوية الأدمن الخارق
-    const isAdmin = (myName === ADMIN_NAME && myPin === ADMIN_PASSWORD);
-    
-    // جلب بيانات الكابتن الحالي للفريق من الذاكرة (التي يتم تحديثها تلقائياً)
-    const captainData = window[`captainData_${team}`];
 
-    // --- 1. حالة إزالة الكابتن (Admin Power) ---
-    if (captainData && captainData.id) {
-        // الأدمن يمكنه إزالة أي كابتن، واللاعب يمكنه إزالة نفسه فقط إذا كان هو الكابتن
-        const isSelf = (captainData.id === playerId && playerName === myName);
-        
-        if (isAdmin || isSelf) {
-            if (confirm(isAdmin ? `تنبيه الأدمن: هل تريد سحب شارة الكابتن من ${playerName}؟` : "هل تريد التنازل عن شارة الكابتن؟")) {
-                // تصفير الـ PIN في قاعدة البيانات لإزالة الصلاحية
-                await supabase.from(table).update({ player_pin: "0000" }).eq('id', playerId);
-                
-                // إغلاق وضع التعديل في جهاز المستخدم الحالي إذا كان هو الكابتن
-                if (isSelf) localStorage.removeItem(`captain_mode_${team}`);
-                
-                showToast(isAdmin ? "تم سحب الشارة بواسطة الأدمن 👑" : "تم التنازل عن الشارة");
-                reloadList(table);
-            }
-        } else {
-            alert(`🛡️ ${captainData.name} هو الكابتن الحالي ولا تملك صلاحية تغييره.`);
-        }
-        return;
-    }
-
-    // --- 2. تعيين كابتن جديد (Admin Power) ---
-    // الأدمن يمكنه اختيار أي لاعب، واللاعب العادي يمكنه اختيار نفسه فقط
-    const canAssign = isAdmin || (playerName === myName);
-
-    if (canAssign) {
-        const confirmMsg = isAdmin ? `تنبيه الأدمن: هل تريد تعيين ${playerName} كابتن للفريق؟` : `هل تريد استلام شارة الكابتن لـ ${team}؟`;
-        
-        if (confirm(confirmMsg)) {
-            let targetPin;
-
-            if (isAdmin && playerName !== myName) {
-                // إذا كان الأدمن هو من يعين لاعباً آخر، نعطيه PIN مؤقت "1111" 
-                // أو يمكنك جعله يطلب من اللاعب إدخال PIN خاص به
-                targetPin = "1111"; 
-                alert(`تم تعيين ${playerName} كابتن. الرمز المؤقت له هو: ${targetPin}`);
-            } else {
-                // إذا كان اللاعب يعين نفسه، يستخدم الـ PIN الخاص به
-                targetPin = myPin;
-            }
-
-            await supabase.from(table).update({ player_pin: targetPin }).eq('id', playerId);
-            
-            // إذا كان الأدمن يعين نفسه، يفتح وضع التعديل فوراً
-            if (playerName === myName) {
-                localStorage.setItem(`captain_mode_${team}`, 'true');
-            }
-
-            showToast(`© ${playerName} أصبح الكابتن الآن!`);
-            
-            // تسجيل الحدث في سجل النظام
-            await supabase.from('system_history').insert([{
-                content: isAdmin ? `الأدمن عين ${playerName} كابتن` : `${playerName} استلم الشارة`,
-                username: 'System'
-            }]);
-            
-            reloadList(table);
-        }
-    } else {
-        alert("❌ لا يمكنك تعيين لاعب آخر كابتن، هذه الصلاحية للأدمن فقط.");
-    }
-}
 
 
 
@@ -4414,31 +4364,41 @@ async function addComment(postId) {
     }
 }
 
-// 1. دالة التحقق الذكي (التعرف على صاحب الاسم أو المضيف)
 async function verifyActionPermission(table, playerId) {
     const myName = localStorage.getItem('chat_username');
     const myPin = localStorage.getItem('user_pin');
-    const adminPin = "2023"; // كلمة سر الأدمن
-
-    if (myPin === adminPin) return true;
-
-    // جلب بيانات اللاعب المستهدف مع بصمة الشخص الذي أضافه
-    const { data: player } = await supabase.from(table).select('name, player_pin, added_by_pin').eq('id', playerId).single();
     
-    if (!player) return false;
+    // --- 1. Super Admin Privilege (Total Control) ---
+    // Bypass all checks if the user is the Admin
+    if (myName === "Eternal Brothers FC Admin" && myPin === "2023") {
+        return true;
+    }
 
-    // تنظيف النصوص للمقارنة الدقيقة (تجنب مشاكل المسافات وحالة الأحرف)
+    // Fetch target player data including both fingerprints
+    const { data: player, error } = await supabase
+        .from(table)
+        .select('name, player_pin, added_by_pin')
+        .eq('id', playerId)
+        .single();
+    
+    if (error || !player) return false;
+
+    // Normalize strings for accurate comparison
     const cleanMyName = (myName || "").trim().toLowerCase();
     const cleanPlayerName = (player.name || "").trim().toLowerCase();
 
-    // الحالة 1: أنا صاحب الاسم (التطابق بالاسم والبصمة المسجلة)
-    const isOwner = (cleanMyName === cleanPlayerName && myPin === player.player_pin);
+    // --- 2. Identity Owner Check ---
+    // True if: Current user is the owner of the name AND their PIN matches the registered player_pin
+    const isOwner = (cleanMyName === cleanPlayerName && myPin === player.player_pin && player.player_pin !== "0000");
     
-    // الحالة 2: أنا من قمت بإضافة هذا اللاعب (التطابق ببصمة الجهاز الذي أضافه)
-    const isCreator = (player.added_by_pin === myPin);
+    // --- 3. The "Host" (Caterer) Check ---
+    // True if: Current device is the one that added this player (matches added_by_pin)
+    const isHost = (player.added_by_pin === myPin);
 
-    return isOwner || isCreator;
+    // Return true if any of the above permissions are met
+    return isOwner || isHost;
 }
+
 
 // 2. دالة الإضافة (حفظ بصمة المضيف وبصمة اللاعب)
 async function addTeam(team, inputId, providedName) {
@@ -4504,6 +4464,8 @@ async function toggleCaptainForPlayer(table, playerId, playerName, team) {
                 if (isSelf) localStorage.removeItem(`captain_mode_${team}`);
                 
                 showToast(isAdmin ? "Captaincy revoked by Admin 👑" : "You have resigned.");
+                
+                // No System History log here - keeping it clean
                 reloadList(table);
             }
         } else {
@@ -4542,18 +4504,14 @@ async function toggleCaptainForPlayer(table, playerId, playerName, team) {
 
             showToast(`© ${playerName} is now the Captain!`);
             
-            // Log the event in System History
-            await supabase.from('system_history').insert([{
-                content: isAdmin ? `Admin assigned ${playerName} as Captain` : `${playerName} took the Captaincy`,
-                username: 'System'
-            }]);
-            
+            // System History log removed as requested to keep history for Main/Waiting list only
             reloadList(table);
         }
     } else {
         alert("❌ Privilege Denied: You cannot assign other players as Captain.");
     }
 }
+
 
 
 // 4. الحذف والتعديل (يعتمد على الهوية أو المضيف)
