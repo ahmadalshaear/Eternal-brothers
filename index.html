@@ -4475,44 +4475,86 @@ async function addTeam(team, inputId, providedName) {
     showToast(`Added: ${name} ✅`);
 }
 
-// 3. دالة الكابتن (محدثة لتعمل فوراً لصاحب الاسم)
 async function toggleCaptainForPlayer(table, playerId, playerName, team) {
     const myName = localStorage.getItem('chat_username');
     const myPin = localStorage.getItem('user_pin');
+    
+    // Check for Super Admin Identity
+    const isAdmin = (myName === ADMIN_NAME && myPin === ADMIN_PASSWORD);
+    
+    // Get current team captain data from memory
     const captainData = window[`captainData_${team}`];
 
-    // إذا كان هناك كابتن بالفعل
+    // --- 1. Admin/Captain Logic: Removing or Revoking Captaincy ---
     if (captainData && captainData.id) {
-        if (captainData.id === playerId && playerName.trim().toLowerCase() === myName.trim().toLowerCase()) {
-            if (confirm(`Captain ${playerName}, do you want to resign?`)) {
+        // Admin can remove ANY captain. Player can only remove themselves if they are the captain.
+        const isTargetCurrentCaptain = (captainData.id === playerId);
+        const isSelf = (isTargetCurrentCaptain && playerName === myName);
+        
+        if (isAdmin || isSelf) {
+            const confirmMsg = isAdmin 
+                ? `Admin Power: Do you want to revoke the captaincy from ${playerName}?` 
+                : "Do you want to resign as Captain?";
+
+            if (confirm(confirmMsg)) {
+                // Reset PIN to "0000" to revoke privileges in database
                 await supabase.from(table).update({ player_pin: "0000" }).eq('id', playerId);
-                localStorage.removeItem(`captain_mode_${team}`);
-                showToast("Captaincy resigned.");
+                
+                // Disable edit mode locally if it's the current user
+                if (isSelf) localStorage.removeItem(`captain_mode_${team}`);
+                
+                showToast(isAdmin ? "Captaincy revoked by Admin 👑" : "You have resigned.");
                 reloadList(table);
             }
         } else {
-            alert(`🛡️ ${captainData.name} is the current Captain.`);
+            alert(`🛡️ ${captainData.name} is the current Captain. Only the Admin can change this.`);
         }
         return;
     }
 
-    // السماح فقط لصاحب الاسم الحقيقي بأن يصبح كابتن (باستخدام بصمة دخوله)
-    if (playerName.trim().toLowerCase() === myName.trim().toLowerCase()) {
-        if (confirm(`Do you want to take the Captaincy for ${team}?`)) {
-            await supabase.from(table).update({ player_pin: myPin }).eq('id', playerId);
-            localStorage.setItem(`captain_mode_${team}`, 'true');
-            showToast(`© Welcome Captain ${playerName}!`);
+    // --- 2. Admin/Player Logic: Assigning a New Captain ---
+    // Admin can choose ANY player. Regular players can only choose themselves.
+    const canAssign = isAdmin || (playerName === myName);
+
+    if (canAssign) {
+        const confirmMsg = isAdmin 
+            ? `Admin Power: Set ${playerName} as Captain for the team?` 
+            : `Do you want to take the Captaincy for ${team}?`;
+        
+        if (confirm(confirmMsg)) {
+            let targetPin;
+
+            if (isAdmin && playerName !== myName) {
+                // If Admin assigns another player, set a temporary PIN "1111"
+                targetPin = "1111"; 
+                alert(`${playerName} is now Captain. Temporary PIN: ${targetPin}`);
+            } else {
+                // If the player assigns themselves, use their personal PIN
+                targetPin = myPin;
+            }
+
+            await supabase.from(table).update({ player_pin: targetPin }).eq('id', playerId);
             
+            // If the user (Admin or Player) just made themselves captain, unlock edit mode
+            if (playerName === myName) {
+                localStorage.setItem(`captain_mode_${team}`, 'true');
+            }
+
+            showToast(`© ${playerName} is now the Captain!`);
+            
+            // Log the event in System History
             await supabase.from('system_history').insert([{
-                content: `${playerName} has taken the captaincy of ${team} team`,
+                content: isAdmin ? `Admin assigned ${playerName} as Captain` : `${playerName} took the Captaincy`,
                 username: 'System'
             }]);
+            
             reloadList(table);
         }
     } else {
-        alert(`❌ You can only become Captain of your own name: ${myName}`);
+        alert("❌ Privilege Denied: You cannot assign other players as Captain.");
     }
 }
+
 
 // 4. الحذف والتعديل (يعتمد على الهوية أو المضيف)
 async function deletePlayer(table, id) {
