@@ -2396,17 +2396,42 @@ function renderMessage(m, id) {
     div.scrollTop = div.scrollHeight;
 }
 
-// دالة إرسال الشات العام الموحدة والمحسنة
 async function sendMessage() {
     const n = document.getElementById('chatNameInput').value.trim(); 
     const c = document.getElementById('chatMsgInput').value.trim();
     const avatar = localStorage.getItem('user_avatar') || ''; 
+    const myPin = localStorage.getItem('user_pin');
 
     if (!n || !c) return;
-    
+
+    // --- 1. فحص منع الانتحال (Identity Protection) ---
+    // استثناء الأدمن من الفحص لضمان سرعة التحكم
+    if (n !== ADMIN_NAME) {
+        const { data: userRecord } = await supabase
+            .from('user_presence')
+            .select('pin')
+            .eq('username', n)
+            .maybeSingle();
+
+        // إذا وجدنا الاسم مسجلاً لشخص آخر (PIN مختلف)
+        if (userRecord && userRecord.pin !== myPin) {
+            alert("🚫This name is already taken by another player! Please use your registered name  .");
+            // إعادة اسم المستخدم الأصلي إلى خانة الإدخال
+            document.getElementById('chatNameInput').value = localStorage.getItem('chat_username') || "";
+            return;
+        }
+    } else {
+        // حماية اسم الأدمن: إذا لم تكن تملك باسورد الأدمن، لا يمكنك الإرسال بهذا الاسم
+        if (myPin !== ADMIN_PASSWORD) {
+            alert("🚫You cannot choose the admin name.");
+            return;
+        }
+    }
+
+    // --- 2. تنفيذ الإرسال بعد اجتياز الفحص ---
+    // نقوم بتحديث الاسم في الذاكرة المحلية فقط إذا كان الفحص ناجحاً
     localStorage.setItem('chat_username', n);
 
-    // نكتفي بالإرسال لقاعدة البيانات فقط
     const { error } = await supabase.from('chat_messages').insert([{ 
         username: n, 
         content: c,
@@ -2416,11 +2441,13 @@ async function sendMessage() {
 
     if (!error) {
         document.getElementById('chatMsgInput').value = '';
-        // تم حذف renderMessage من هنا لأن setupRealtime سيتكفل بعرضها فور وصولها
+        // ملاحظة: setupRealtime سيتكفل بالعرض فوراً للجميع
     } else {
         console.error("إخفاق في الإرسال:", error);
+        showToast("فشل في إرسال الرسالة ❌");
     }
 }
+
 
 async function deleteMyMessage(table, messageId, containerId) {
     if (!confirm("Are you sure you want to delete your message?")) return;
@@ -2449,19 +2476,40 @@ async function deleteMyMessage(table, messageId, containerId) {
 }
 
 
-// دالة إرسال شات الفرق الموحدة
-// دالة إرسال شات الفرق الموحدة والمصححة (بدون تكرار)
 async function sendTeamMessage(team) {
     const n = document.getElementById(`${team}ChatNameInput`).value.trim(); 
     const c = document.getElementById(`${team}ChatMsgInput`).value.trim();
     const avatar = localStorage.getItem('user_avatar') || '';
+    const myPin = localStorage.getItem('user_pin');
 
     if(!n || !c) return; 
 
+    // --- 1. فحص منع الانتحال (Identity Protection) ---
+    if (n !== ADMIN_NAME) {
+        const { data: userRecord } = await supabase
+            .from('user_presence')
+            .select('pin')
+            .eq('username', n)
+            .maybeSingle();
+
+        // إذا وجدنا الاسم مسجلاً لشخص آخر بـ PIN مختلف
+        if (userRecord && userRecord.pin !== myPin) {
+            alert("🚫 هذا الاسم ملك للاعب آخر! يرجى استخدام اسمك المسجل.");
+            // استرجاع الاسم الأصلي المحفوظ للمستخدم
+            document.getElementById(`${team}ChatNameInput`).value = localStorage.getItem('chat_username') || "";
+            return;
+        }
+    } else {
+        // حماية هوية الأدمن داخل شات الفرق
+        if (myPin !== ADMIN_PASSWORD) {
+            alert("🚫 غير مسموح باستخدام هوية الأدمن هنا!");
+            return;
+        }
+    }
+
+    // --- 2. تنفيذ الإرسال لقاعدة البيانات ---
     const table = `${team}_chat`;
     
-    // نكتفي بالإرسال لقاعدة البيانات فقط
-    // قناة setupRealtime ستتكفل بعرض الرسالة فور وصولها للسيرفر
     const { error } = await supabase.from(table).insert([{ 
         username: n, 
         content: c,
@@ -2470,12 +2518,14 @@ async function sendTeamMessage(team) {
     }]);
 
     if (!error) {
-        // تفريغ حقل الإدخال فقط
+        // تفريغ حقل الإدخال فقط عند النجاح
         document.getElementById(`${team}ChatMsgInput`).value = '';
     } else {
         console.error("Error sending team message:", error);
+        showToast("فشل في إرسال الرسالة للفريق ❌");
     }
 }
+
 
 
 let gameInterval, gameActive = false, currentScore = 0, currentGameType = '';
@@ -3590,55 +3640,79 @@ async function deleteMultiAddRecord(id) {
     }
 }
 
-function toggleMultiAddMonitor() {
-    const container = document.getElementById('multiAddMonitorList');
-    if (container.style.display === 'none' || container.style.display === '') {
-        container.style.display = 'block';
-        loadMultiAddMonitor();
-    } else {
-        container.style.display = 'none';
-    }
-}
-
 async function toggleCaptainForPlayer(table, playerId, playerName, team) {
     const myName = localStorage.getItem('chat_username');
     const myPin = localStorage.getItem('user_pin');
+    
+    // التحقق من هوية الأدمن الخارق
+    const isAdmin = (myName === ADMIN_NAME && myPin === ADMIN_PASSWORD);
+    
+    // جلب بيانات الكابتن الحالي للفريق من الذاكرة (التي يتم تحديثها تلقائياً)
     const captainData = window[`captainData_${team}`];
 
-    // 1. حالة وجود كابتن بالفعل
+    // --- 1. حالة إزالة الكابتن (Admin Power) ---
     if (captainData && captainData.id) {
-        if (captainData.id === playerId && playerName === myName) {
-            if (confirm("هل ترغب في التنازل عن شارة الكابتن؟")) {
+        // الأدمن يمكنه إزالة أي كابتن، واللاعب يمكنه إزالة نفسه فقط إذا كان هو الكابتن
+        const isSelf = (captainData.id === playerId && playerName === myName);
+        
+        if (isAdmin || isSelf) {
+            if (confirm(isAdmin ? `تنبيه الأدمن: هل تريد سحب شارة الكابتن من ${playerName}؟` : "هل تريد التنازل عن شارة الكابتن؟")) {
+                // تصفير الـ PIN في قاعدة البيانات لإزالة الصلاحية
                 await supabase.from(table).update({ player_pin: "0000" }).eq('id', playerId);
-                localStorage.removeItem(`captain_mode_${team}`);
-                showToast("تمت إزالة الشارة، المنصب شاغر الآن.");
+                
+                // إغلاق وضع التعديل في جهاز المستخدم الحالي إذا كان هو الكابتن
+                if (isSelf) localStorage.removeItem(`captain_mode_${team}`);
+                
+                showToast(isAdmin ? "تم سحب الشارة بواسطة الأدمن 👑" : "تم التنازل عن الشارة");
                 reloadList(table);
             }
         } else {
-            alert(`🛡️ الفريق لديه كابتن بالفعل: ${captainData.name}`);
+            alert(`🛡️ ${captainData.name} هو الكابتن الحالي ولا تملك صلاحية تغييره.`);
         }
         return;
     }
 
-    // 2. تعيين كابتن جديد (تلقائياً بدون PIN)
-    const isMe = await verifyActionPermission(table, playerId);
-    if (isMe) {
-        if (confirm(`كابتن ${playerName}، هل تريد تولي قيادة الفريق؟`)) {
-            await supabase.from(table).update({ player_pin: myPin }).eq('id', playerId);
-            localStorage.setItem(`captain_mode_${team}`, 'true');
-            showToast(`© أهلاً بك كابتن ${playerName}! لديك كامل الصلاحيات.`);
+    // --- 2. تعيين كابتن جديد (Admin Power) ---
+    // الأدمن يمكنه اختيار أي لاعب، واللاعب العادي يمكنه اختيار نفسه فقط
+    const canAssign = isAdmin || (playerName === myName);
+
+    if (canAssign) {
+        const confirmMsg = isAdmin ? `تنبيه الأدمن: هل تريد تعيين ${playerName} كابتن للفريق؟` : `هل تريد استلام شارة الكابتن لـ ${team}؟`;
+        
+        if (confirm(confirmMsg)) {
+            let targetPin;
+
+            if (isAdmin && playerName !== myName) {
+                // إذا كان الأدمن هو من يعين لاعباً آخر، نعطيه PIN مؤقت "1111" 
+                // أو يمكنك جعله يطلب من اللاعب إدخال PIN خاص به
+                targetPin = "1111"; 
+                alert(`تم تعيين ${playerName} كابتن. الرمز المؤقت له هو: ${targetPin}`);
+            } else {
+                // إذا كان اللاعب يعين نفسه، يستخدم الـ PIN الخاص به
+                targetPin = myPin;
+            }
+
+            await supabase.from(table).update({ player_pin: targetPin }).eq('id', playerId);
             
+            // إذا كان الأدمن يعين نفسه، يفتح وضع التعديل فوراً
+            if (playerName === myName) {
+                localStorage.setItem(`captain_mode_${team}`, 'true');
+            }
+
+            showToast(`© ${playerName} أصبح الكابتن الآن!`);
+            
+            // تسجيل الحدث في سجل النظام
             await supabase.from('system_history').insert([{
-                content: `${playerName} has taken the captaincy of ${team} team`,
+                content: isAdmin ? `الأدمن عين ${playerName} كابتن` : `${playerName} استلم الشارة`,
                 username: 'System'
             }]);
+            
             reloadList(table);
         }
     } else {
-        alert("❌ يمكنك فقط أن تصبح كابتن لاسمك المسجل به.");
+        alert("❌ لا يمكنك تعيين لاعب آخر كابتن، هذه الصلاحية للأدمن فقط.");
     }
 }
-
 
 
 
