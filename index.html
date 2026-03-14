@@ -1052,8 +1052,22 @@ window.addEventListener('beforeunload', () => {
                 <p id="passwordError" style="color: #ffeb3b; display: none; margin: 5px 0;">Incorrect password.</p>
             </div>
         </div>
+       
         <div id="settingsControls" style="display:none; flex-grow: 1; display: flex; flex-direction: column; min-height: 0;">
             <div class="settings-options-container">
+            <div style="border: 1px solid #d32f2f; padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #252525;">
+    <h3 style="margin-top:0; color:#ff5252; display:flex; align-items:center; gap:8px;">👥 Database Management</h3>
+    <p style="font-size:11px; color:#aaa; margin-bottom:10px;">Control all registered identities, reset PINs, or delete fake users.</p>
+    
+    <button onclick="loadRegisteredUsers()" style="background:#444; color:#fff; width:100%; padding:10px; border-radius:8px; border:1px solid #666; cursor:pointer; font-weight:bold;">
+        🔄 Refresh User Database
+    </button>
+
+    <div id="adminUserList" style="max-height: 300px; overflow-y: auto; margin-top: 15px; padding-right: 5px;">
+        <p style="text-align:center; color:#666; font-size:12px;">Click Refresh to load data...</p>
+    </div>
+</div>
+
                 
                 <!-- SMART TEAM MAKER - MOVED TO TOP -->
                 <div class="tm-container" style="margin-top: 0;">
@@ -5377,6 +5391,81 @@ async function logoutUser() {
     
     // 3. إعادة تحميل الصفحة لإظهار نافذة تسجيل الدخول الإجبارية
     location.reload();
+}
+
+// 1. دالة جلب كافة المسجلين من قاعدة البيانات
+async function loadRegisteredUsers() {
+    const listDiv = document.getElementById('adminUserList');
+    listDiv.innerHTML = '<p style="text-align:center; color:#aaa;">Fetching Users... ⏳</p>';
+
+    try {
+        const { data: users, error } = await supabase
+            .from('user_presence')
+            .select('*')
+            .order('username', { ascending: true });
+
+        if (error) throw error;
+
+        listDiv.innerHTML = '';
+        users.forEach(user => {
+            const card = document.createElement('div');
+            card.style.cssText = "background:#1a1a1a; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid #333; display:flex; flex-direction:column; gap:8px;";
+            
+            card.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #d32f2f;">
+                    <div style="flex:1;">
+                        <div style="color:#fff; font-weight:bold; font-size:13px;">${user.username}</div>
+                        <div style="color:#00e676; font-size:10px;">PIN: <span style="background:#333; padding:1px 4px; border-radius:3px; letter-spacing:1px;">${user.pin}</span></div>
+                    </div>
+                    <button onclick="deleteRegisteredUser('${user.username}')" style="background:#d32f2f; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:11px; cursor:pointer;">Delete</button>
+                </div>
+                <div style="display:flex; gap:5px;">
+                    <button onclick="adminEditUser('${user.username}', '${user.pin}')" style="flex:1; background:#1976d2; color:white; border:none; padding:5px; border-radius:4px; font-size:10px; cursor:pointer;">Edit Name/PIN</button>
+                </div>
+            `;
+            listDiv.appendChild(card);
+        });
+    } catch (err) {
+        alert("Error loading users: " + err.message);
+    }
+}
+
+// 2. دالة حذف مستخدم نهائياً من قاعدة البيانات
+async function deleteRegisteredUser(username) {
+    if (username === "Eternal Brothers FC Admin") return alert("Cannot delete System Admin!");
+    
+    if (!confirm(`Are you sure you want to delete ${username}? This will wipe their identity and PIN.`)) return;
+
+    const { error } = await supabase.from('user_presence').delete().eq('username', username);
+    
+    if (!error) {
+        showToast("User deleted from database.");
+        loadRegisteredUsers();
+    } else {
+        alert("Delete failed: " + error.message);
+    }
+}
+
+// 3. دالة تعديل بيانات أي مستخدم (اسم أو PIN)
+async function adminEditUser(oldName, oldPin) {
+    const newName = prompt("Edit Username:", oldName);
+    if (!newName) return;
+    
+    const newPin = prompt("Set New 4-Digit PIN:", oldPin);
+    if (!newPin || newPin.length !== 4) return alert("Invalid PIN!");
+
+    const { error } = await supabase
+        .from('user_presence')
+        .update({ username: newName, pin: newPin })
+        .eq('username', oldName);
+
+    if (!error) {
+        showToast("Identity updated successfully!");
+        loadRegisteredUsers();
+    } else {
+        alert("Update failed: " + error.message);
+    }
 }
 
 
