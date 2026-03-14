@@ -7,8 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 
-
-
 /* ستايل اسم الأدمن المضيء */
 .message div[style*="color: rgb(255, 215, 0)"] { /* إذا كان اللون ذهبي */
     text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700;
@@ -681,16 +679,11 @@ window.addEventListener('beforeunload', () => {
 
 
 
-<div id="playerManagement">
+  <div id="playerManagement">
     <h2>Add Player</h2>
-    <div style="position:relative; width:90%; margin:auto;">
-        <input type="text" id="nameInput" placeholder="Enter full name..." oninput="searchPlayers(this.value)" autocomplete="off">
-        <div id="searchSuggestions" style="display:none; position:absolute; top:100%; left:0; right:0; background:#242424; border:1px solid #555; border-radius:0 0 10px 10px; z-index:2500; box-shadow:0 10px 20px rgba(0,0,0,0.5);"></div>
-    </div>
-    <button id="addPlayerBtn" onclick="addPlayer()" style="margin-top:10px;">Add</button>
-</div>
-
-
+    <input type="text" id="nameInput" placeholder="Enter player name">
+    <button id="addPlayerBtn" onclick="addPlayer()">Add</button>
+  </div>
 
   <h2>Main Team (24 max)</h2>
   <ul id="teamList"></ul>
@@ -809,9 +802,7 @@ window.addEventListener('beforeunload', () => {
 <div id="blue" class="container" style="background:#1565c0aa;">
   <h2>Blue Team</h2>
   <div id="bluePlayerManagement">
- <input type="text" id="blueInput" oninput="searchPlayersInTeam(this.value, 'blue')" placeholder="Enter player name" autocomplete="off">
-<div id="blueSearchSuggestions" style="display:none; position:absolute; z-index:100; background:#242424; width:100%;"></div>
-
+    <input type="text" id="blueInput" placeholder="Enter player name">
     <button id="addBlueBtn" onclick="addBlue()">Add</button>
   </div>
   <ul id="blueList"></ul>
@@ -858,9 +849,8 @@ window.addEventListener('beforeunload', () => {
 <div id="yellow" class="container" style="background:#fdd835aa; color:#000;">
   <h2>Yellow Team</h2>
   <div id="yellowPlayerManagement">
- <input type="text" id="yellowInput" placeholder="Enter player name" oninput="searchPlayersInTeam(this.value, 'yellow')" autocomplete="off">
-<div id="yellowSearchSuggestions" style="display:none; position:absolute; width:80%; left:10%; background:#242424; border:1px solid #fbc02d; border-radius:0 0 10px 10px; z-index:2500; box-shadow:0 10px 20px rgba(0,0,0,0.5);"></div>
-<button id="addYellowBtn" onclick="addYellow()">Add</button>
+    <input type="text" id="yellowInput" placeholder="Enter player name">
+    <button id="addYellowBtn" onclick="addYellow()">Add</button>
   </div>
   <ul id="yellowList"></ul>
   <div class="formation-controls">
@@ -1723,8 +1713,11 @@ async function addPlayer() {
   if(!systemConfig.allowPlayerEdit) return alert("Add disabled");
   if(!isWithinAllowedTime()){ alert("Adding players is only allowed from Wednesday 3 PM to Sunday 12 PM."); return; }
   
+  // Data of the person currently using the device
   const myName = localStorage.getItem('chat_username');
   const myPin = localStorage.getItem('user_pin');
+  
+  // Super Admin Privilege
   const isAdmin = (myName === "Eternal Brothers FC Admin" && myPin === "2023");
 
   if(!myName || !myPin) {
@@ -1735,70 +1728,79 @@ async function addPlayer() {
   const inputName = document.getElementById("nameInput").value.trim();
   if (!inputName) return alert("Please enter a name! ⚽");
 
-  // 1. منع التكرار
+  // 1. Permission Check: Admin can add anyone, users can add themselves or others 
+  // (Control is managed via dual-PIN logic during Edit/Delete)
+  
+  // 2. Prevent Duplicates in Lists
   const { data: existMain } = await supabase.from("main_team").select("id").ilike("name", inputName);
   const { data: existWait } = await supabase.from("waiting_list").select("id").ilike("name", inputName);
+
   if ((existMain && existMain.length > 0) || (existWait && existWait.length > 0)) {
       return alert("This name is already on the list! ⚽");
   }
 
-  // 2. جلب بيانات اللاعب المسجل
+  // 3. Fetch "Owner's" data if they are already registered in the system
   const { data: registeredUser } = await supabase.from('user_presence')
-      .select('pin, avatar_url')
+      .select('pin')
       .eq('username', inputName)
       .maybeSingle();
 
+  // Determine the Player's PIN (Original footprint if registered)
   let playerPin = "0000"; 
-  let playerAvatar = 'https://www.w3schools.com/howto/img_avatar.png';
-
   if (registeredUser) {
-      playerPin = registeredUser.pin;
-      playerAvatar = registeredUser.avatar_url;
+      playerPin = registeredUser.pin; // Linked to the registered owner
   } else if (inputName.toLowerCase() === myName.toLowerCase()) {
-      playerPin = myPin;
-      playerAvatar = localStorage.getItem('user_avatar');
+      playerPin = myPin; // Self-adding but not registered yet
   }
 
-  // 3. فحص الامتلاء ونظام التنبيهات
+  // 4. Determine Target List (Main or Waiting)
   const { data: team } = await supabase.from("main_team").select("id");
-  const isWaiting = team.length >= 24;
-  const table = isWaiting ? "waiting_list" : "main_team";
+  const table = team.length < 24 ? "main_team" : "waiting_list";
   
-  // 4. الإدراج مع حفظ البصمات (بصمة اللاعب + بصمة الجهاز الحالي)
+  // 5. Insert Operation with Dual-PIN (Owner PIN + Host PIN)
   const { error } = await supabase.from(table).insert([{ 
       name: inputName, 
       time: Date.now(), 
-      player_pin: playerPin,
-      added_by_pin: myPin, // هذه هي البصمة التي تحدد اللون الأخضر
-      avatar_url: playerAvatar
+      player_pin: playerPin,   // Original owner's footprint
+      added_by_pin: myPin      // Device footprint (The Host/Caterer)
   }]);
   
   if (!error) {
+      // Log to Multi-Add Monitor
       await supabase.from('multi_add_log').insert([{ 
           device_name: myName, 
           player_name: inputName,
           added_at: new Date().toISOString() 
       }]);
       
-      if (!isWaiting) {
-          let historyMsg = (inputName.toLowerCase() === myName.toLowerCase()) 
-              ? `joined the Main Team (Self-Add) ⚽` 
-              : `was added to the list by ${myName} 🤝`;
-          sendSystemMessageToChat(inputName, historyMsg);
-      } else {
-          sendSystemMessageToChat(inputName, `added to the Waiting List`);
-          alert(`Main team is full (24). ${inputName} has been added to the Waiting List.`);
+      if(table === "main_team") { 
+          sendSystemMessageToChat(inputName, `joined the Main Team`); 
+      } else { 
+          sendSystemMessageToChat(inputName, `added to the Waiting List`); 
+          alert(`Main team is full. Added to the Waiting List.`); 
       }
       
       document.getElementById("nameInput").value = ""; 
-      if(document.getElementById('searchSuggestions')) document.getElementById('searchSuggestions').style.display = 'none';
       loadPlayers();
   } else {
+      console.error("Error:", error);
       alert("Failed to add player.");
   }
 }
 
 
+async function loadPlayers(){
+  const { data: team } = await supabase.from("main_team").select("*").order("id");
+  const { data: waiting } = await supabase.from("waiting_list").select("*").order("id");
+  renderList("teamList", team, "main_team"); renderList("waitingList", waiting, "waiting_list");
+}
+function renderList(id, data, table){
+    const ul = document.getElementById(id); ul.innerHTML = "";
+    if(data) data.forEach((p,i) => {
+        const btns = systemConfig.allowPlayerEdit ? `<span><button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button><button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button></span>` : '';
+        ul.innerHTML += `<li><div class="player-info"><span>${i+1}. ${p.name} <span class="player-time">${formatPlayerTime(p.time)}</span></span></div>${btns}</li>`;
+    });
+}
 async function deletePlayer(table, id) {
     if((table.includes('team') && !systemConfig.allowTeamEdit) || (!table.includes('team') && !systemConfig.allowPlayerEdit)) return;
 
@@ -1921,112 +1923,77 @@ async function addBlue(n) { await addTeam('blue', 'blueInput', n); }
 async function addYellow(n) { await addTeam('yellow', 'yellowInput', n); }
 
 async function loadTeamData(team) {
+
+
     const table = `${team}_team`;
-    // جلب البيانات مع الترتيب حسب الوقت لضمان دقة "المضيف"
-    const { data } = await supabase.from(table).select("*").order("time", { ascending: true });
+    const { data } = await supabase.from(table).select("*").order("id");
     const ul = document.getElementById(`${team}List`);
     const field = document.getElementById(`${team}Plan`);
 
     ul.innerHTML = "";
     field.innerHTML = `<div class="mid-line"></div><div class="center-circle"></div><div class="penalty-box-left"></div><div class="penalty-box-right"></div>`;
 
-    if (!data || data.length === 0) {
-        ul.innerHTML = `<li style="color:gray; text-align:center; padding:15px; background:none; border:none;">Waiting for players to join... ⚽</li>`;
-        return;
-    }
-
-    // 1. تحديد من هو الكابتن وإعادة الترتيب (ميزتك الأصلية)
+    // 1. تحديد من هو الكابتن
     let currentCaptainId = null;
     let currentCaptainPin = null;
 
-    data.forEach(p => {
-        if (p.player_pin && p.player_pin !== "0000" && p.player_pin.length === 4) {
-            currentCaptainId = p.id;
-            currentCaptainPin = p.player_pin;
-        }
-    });
-
-    if (currentCaptainId) {
-        data.sort((a, b) => {
-            if (a.id === currentCaptainId) return -1;
-            if (b.id === currentCaptainId) return 1;
-            return 0;
+    if (data) {
+        // البحث عن الكابتن أولاً
+        data.forEach(p => {
+            if (p.player_pin && p.player_pin !== "0000" && p.player_pin.length === 4) {
+                currentCaptainId = p.id;
+                currentCaptainPin = p.player_pin;
+            }
         });
+
+        // ⬇️⬇️ التعديل الجديد: إعادة ترتيب القائمة ليصبح الكابتن رقم 1 ⬇️⬇️
+        if (currentCaptainId) {
+            data.sort((a, b) => {
+                // إذا كان العنصر a هو الكابتن، ضعه في البداية (-1)
+                if (a.id === currentCaptainId) return -1;
+                // إذا كان العنصر b هو الكابتن، ضعه هو في البداية (1)
+                if (b.id === currentCaptainId) return 1;
+                // البقية يبقون كما هم (حسب الترتيب الأصلي id)
+                return 0;
+            });
+        }
+        // ⬆️⬆️ نهاية التعديل ⬆️⬆️
     }
     
     window[`captainData_${team}`] = { id: currentCaptainId, pin: currentCaptainPin };
 
-    // 2. إعدادات الثيم (الألوان المخصصة)
-    const teamThemeColor = team === 'blue' ? '#1E90FF' : '#FFD700'; // أزرق DodgerBlue أو أصفر ذهبي
-    const myPin = localStorage.getItem('user_pin');
     const isViewerInCaptainMode = localStorage.getItem(`captain_mode_${team}`) === 'true';
 
-    // جلب سجلات الإضافة لمعرفة من أضاف من
-    const { data: logs } = await supabase.from('multi_add_log').select('player_name, device_name');
-    const logMap = {};
-    if (logs) logs.forEach(log => { logMap[log.player_name] = log.device_name; });
-
-    // 3. بناء القائمة بالتصميم الجديد
-    data.forEach((p, i) => {
-        const avatar = p.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
-        const isCaptain = (p.id === currentCaptainId);
-        
-        // منطق المضيف (BY WHOM)
-        let fullAdderName = logMap[p.name] || "";
-        let adderFirstName = fullAdderName.split(' ')[0].toUpperCase();
-        let statusText = "";
-
-        if (p.added_by_pin === ADMIN_PASSWORD) {
-            statusText = "BY ADMIN";
-        } else if (p.player_pin !== "0000" && p.player_pin === p.added_by_pin) {
-            statusText = "BY HIMSELF";
-        } else {
-            statusText = adderFirstName ? `BY ${adderFirstName}` : "BY SYSTEM";
-        }
-
-        // إعداد الأزرار مع الحفاظ على منطق الصلاحيات الخاص بك
+    if (data) data.forEach((p, i) => {
         let btns = '';
-        if (systemConfig.allowTeamEdit) {
-            // زر الكابتن ©
-            const capBtnBg = isCaptain ? '#4CAF50' : '#616161';
-            const capBtnShadow = isCaptain ? 'box-shadow: 0 0 8px #4CAF50;' : '';
-            
-            btns += `<button class="action-btn" onclick="toggleCaptainForPlayer('${table}', ${p.id}, '${p.name}', '${team}')" 
-                        style="background:${capBtnBg}; color:#fff; border-radius:50%; width:28px; height:28px; padding:0; ${capBtnShadow}" title="${isCaptain ? 'Captain (Active)' : 'Set as Captain'}">
-                        ©
-                     </button>`;
 
-            // أزرار التعديل والحذف بناءً على وضع الكابتن أو الأدمن
-            if (!currentCaptainId || isCaptain || isViewerInCaptainMode) {
-                btns += `
-                    <button class="action-btn edit-btn" style="padding: 3px 8px; font-size: 11px;" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button>
-                    <button class="action-btn delete-btn" style="padding: 3px 8px; font-size: 11px;" onclick="deletePlayer('${table}',${p.id})">Delete</button>
-                `;
+        if (systemConfig.allowTeamEdit) {
+            if (!currentCaptainId) {
+                btns = `<span>
+                    <button class="action-btn captain-btn" onclick="toggleCaptainForPlayer('${table}', ${p.id}, '${p.name}', '${team}')" style="background:#616161; color:#fff; margin-left:5px;" title="Set as Captain">©</button>
+                    <button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button>
+                    <button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button>
+                </span>`;
+            } 
+            else {
+                if (p.id === currentCaptainId) {
+                    btns = `<span>
+                        <button class="action-btn captain-btn" onclick="toggleCaptainForPlayer('${table}', ${p.id}, '${p.name}', '${team}')" style="background:#4CAF50; color:#fff; margin-left:5px; box-shadow: 0 0 5px #fff;" title="Captain (Active)">©</button>
+                        ${isViewerInCaptainMode ? `<button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button><button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button>` : ''}
+                    </span>`;
+                } else {
+                    if (isViewerInCaptainMode) {
+                        btns = `<span>
+                            <button class="action-btn edit-btn" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button>
+                            <button class="action-btn delete-btn" onclick="deletePlayer('${table}',${p.id})">Delete</button>
+                        </span>`;
+                    }
+                }
             }
         }
 
-        // دمج التصميم (Mini List Style)
-        ul.innerHTML += `
-            <li style="display:flex; justify-content:space-between; align-items:center; background:#242526; border-radius:12px; margin-bottom:8px; padding:10px 15px; border-left: 5px solid ${teamThemeColor}; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05);">
-                <div class="player-info" style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:12px; font-weight:bold; color:${teamThemeColor}; min-width:20px;">${i + 1}</span>
-                    <div style="position:relative;">
-                        <img src="${avatar}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid ${teamThemeColor};">
-                        ${isCaptain ? `<span style="position:absolute; top:-5px; right:-5px; background:#4CAF50; color:white; font-size:8px; padding:1px 3px; border-radius:3px; font-weight:bold; border:1px solid #242526;">CAP</span>` : ''}
-                    </div>
-                    <div style="display:flex; flex-direction:column; text-align:left;">
-                        <span style="font-weight:bold; color:#ffffff; font-size:14px; letter-spacing:0.3px;">${p.name}</span>
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <span style="font-size:9px; color:${teamThemeColor}; font-weight:bold; opacity:0.9;">${statusText}</span>
-                            <span style="font-size:9px; color:#888;">• ${p.position_code || 'SUB'}</span>
-                        </div>
-                    </div>
-                </div>
-                <div style="display:flex; align-items:center; gap:5px;">
-                    ${btns}
-                </div>
-            </li>`;
-
+        // لاحظ هنا: i + 1 سيكون 1 للكابتن لأنه أصبح أول عنصر في المصفوفة
+        ul.innerHTML += `<li><div class="player-info"><span>${i + 1}. ${p.name}</span></div>${btns}</li>`;
         createPlayerMarker(team, p.name, p.id, JSON.parse(p.position), p.position_code, i + 1);
     });
 
@@ -4433,88 +4400,40 @@ async function verifyActionPermission(table, playerId) {
 }
 
 
+// 2. دالة الإضافة (حفظ بصمة المضيف وبصمة اللاعب)
 async function addTeam(team, inputId, providedName) {
     if (!systemConfig.allowTeamEdit) return;
 
     const myName = localStorage.getItem('chat_username');
     const myPin = localStorage.getItem('user_pin');
     
-    // 1. جلب الاسم من الحقل أو من الاقتراحات
     let name = providedName || document.getElementById(inputId).value.trim();
     if (!name) return;
+    
+    // تحديد PIN اللاعب: إذا أضاف نفسه نضع بصمته، وإذا أضاف غيره نتركها افتراضية
+    let pinToSave = (name.trim().toLowerCase() === myName.trim().toLowerCase()) ? myPin : "0000";
 
     const table = `${team}_team`;
+    const { data: curr } = await supabase.from(table).select("id");
+    if (curr && curr.length >= 12) return alert("Team is full!");
 
-    try {
-        // 2. التحقق من العدد (الحد الأقصى 12)
-        const { data: curr, error: countError } = await supabase.from(table).select("id");
-        if (countError) throw countError;
+    const pos = FORMATIONS['4-3-3'][curr.length] || { left: '50%', top: '-15%', code: 'SUB' };
 
-        if (curr && curr.length >= 12) {
-            alert("Team is full (Max 12 players) ⚽");
-            return;
-        }
+    await supabase.from(table).insert([{
+        name: name,
+        time: Date.now(),
+        position: JSON.stringify({ left: pos.left, top: pos.top }),
+        position_code: pos.code,
+        player_pin: pinToSave,
+        added_by_pin: myPin // ميزة حيوية: تسجيل بصمة جهاز الشخص الذي ضغط على "إضافة"
+    }]);
 
-        // 3. جلب بيانات اللاعب المسجلة (الـ PIN والصورة) لضمان عدم فقدان الهوية
-        let playerAvatar = 'https://www.w3schools.com/howto/img_avatar.png';
-        let registeredPin = "0000";
+    if (!providedName) document.getElementById(inputId).value = "";
+    if (providedName) closeTeamAddModal(); // إذا كانت الإضافة من القائمة المنبثقة
 
-        const { data: userData } = await supabase
-            .from('user_presence')
-            .select('avatar_url, pin')
-            .ilike('username', name)
-            .maybeSingle();
-
-        if (userData) {
-            playerAvatar = userData.avatar_url || playerAvatar;
-            registeredPin = userData.pin;
-        }
-
-        // 4. منطق الـ PIN: إذا كنت تضيف نفسك استخدم PIN جهازك، وإلا استخدم PIN اللاعب المسجل
-        let pinToSave = (name.trim().toLowerCase() === myName?.trim().toLowerCase()) ? myPin : registeredPin;
-
-        // 5. تحديد المركز تلقائياً بناءً على التشكيلة
-        const currentCount = curr ? curr.length : 0;
-        const pos = FORMATIONS['4-3-3'][currentCount] || { left: '50%', top: '-15%', code: 'SUB' };
-
-        // 6. عملية الإضافة مع حفظ كامل البيانات (الصورة + بصمة المضيف + الـ PIN)
-        const { error: insertError } = await supabase.from(table).insert([
-            {
-                name: name,
-                time: Date.now(),
-                position: JSON.stringify({ left: pos.left, top: pos.top }),
-                position_code: pos.code,
-                player_pin: pinToSave,    // لضمان صلاحية "صاحب الاسم"
-                added_by_pin: myPin,      // لضمان صلاحية "المضيف" (الجهاز الذي أضاف)
-                avatar_url: playerAvatar  // لضمان ظهور الصورة الشخصية
-            }
-        ]);
-
-        if (insertError) throw insertError;
-
-        // 7. تنظيف الواجهة
-        if (!providedName) {
-            const inputField = document.getElementById(inputId);
-            if (inputField) inputField.value = "";
-        }
-        
-        // إخفاء قائمة الاقتراحات إذا وجدت
-        const suggestions = document.getElementById(`${team}SearchSuggestions`);
-        if (suggestions) suggestions.style.display = 'none';
-
-        if (providedName) closeTeamAddModal();
-
-        // 8. تحديث القوائم وإشعار النجاح
-        reloadList(table);
-        showToast(`Successfully added: ${name} ✅`);
-
-    } catch (err) {
-        console.error("Critical System Error:", err);
-        alert("Save failed! Please check your connection.");
-    }
+    reloadList(table);
+    showToast(`Added: ${name} ✅`);
 }
-
-
 
 async function toggleCaptainForPlayer(table, playerId, playerName, team) {
     const myName = localStorage.getItem('chat_username');
@@ -4753,235 +4672,6 @@ async function handleFeedUpload(input) {
         input.value = ''; // تفريغ حقل اختيار الملف
     }
 }
-
-async function searchPlayers(query) {
-    const suggestions = document.getElementById('searchSuggestions');
-    
-    // إذا كان الحقل فارغاً، أخفِ القائمة
-    if (query.length < 2) {
-        suggestions.style.display = 'none';
-        return;
-    }
-
-    // نبحث عن اللاعب في سجلات النظام
-    const { data } = await supabase
-        .from('user_presence')
-        .select('username, avatar_url')
-        .ilike('username', `%${query}%`)
-        .limit(5);
-
-    if (data && data.length > 0) {
-        suggestions.innerHTML = '';
-        data.forEach(user => {
-            const div = document.createElement('div');
-            div.style.cssText = "padding:10px; border-bottom:1px solid #444; cursor:pointer; display:flex; align-items:center; gap:10px; color:#fff;";
-            
-            // عند الضغط على الاسم المقترح:
-            div.onclick = () => {
-                document.getElementById('nameInput').value = user.username; // تعبئة الاسم
-                suggestions.style.display = 'none'; // إخفاء القائمة
-            };
-
-            div.innerHTML = `
-                <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" 
-                     style="width:25px; height:25px; border-radius:50%; border:2px solid #00e676;">
-                <span>${user.username}</span>
-            `;
-            suggestions.appendChild(div);
-        });
-        suggestions.style.display = 'block';
-    } else {
-        suggestions.style.display = 'none';
-    }
-}
-
-// 1. دالة البحث التلقائي (توضع فوق دالة addPlayer)
-async function searchPlayers(query) {
-    const suggestions = document.getElementById('searchSuggestions');
-    if (query.length < 2) {
-        suggestions.style.display = 'none';
-        return;
-    }
-
-    const { data } = await supabase
-        .from('user_presence')
-        .select('username, avatar_url')
-        .ilike('username', `%${query}%`)
-        .limit(5);
-
-    if (data && data.length > 0) {
-        suggestions.innerHTML = '';
-        data.forEach(user => {
-            const div = document.createElement('div');
-            div.style.cssText = "padding:10px; border-bottom:1px solid #444; cursor:pointer; display:flex; align-items:center; gap:10px; color:#fff;";
-            div.innerHTML = `
-                <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" style="width:25px; height:25px; border-radius:50%; border:2px solid #00e676;">
-                <span style="font-weight:bold;">${user.username}</span>
-            `;
-            div.onclick = () => {
-                document.getElementById('nameInput').value = user.username;
-                suggestions.style.display = 'none';
-            };
-            suggestions.appendChild(div);
-        });
-        suggestions.style.display = 'block';
-    } else {
-        suggestions.style.display = 'none';
-    }
-}
-
-async function renderList(id, data, table) {
-    const ul = document.getElementById(id);
-    if (!ul) return;
-    ul.innerHTML = "";
-
-    if (!data || data.length === 0) {
-        ul.innerHTML = "<li style='color:gray; text-align:center; padding:10px; background:none;'>No players yet...</li>";
-        return;
-    }
-
-    // جلب سجلات الإضافة من جدول multi_add_log لربط الأسماء
-    const { data: logs } = await supabase.from('multi_add_log').select('player_name, device_name');
-    const logMap = {};
-    if (logs) {
-        logs.forEach(log => { logMap[log.player_name] = log.device_name; });
-    }
-
-    // --- تحديد لون الثيم بناءً على نوع الجدول ---
-    let teamThemeColor = "#98FB98"; // الأخضر الافتراضي (للميني ليست)
-    if (table.includes("yellow")) {
-        teamThemeColor = "#FFD700"; // أصفر ذهبي للفريق الأصفر
-    } else if (table.includes("blue")) {
-        teamThemeColor = "#1E90FF"; // أزرق DodgerBlue للفريق الأزرق
-    }
-
-    data.forEach((p, i) => {
-        // الإعدادات الديناميكية
-        let borderColor = teamThemeColor; 
-        let statusColor = "#98FB98"; // نص الحالة يبقى أخضر (White Green) لسهولة القراءة
-        let adderText = "";
-
-        // استخراج الاسم الأول للمضيف
-        let fullAdderName = logMap[p.name] || "";
-        let firstName = fullAdderName.split(' ')[0].toUpperCase(); 
-
-        // 1. استثناء الأدمن (يبقى بنفسجي دائمًا في أي قائمة)
-        if (p.name === ADMIN_NAME || p.added_by_pin === ADMIN_PASSWORD) {
-            borderColor = "#9c27b0";
-            statusColor = "#9c27b0"; 
-            adderText = "BY ADMIN";
-        } 
-        // 2. حالة الإضافة الذاتية (تأخذ لون ثيم الفريق)
-        else if (p.player_pin !== "0000" && p.player_pin === p.added_by_pin) {
-            borderColor = teamThemeColor;
-            adderText = "BY HIMSELF";
-        } 
-        // 3. حالة إضافة صديق (تأخذ لون ثيم الفريق)
-        else {
-            borderColor = teamThemeColor;
-            adderText = firstName ? `BY ${firstName}` : "BY SYSTEM";
-        }
-
-        // تمييز حدود قائمة الانتظار باللون الأحمر دائمًا
-        if (table === "waiting_list") {
-            borderColor = "#ff1744"; 
-        }
-
-        const avatar = p.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png';
-        
-        // الأزرار مع الحفاظ الكامل على الامتيازات
-        const btns = systemConfig.allowPlayerEdit ? `
-            <span style="display:flex; gap:4px;">
-                <button class="action-btn edit-btn" style="padding: 3px 7px; font-size: 11px;" onclick="editPlayer('${table}',${p.id},'${p.name}')">Edit</button>
-                <button class="action-btn delete-btn" style="padding: 3px 7px; font-size: 11px;" onclick="deletePlayer('${table}',${p.id})">Delete</button>
-            </span>` : '';
-        
-        ul.innerHTML += `
-            <li style="display:flex; justify-content:space-between; align-items:center; background:#1e1e1e; border-radius:10px; margin-bottom:8px; padding:8px 12px; border-left: 5px solid ${borderColor}; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                <div class="player-info" style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:12px; font-weight:bold; color:#FFD700; min-width:20px;">${i+1}</span>
-                    <div style="position:relative;">
-                        <img src="${avatar}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid ${borderColor};">
-                    </div>
-                    <div style="display:flex; flex-direction:column; text-align:left;">
-                        <span style="font-weight:bold; color:#ffffff; font-size:13px; letter-spacing:0.3px;">${p.name}</span>
-                        <div style="display:flex; align-items:center; gap:5px;">
-                            <span style="font-size:8.5px; color:${statusColor}; font-weight:bold; text-transform:uppercase;">${adderText}</span>
-                            <span style="font-size:8.5px; color:#666;">• ${formatPlayerTime(p.time)}</span>
-                        </div>
-                    </div>
-                </div>
-                ${btns}
-            </li>`;
-    });
-}
-
-
-async function loadPlayers(){
-  // جلب البيانات مع التأكد من ترتيبها
-  const { data: team, error: e1 } = await supabase.from("main_team").select("*").order("time", { ascending: true });
-  const { data: waiting, error: e2 } = await supabase.from("waiting_list").select("*").order("time", { ascending: true });
-  
-  if (e1 || e2) console.error("Error fetching players:", e1 || e2);
-
-  // استدعاء دالة الرسم
-  renderList("teamList", team, "main_team"); 
-  renderList("waitingList", waiting, "waiting_list");
-}
-
-// دالة البحث الذكي الخاصة بالفرق
-async function searchPlayersInTeam(query, team) {
-    const suggestions = document.getElementById(`${team}SearchSuggestions`);
-    const inputId = (team === 'blue') ? 'blueInput' : 'yellowInput';
-    const themeColor = (team === 'blue') ? '#1976d2' : '#fbc02d';
-
-    if (query.length < 2) {
-        suggestions.style.display = 'none';
-        return;
-    }
-
-    // جلب اللاعبين من القائمة الرئيسية الذين يطابقون البحث
-    const { data } = await supabase
-        .from('user_presence')
-        .select('username, avatar_url')
-        .ilike('username', `%${query}%`)
-        .limit(5);
-
-    if (data && data.length > 0) {
-        suggestions.innerHTML = '';
-        data.forEach(user => {
-            const div = document.createElement('div');
-            div.style.cssText = "padding:10px; border-bottom:1px solid #444; cursor:pointer; display:flex; align-items:center; gap:10px; color:#fff;";
-            
-            div.onclick = () => {
-                document.getElementById(inputId).value = user.username;
-                suggestions.style.display = 'none';
-            };
-
-            div.innerHTML = `
-                <img src="${user.avatar_url || 'https://www.w3schools.com/howto/img_avatar.png'}" 
-                     style="width:25px; height:25px; border-radius:50%; border:2px solid ${themeColor};">
-                <span style="font-weight:bold; font-size:13px;">${user.username}</span>
-            `;
-            suggestions.appendChild(div);
-        });
-        suggestions.style.display = 'block';
-    } else {
-        suggestions.style.display = 'none';
-    }
-}
-
-// دالة إضافية لإغلاق الاقتراحات عند الضغط في أي مكان خارج الحقل
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('#bluePlayerManagement')) {
-        const s = document.getElementById('blueSearchSuggestions');
-        if(s) s.style.display = 'none';
-    }
-    if (!e.target.closest('#yellowPlayerManagement')) {
-        const s = document.getElementById('yellowSearchSuggestions');
-        if(s) s.style.display = 'none';
-    }
-});
 
 
 </script>
