@@ -5497,6 +5497,23 @@ async function adminEditUser(oldName, oldPin) {
 }
 </style>
 
+<div id="viewAddressModal" class="mini-modal-overlay" style="display:none; z-index: 3500;">
+    <div class="mini-modal-box" style="border: 2px solid #9c27b0;">
+        <h3 style="color:#fff; margin-top:0;">Match Location 📍</h3>
+        <p style="color:#ccc; font-size:12px; margin-bottom:10px;">Copy the address for Uber/Maps or open directly:</p>
+        
+        <input type="text" id="addressDisplayInput" readonly 
+               style="width:100%; background:#111; color:#fff; border:1px solid #9c27b0; padding:12px; text-align:center; border-radius:8px; box-sizing: border-box; font-size:14px;">
+        
+        <div style="display:flex; gap:10px; margin-top:15px; justify-content: center;">
+            <button onclick="copyToClipboard()" style="background:#009688; color:#fff; flex:1; padding:12px; border-radius:8px; font-weight:bold;">Copy 📋</button>
+            <button onclick="openMapDirectly()" style="background:#1976d2; color:#fff; flex:1; padding:12px; border-radius:8px; font-weight:bold;">Maps 🗺️</button>
+        </div>
+        
+        <button onclick="closeAddressModal()" style="background:transparent; color:#aaa; margin-top:15px; width:100%; border:none; text-decoration:underline;">Close</button>
+    </div>
+</div>
+
 
 </body>
 </html>
