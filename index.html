@@ -4439,19 +4439,24 @@ async function addTeam(team, inputId, providedName) {
     const myName = localStorage.getItem('chat_username');
     const myPin = localStorage.getItem('user_pin');
     
-    // جلب الاسم من الحقل أو من الاقتراحات
+    // 1. جلب الاسم من الحقل أو من الاقتراحات
     let name = providedName || document.getElementById(inputId).value.trim();
     if (!name) return;
 
     const table = `${team}_team`;
 
     try {
-        // 1. التحقق من العدد (الحد الأقصى 12)
-        const { data: curr } = await supabase.from(table).select("id");
-        if (curr && curr.length >= 12) return alert("Team is full!");
+        // 2. التحقق من العدد (الحد الأقصى 12)
+        const { data: curr, error: countError } = await supabase.from(table).select("id");
+        if (countError) throw countError;
 
-        // 2. جلب صورة اللاعب والـ PIN الخاص به من قاعدة بيانات المستخدمين
-        let playerAvatar = 'https://www.w3schools.com/howto/img_avatar.png'; // صورة افتراضية
+        if (curr && curr.length >= 12) {
+            alert("Team is full (Max 12 players) ⚽");
+            return;
+        }
+
+        // 3. جلب بيانات اللاعب المسجلة (الـ PIN والصورة) لضمان عدم فقدان الهوية
+        let playerAvatar = 'https://www.w3schools.com/howto/img_avatar.png';
         let registeredPin = "0000";
 
         const { data: userData } = await supabase
@@ -4465,24 +4470,29 @@ async function addTeam(team, inputId, providedName) {
             registeredPin = userData.pin;
         }
 
-        // 3. منطق الـ PIN (الحفاظ على ميزة إضافة النفس)
+        // 4. منطق الـ PIN: إذا كنت تضيف نفسك استخدم PIN جهازك، وإلا استخدم PIN اللاعب المسجل
         let pinToSave = (name.trim().toLowerCase() === myName?.trim().toLowerCase()) ? myPin : registeredPin;
 
-        // 4. تحديد المركز تلقائياً بناءً على التشكيلة
-        const pos = FORMATIONS['4-3-3'][curr.length] || { left: '50%', top: '-15%', code: 'SUB' };
+        // 5. تحديد المركز تلقائياً بناءً على التشكيلة
+        const currentCount = curr ? curr.length : 0;
+        const pos = FORMATIONS['4-3-3'][currentCount] || { left: '50%', top: '-15%', code: 'SUB' };
 
-        // 5. عملية الإضافة مع حفظ رابط الصورة وبصمة المضيف
-        await supabase.from(table).insert([{
-            name: name,
-            time: Date.now(),
-            position: JSON.stringify({ left: pos.left, top: pos.top }),
-            position_code: pos.code,
-            player_pin: pinToSave,
-            added_by_pin: myPin, // بصمة جهازك (للحفاظ على صلاحية الحذف/التعديل)
-            avatar_url: playerAvatar // هذا هو السطر الذي سيجعل الصور تظهر
-        }]);
+        // 6. عملية الإضافة مع حفظ كامل البيانات (الصورة + بصمة المضيف + الـ PIN)
+        const { error: insertError } = await supabase.from(table).insert([
+            {
+                name: name,
+                time: Date.now(),
+                position: JSON.stringify({ left: pos.left, top: pos.top }),
+                position_code: pos.code,
+                player_pin: pinToSave,    // لضمان صلاحية "صاحب الاسم"
+                added_by_pin: myPin,      // لضمان صلاحية "المضيف" (الجهاز الذي أضاف)
+                avatar_url: playerAvatar  // لضمان ظهور الصورة الشخصية
+            }
+        ]);
 
-        // 6. تنظيف الواجهة
+        if (insertError) throw insertError;
+
+        // 7. تنظيف الواجهة
         if (!providedName) {
             const inputField = document.getElementById(inputId);
             if (inputField) inputField.value = "";
@@ -4494,13 +4504,16 @@ async function addTeam(team, inputId, providedName) {
 
         if (providedName) closeTeamAddModal();
 
+        // 8. تحديث القوائم وإشعار النجاح
         reloadList(table);
         showToast(`Successfully added: ${name} ✅`);
 
     } catch (err) {
         console.error("Critical System Error:", err);
+        alert("Save failed! Please check your connection.");
     }
 }
+
 
 
 async function toggleCaptainForPlayer(table, playerId, playerName, team) {
